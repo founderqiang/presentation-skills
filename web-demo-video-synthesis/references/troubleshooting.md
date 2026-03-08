@@ -33,7 +33,15 @@
 处理建议：
 - 缩短单条字幕（拆成两段 cues，而不是硬塞一条长句）。
 - 降低字体大小（例如 16 -> 13）并微调底边距（`MarginV`）。
+- 显式设置左右安全区（`MarginL` / `MarginR`），竖屏时建议明显大于横屏。
+- 启用自适应换行并调小每行宽度（`--subtitle-auto-wrap true --subtitle-wrap-max-units 36~46`）。
 - 不要把字幕框做得太宽：宁可多换行，也别顶到左右边界。
+
+推荐参数（竖屏）：
+- `--subtitle-font-size 13~15`
+- `--subtitle-margin-v 72~108`
+- `--subtitle-margin-l 72~120`
+- `--subtitle-margin-r 72~120`
 
 ## 4. 清晰度没有明显提升
 
@@ -90,6 +98,26 @@
 处理建议：
 - 使用完整版 ffmpeg（本仓库环境可用：`conda run -n prts ffmpeg`）。
 
+## 12. 报错“未找到 ffmpeg”，但你确信装了
+
+现象：
+- `mix_audio_from_timeline.py` 或其他步骤提示 `未找到 ffmpeg`。
+
+高概率原因：
+- 你安装了 ffmpeg，但它不在当前 shell 的 `PATH` 里（常见于 conda/自定义安装）。
+
+处理建议：
+1. 显式指定 ffmpeg 路径（推荐，最可复现）：
+   - `python3 scripts/mix_audio_from_timeline.py --ffmpeg /path/to/ffmpeg ...`
+   - `bash scripts/make_demo_video.sh --ffmpeg /path/to/ffmpeg ...`
+2. 或把 ffmpeg 加入 PATH：
+   - conda 常见：`export PATH="$CONDA_PREFIX/bin:$PATH"`
+
+补充：
+- 有些环境 `ffprobe` 也不在 PATH。若你需要看视频宽高/时长，可以：
+  - 用同目录下的 `ffprobe`（如果存在），或
+  - 直接 `ffmpeg -i your_video.mp4` 从输出里读取 metadata。
+
 ## 9. 成片画面是 Not Found / JSON / 不是你想录的网页
 
 现象：
@@ -108,6 +136,25 @@
    - 强烈建议加 `--expect-selector \"#step-hero\"` 或 `--expect-title-includes \"YourTitle\"`，确保确实命中目标页面。
 3. SPA/持续请求页面若卡在打开阶段：
    - 改用 `--wait-until domcontentloaded`（避免 `networkidle` 等不到）。
+
+补充检查：
+- 若 `python -m http.server 6150` 启动失败 `Address already in use`，说明端口已被占用。
+- 先执行 `lsof -iTCP:6150 -sTCP:LISTEN -n -P` 确认占用进程，再换成未占用端口（例如 `6277`），并同步更新 `record_url`。
+
+## 11. 每段都在滚动，但画面看起来“没翻页”
+
+现象：
+- 语音在走、滚动也在走，但视觉上像“一屏塞了很多内容”，翻页节奏不明显。
+
+高概率原因：
+- 单个页面承载了过多内容，导致一次滚动仍然看到多个主题。
+- section 高度不足（小于或接近一个屏高），页面锚点切换缺少“翻页感”。
+
+处理建议：
+1. 结构设计按“每页一主题”拆分：一段旁白对应一个 section。
+2. 每个 section 至少占满一屏（常见做法：`min-height: 100vh`）。
+3. 控制每页信息量：标题 + 1~3 个关键点，避免密集长段落。
+4. 竖屏项目优先以移动端画幅设计，先看 9:16 再做桌面端兼容。
 
 ## 10. 没有 TTS 秘钥，如何先跑通视频流水线？
 

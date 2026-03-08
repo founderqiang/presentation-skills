@@ -53,6 +53,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--inter-gap-sec", type=float, default=2.5, help="段间静默秒数")
     parser.add_argument("--scroll-lag-sec", type=float, default=1.2, help="滚动提前量秒数")
     parser.add_argument(
+        "--ffmpeg",
+        default="auto",
+        help="ffmpeg 命令（auto 或显式指定，例如 'ffmpeg' 或 '/path/to/ffmpeg'）。用于混音步骤。",
+    )
+    parser.add_argument(
         "--force-tts",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -283,7 +288,7 @@ def build_timeline(
     }
 
 
-def run_mix_audio_from_timeline(timeline_json: Path, out_mp3: Path) -> None:
+def run_mix_audio_from_timeline(timeline_json: Path, out_mp3: Path, ffmpeg: str) -> None:
     script_dir = Path(__file__).resolve().parent
     mix_py = script_dir / "mix_audio_from_timeline.py"
     if not mix_py.exists():
@@ -295,6 +300,8 @@ def run_mix_audio_from_timeline(timeline_json: Path, out_mp3: Path) -> None:
         str(timeline_json),
         "--output",
         str(out_mp3),
+        "--ffmpeg",
+        ffmpeg,
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
@@ -391,7 +398,7 @@ def main() -> None:
 
     if args.mix_audio:
         out_mp3 = ws_audio_dir / "timeline_audio.mp3"
-        run_mix_audio_from_timeline(timeline_path, out_mp3)
+        run_mix_audio_from_timeline(timeline_path, out_mp3, ffmpeg=str(args.ffmpeg))
 
     write_json(
         meta_path,

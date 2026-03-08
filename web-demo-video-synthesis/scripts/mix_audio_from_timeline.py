@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -41,7 +43,27 @@ def resolve_ffmpeg(cmd: str) -> List[str]:
         return cmd.split(" ")
     if shutil.which("ffmpeg"):
         return ["ffmpeg"]
-    raise RuntimeError("未找到 ffmpeg，请先安装（或用 --ffmpeg 显式指定命令）")
+    conda_prefix = os.environ.get("CONDA_PREFIX", "").strip()
+    candidates = []
+    if conda_prefix:
+        candidates.append(Path(conda_prefix) / "bin" / "ffmpeg")
+    candidates.append(Path(sys.prefix) / "bin" / "ffmpeg")
+    candidates.extend(
+        [
+            Path("/opt/homebrew/bin/ffmpeg"),
+            Path("/usr/local/bin/ffmpeg"),
+            Path("/usr/bin/ffmpeg"),
+        ]
+    )
+    existing = [str(p) for p in candidates if p.exists()]
+    hint = ""
+    if existing:
+        hint = (
+            "\n可能存在的 ffmpeg 路径（未在 PATH 中）：\n"
+            + "\n".join([f"- {p}" for p in existing])
+            + "\n解决：把它加入 PATH，或用 --ffmpeg 显式指定。"
+        )
+    raise RuntimeError("未找到 ffmpeg，请先安装（或用 --ffmpeg 显式指定命令）。" + hint)
 
 
 def read_json(path: Path) -> Dict[str, Any]:

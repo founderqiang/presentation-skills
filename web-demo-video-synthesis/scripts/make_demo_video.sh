@@ -29,9 +29,16 @@ RECORD_FAIL_ON_JSON="true"
 RECORD_EXPECT_SELECTOR=""
 RECORD_EXPECT_TITLE_INCLUDES=""
 RECORD_EXPECT_TIMEOUT_MS="12000"
+RECORD_SCROLL_BEHAVIOR="auto"
+RECORD_SCROLL_SETTLE_MS="420"
 
 SUBTITLE_FONT_SIZE="13"
 SUBTITLE_MARGIN_V="24"
+SUBTITLE_MARGIN_L="48"
+SUBTITLE_MARGIN_R="48"
+SUBTITLE_FONT_NAME="Arial"
+SUBTITLE_AUTO_WRAP="true"
+SUBTITLE_WRAP_MAX_UNITS="42"
 
 FFMPEG_BIN="ffmpeg"
 
@@ -79,10 +86,24 @@ while [[ $# -gt 0 ]]; do
       RECORD_EXPECT_TITLE_INCLUDES="$2"; shift 2 ;;
     --record-expect-timeout-ms)
       RECORD_EXPECT_TIMEOUT_MS="$2"; shift 2 ;;
+    --record-scroll-behavior)
+      RECORD_SCROLL_BEHAVIOR="$2"; shift 2 ;;
+    --record-scroll-settle-ms)
+      RECORD_SCROLL_SETTLE_MS="$2"; shift 2 ;;
     --subtitle-font-size)
       SUBTITLE_FONT_SIZE="$2"; shift 2 ;;
     --subtitle-margin-v)
       SUBTITLE_MARGIN_V="$2"; shift 2 ;;
+    --subtitle-margin-l)
+      SUBTITLE_MARGIN_L="$2"; shift 2 ;;
+    --subtitle-margin-r)
+      SUBTITLE_MARGIN_R="$2"; shift 2 ;;
+    --subtitle-font-name)
+      SUBTITLE_FONT_NAME="$2"; shift 2 ;;
+    --subtitle-auto-wrap)
+      SUBTITLE_AUTO_WRAP="$2"; shift 2 ;;
+    --subtitle-wrap-max-units)
+      SUBTITLE_WRAP_MAX_UNITS="$2"; shift 2 ;;
     --ffmpeg)
       FFMPEG_BIN="$2"; shift 2 ;;
     *)
@@ -100,6 +121,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if ! command -v "$FFMPEG_BIN" >/dev/null 2>&1; then
   echo "未找到 ffmpeg: $FFMPEG_BIN" >&2
   echo "请安装系统 ffmpeg（需支持 libass+libx264），或用 --ffmpeg 指向可用的 ffmpeg 可执行文件名/路径。" >&2
+  if [[ -n "${CONDA_PREFIX:-}" && -x "${CONDA_PREFIX}/bin/ffmpeg" ]]; then
+    echo "提示：检测到 conda 环境内可能有 ffmpeg，可尝试：" >&2
+    echo "  --ffmpeg \"${CONDA_PREFIX}/bin/ffmpeg\"" >&2
+    echo "  或 export PATH=\"${CONDA_PREFIX}/bin:\$PATH\"" >&2
+  fi
   exit 1
 fi
 
@@ -146,7 +172,8 @@ if [[ ! -f "$WS_TIMELINE" || ! -d "$WORKSPACE_DIR/segment_audio" || -z "$(ls -A 
     --format "wav" \
     --inter-gap-sec "$INTER_GAP_SEC" \
     --scroll-lag-sec "$SCROLL_LAG_SEC" \
-    --mix-audio true
+    --ffmpeg "$FFMPEG_BIN" \
+    --mix-audio
 fi
 
 if [[ ! -f "$WS_TIMELINE" ]]; then
@@ -180,13 +207,30 @@ node "$SCRIPT_DIR/record_demo_from_timeline.mjs" \
   --fail-on-json "$RECORD_FAIL_ON_JSON" \
   --expect-timeout-ms "$RECORD_EXPECT_TIMEOUT_MS" \
   "${extra_record_args[@]}" \
-  --scroll-behavior auto \
-  --scroll-settle-ms 420 \
+  --scroll-behavior "$RECORD_SCROLL_BEHAVIOR" \
+  --scroll-settle-ms "$RECORD_SCROLL_SETTLE_MS" \
   --no-captions true
+
+SUBTITLE_AUTO_WRAP_LOWER="$(printf '%s' "$SUBTITLE_AUTO_WRAP" | tr '[:upper:]' '[:lower:]')"
+subtitle_wrap_args=()
+case "$SUBTITLE_AUTO_WRAP_LOWER" in
+  true|1|yes)
+    subtitle_wrap_args+=(--auto-wrap)
+    ;;
+  false|0|no)
+    subtitle_wrap_args+=(--no-auto-wrap)
+    ;;
+  *)
+    echo "--subtitle-auto-wrap 必须是 true/false" >&2
+    exit 1
+    ;;
+esac
+subtitle_wrap_args+=(--wrap-max-units "$SUBTITLE_WRAP_MAX_UNITS")
 
 python3 "$SCRIPT_DIR/build_srt_from_timeline.py" \
   --timeline "$WS_TIMELINE" \
-  --output "$WS_SRT"
+  --output "$WS_SRT" \
+  "${subtitle_wrap_args[@]}"
 
 # 备注：这里直接“烧录字幕 + 混入旁白音轨”，输出最终 MP4。
 # 需要完整 ffmpeg（libass + libx264）。
@@ -194,13 +238,14 @@ if [[ ! -f "$WS_AUDIO" ]]; then
   # timeline_audio 不存在时，尝试用 workspace timeline 混音重建（常见于手工编辑 timeline 的场景）。
   python3 "$SCRIPT_DIR/mix_audio_from_timeline.py" \
     --timeline "$WS_TIMELINE" \
-    --output "$WS_AUDIO"
+    --output "$WS_AUDIO" \
+    --ffmpeg "$FFMPEG_BIN"
 fi
 
 "$FFMPEG_BIN" -y \
   -i "$WS_VIDEO" \
   -i "$WS_AUDIO" \
-  -vf "subtitles=${WS_SRT}:force_style='Alignment=2,MarginV=${SUBTITLE_MARGIN_V},FontName=Arial,FontSize=${SUBTITLE_FONT_SIZE},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=1,Shadow=0'" \
+  -vf "subtitles=${WS_SRT}:force_style='Alignment=2,MarginV=${SUBTITLE_MARGIN_V},MarginL=${SUBTITLE_MARGIN_L},MarginR=${SUBTITLE_MARGIN_R},FontName=${SUBTITLE_FONT_NAME},FontSize=${SUBTITLE_FONT_SIZE},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=1,Shadow=0'" \
   -c:v libx264 -preset medium -crf 18 \
   -c:a aac -b:a 192k \
   -shortest \
