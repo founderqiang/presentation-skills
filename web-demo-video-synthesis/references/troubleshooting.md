@@ -38,10 +38,34 @@
 - 不要把字幕框做得太宽：宁可多换行，也别顶到左右边界。
 
 推荐参数（竖屏）：
-- `--subtitle-font-size 13~15`
-- `--subtitle-margin-v 72~108`
-- `--subtitle-margin-l 72~120`
-- `--subtitle-margin-r 72~120`
+- `--subtitle-font-size 10~12`
+- `--subtitle-margin-v 28~72`
+- `--subtitle-margin-l 96~140`
+- `--subtitle-margin-r 96~140`
+
+## 3.1 横屏里“怎么调边距都不生效/还是老样子换行”
+
+现象：
+- 你调小了 `MarginL/R`，但字幕宽度看起来几乎不变，换行频率也没明显下降。
+
+高概率原因：
+- SRT 里已经写入了“硬换行”（例如之前用较小 `wrap-max-units` 生成过，或启用了 `--wrap-max-lines 2`）。
+- 这种情况下播放器只能按你写死的分行显示，再大的显示区也用不上。
+
+处理建议（按顺序）：
+1. 重新生成 SRT，避免过早硬换行：
+   - 用更大的 `--wrap-max-units`（如 `140~180`）
+   - `--wrap-max-lines 0`
+2. 再调烧录样式：减小 `MarginL/R`（如 `8~40`），`FontSize` 维持可读范围（如 `13~16`）。
+3. 抽帧对比同一时刻（A/B），确认“行宽是否变长”后再跑全片，避免盲目重编码。
+
+横屏 4K 起步值（可复用）：
+- `--subtitle-font-size 14`
+- `--subtitle-margin-v 24`
+- `--subtitle-margin-l 8`
+- `--subtitle-margin-r 8`
+- `--subtitle-wrap-max-units 170`
+- `--subtitle-wrap-max-lines 0`
 
 ## 4. 清晰度没有明显提升
 

@@ -39,6 +39,7 @@ SUBTITLE_MARGIN_R="48"
 SUBTITLE_FONT_NAME="Arial"
 SUBTITLE_AUTO_WRAP="true"
 SUBTITLE_WRAP_MAX_UNITS="42"
+SUBTITLE_WRAP_MAX_LINES="0"
 
 FFMPEG_BIN="ffmpeg"
 
@@ -104,6 +105,8 @@ while [[ $# -gt 0 ]]; do
       SUBTITLE_AUTO_WRAP="$2"; shift 2 ;;
     --subtitle-wrap-max-units)
       SUBTITLE_WRAP_MAX_UNITS="$2"; shift 2 ;;
+    --subtitle-wrap-max-lines)
+      SUBTITLE_WRAP_MAX_LINES="$2"; shift 2 ;;
     --ffmpeg)
       FFMPEG_BIN="$2"; shift 2 ;;
     *)
@@ -226,6 +229,9 @@ case "$SUBTITLE_AUTO_WRAP_LOWER" in
     ;;
 esac
 subtitle_wrap_args+=(--wrap-max-units "$SUBTITLE_WRAP_MAX_UNITS")
+if [[ "$SUBTITLE_WRAP_MAX_LINES" != "0" ]]; then
+  subtitle_wrap_args+=(--wrap-max-lines "$SUBTITLE_WRAP_MAX_LINES")
+fi
 
 python3 "$SCRIPT_DIR/build_srt_from_timeline.py" \
   --timeline "$WS_TIMELINE" \

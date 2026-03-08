@@ -79,12 +79,47 @@
 - 字体大小不要从 UI 感觉“差不多”开始猜：先出 1 版成片，再按实际遮挡/越界调整。
 - 如果网页需要放大（zoom），字幕样式要预留安全区，避免左右越界或底部被遮挡。
 
+## 字幕换行与显示区（重点经验）
+
+### 先区分两种换行
+
+1. **硬换行**（SRT 内已有 `\n`）
+- 来源通常是 `build_srt_from_timeline.py` 的 `--wrap-max-units` 太小，或设置了 `--wrap-max-lines 2`。
+- 一旦硬换行写进 SRT，后续只改 `MarginL/R` 常常“看起来没变化”，因为每行长度已经被锁死。
+
+2. **软换行**（SRT 不写 `\n`，交给渲染器按可用宽度换行）
+- 更适合横屏讲解视频，能更充分利用可显示宽度。
+
+### 横屏推荐调参顺序（避免反复返工）
+
+1. 先固定 `FontSize` 到“你觉得好听且好读”的大小。
+2. 再减小 `MarginL/MarginR` 扩大可显示区。
+3. 再增大 `--subtitle-wrap-max-units`（减少过早预换行）。
+4. 仍然频繁换行时，再拆分文案或微降字号。
+
+### 可复用起步参数（按画幅，不按语言）
+
+- 竖屏（9:16，1080x1920）：
+  - `FontSize=10~12`
+  - `MarginV=28~72`
+  - `MarginL/R=96~140`
+  - `--subtitle-wrap-max-units 32~40`
+  - 说明：竖屏必须优先保证左右安全区，宁可多一点换行。
+
+- 横屏（16:9，4K 输出）：
+  - `FontSize=13~16`
+  - `MarginV=18~36`
+  - `MarginL/R=8~40`
+  - `--subtitle-wrap-max-units 140~180`
+  - `--subtitle-wrap-max-lines 0`
+  - 说明：横屏优先减少“碎行”，不建议默认强制两行上限。
+
 ## 竖屏（9:16）专项建议
 
 - 录制参数优先从 `viewport=1080x1920`、`record-size=1080x1920` 起步。
 - 竖屏字幕不要沿用横屏边距：必须显式增大 `MarginL/MarginR`，否则很容易左右越界。
-- 常见起步值：`FontSize=13~15`、`MarginV=72~108`、`MarginL=72~120`、`MarginR=72~120`。
-- 结合自适应换行：`--subtitle-auto-wrap true --subtitle-wrap-max-units 36~46`。
+- 常见起步值：`FontSize=10~12`、`MarginV=28~72`、`MarginL=96~140`、`MarginR=96~140`。
+- 结合自适应换行：`--subtitle-auto-wrap true --subtitle-wrap-max-units 32~40`。
 - 字幕越界时，优先增大左右边距，其次减小字号，再调小 `wrap-max-units`，最后再拆分过长文案。
 
 ## 翻页节奏与页面信息量

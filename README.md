@@ -12,13 +12,7 @@
 
 ## 安装（给 Codex CLI 用）
 
-把 skill 目录拷到 `~/.codex/skills/`，然后 **重启 Codex**：
-
-```bash
-mkdir -p ~/.codex/skills
-cp -R ppt-complex-diagram-collab ~/.codex/skills/ppt-complex-diagram-collab
-cp -R web-demo-video-synthesis ~/.codex/skills/web-demo-video-synthesis
-```
+把这个仓库的链接复制给Codex, 让他自己装. 他会提醒你需要的步骤. 
 
 依赖安装请参考各自的 `SKILL.md`（会包含必须的系统依赖与最小命令）。
 

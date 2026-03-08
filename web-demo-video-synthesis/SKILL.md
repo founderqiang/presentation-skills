@@ -212,7 +212,7 @@ bash scripts/make_demo_video.sh \
 - 字幕安全区（两种常用思路，二选一并迭代调参）：
   - **更大字**：`--subtitle-font-size 13~15 --subtitle-margin-v 72~108 --subtitle-margin-l 72~120 --subtitle-margin-r 72~120`
   - **更小字（推荐默认；信息密度更高，且更不遮画面）**：`--subtitle-font-size 10 --subtitle-margin-v 28 --subtitle-margin-l 96 --subtitle-margin-r 96`
-- 自动换行（推荐默认）：`--subtitle-auto-wrap true --subtitle-wrap-max-units 38`（中文竖屏通常更小一些）
+- 自动换行（推荐默认）：`--subtitle-auto-wrap true --subtitle-wrap-max-units 38`（竖屏通常需要更积极的换行与更大的左右安全区）
 - 字幕仍越界时，优先顺序：
   1) 增大 `subtitle-margin-l/r`
   2) 降低 `subtitle-font-size`
@@ -251,6 +251,69 @@ bash scripts/make_demo_video.sh \
 
 备注：
 - `--subtitle-font-name` 与系统字体有关：macOS 常用 `PingFangSC-Regular`；Linux 可用 `Noto Sans CJK SC`（按你系统已安装字体为准）。
+
+## 横屏（16:9）推荐参数（如 X / YouTube）
+
+横屏的字幕与竖屏不同点：
+- 画面横向空间更大：**每行可更长**，不需要太激进的换行。
+- 常见输出分辨率有 1080p 与 4K：**FontSize/Margins 需要跟分辨率成比例调整**。
+
+### 横屏字幕专项经验（这次反复调参后的关键结论）
+
+1. **先区分“硬换行”与“软换行”**：
+   - 硬换行：SRT 里已经写入 `\n`（例如 `build_srt_from_timeline.py` 的 `--wrap-max-lines 2` 或偏小的 `--wrap-max-units` 导致）。
+   - 软换行：SRT 一行文本，最终由渲染器按可用宽度自动断行。
+2. 如果已经“硬换行”过早，后续只改 `MarginL/MarginR` 常常看不出提升，因为可显示宽度已经在 SRT 阶段被锁死。
+3. 横屏想“减少频繁换行”，优先使用：
+   - `--wrap-max-lines 0`（不强制二行上限）
+   - 更大的 `--subtitle-wrap-max-units`（例如 `140~180`）
+   - 更小的 `MarginL/MarginR`（例如 `8~40`）
+4. 推荐调参顺序（避免反复返工）：
+   1) 固定 `FontSize` 到“听感/可读性满意”的值  
+   2) 逐步减小 `MarginL/R` 扩大显示区  
+   3) 再增大 `wrap-max-units` 减少预断行  
+   4) 仍频繁换行时再考虑拆分文案或微降字号
+5. 经验上，`--subtitle-wrap-max-lines 2` 仅适合你**明确需要强制两行美观**的场景；对长句讲解视频，它更容易制造“没必要的换行”。
+
+推荐起步（1080p，1920×1080）：
+- 录制：`--record-viewport 1920x1080 --record-size 1920x1080 --record-device-scale-factor 1`
+- 字幕：`--subtitle-font-size 14~20 --subtitle-margin-v 24~56 --subtitle-margin-l 24~80 --subtitle-margin-r 24~80`
+- 换行：`--subtitle-wrap-max-lines 0 --subtitle-wrap-max-units 110~160`（先让每行吃满，再看是否需要更强约束）
+
+推荐起步（4K，3840×2160；更清晰，适合桌面观看）：
+- 录制：`--record-viewport 1920x1080 --record-size 3840x2160 --record-device-scale-factor 2`
+- 字幕：`--subtitle-font-size 13~16 --subtitle-margin-v 18~36 --subtitle-margin-l 8~40 --subtitle-margin-r 8~40`
+- 换行：建议 `--subtitle-wrap-max-lines 0 --subtitle-wrap-max-units 140~180`（横屏优先少换行，避免句子被切碎）
+
+横屏一键参数示例（4K）：
+
+```bash
+WORKSPACE_DIR="temp/web_demo_video_ws/demo01"
+RECORD_URL="http://127.0.0.1:6150/demo"
+
+bash scripts/make_demo_video.sh \
+  --workspace-dir "$WORKSPACE_DIR" \
+  --record-url "$RECORD_URL" \
+  --record-lang en \
+  --voice auto \
+  --record-viewport 1920x1080 \
+  --record-size 3840x2160 \
+  --record-device-scale-factor 2 \
+  --record-wait-until domcontentloaded \
+  --record-expect-selector "#step-hero" \
+  --record-scroll-settle-ms 520 \
+  --subtitle-font-name "Arial" \
+  --subtitle-font-size 14 \
+  --subtitle-margin-v 24 \
+  --subtitle-margin-l 8 \
+  --subtitle-margin-r 8 \
+  --subtitle-auto-wrap true \
+  --subtitle-wrap-max-units 170 \
+  --subtitle-wrap-max-lines 0
+```
+
+备注：
+- `--record-lang` 主要用于录屏脚本的语言设置与 `--voice auto` 的默认音色映射；请按你的视频语言选择（例如中文 `zh`，英文 `en`）。
 
 ## 常用局部命令（只重跑某一步）
 
