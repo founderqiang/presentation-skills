@@ -5,12 +5,16 @@ description: Use when collaborating with humans to produce publication-grade com
 
 # PPT Complex Diagram Collab
 
+## 归档说明
+- 本 skill 在仓库中已经归档到 `old/ppt-complex-diagram-collab/`，后续主线能力统一迁移到 `ppt-polished-deck-collab/`。
+- 这里保留的价值主要是复杂图、connector 校验和视觉经验，不再作为主线持续扩展入口。
+
 ## 概览
 把“业务讲清楚 + 图可复用 + 论文可交付”作为同一个任务完成。
 优先交付图包（planning + mermaid + editable PPT + 校验结果），不要只交单张图。
 
 ## 执行目录约定
-- 以下命令默认在 `ppt-complex-diagram-collab/` 目录内执行（即本 `SKILL.md` 同级目录）。
+- 以下命令默认在 `old/ppt-complex-diagram-collab/` 目录内执行（即本 `SKILL.md` 同级目录）。
 - 若你从其他目录执行，请自行补齐前缀路径。
 
 ## 工作流

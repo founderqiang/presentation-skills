@@ -42,7 +42,7 @@ python scripts/check_pptx_connectors.py \
 如果你使用 Codex skill 开发工具链，也可额外做结构校验（可选，不是对外发布必需）：
 
 ```bash
-python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py ppt-complex-diagram-collab
+python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py old/ppt-complex-diagram-collab
 ```
 
 ## 6. 维护规则

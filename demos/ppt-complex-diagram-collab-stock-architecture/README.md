@@ -1,6 +1,6 @@
 # ppt-complex-diagram-collab 股票复杂架构 Demo
 
-这是一个纯测试/展示用 demo，目标是演示 `ppt-complex-diagram-collab` 如何把“复杂业务架构”做成：
+这是一个纯测试/展示用 demo，目标是演示归档 skill `ppt-complex-diagram-collab` 如何把“复杂业务架构”做成：
 
 1. 可讨论版本（Mermaid）
 2. 可演示版本（PPTX，用箭头表达层级递进，不使用 connector 连线）
@@ -30,7 +30,7 @@
 ```bash
 cd demos/ppt-complex-diagram-collab-stock-architecture
 python build_editable_pptx.py
-python ../../ppt-complex-diagram-collab/scripts/check_pptx_connectors.py \
+python ../../old/ppt-complex-diagram-collab/scripts/check_pptx_connectors.py \
   --pptx pptx/stock_architecture_complex_demo.pptx \
   --slide 1 \
   --forbid-prefix "Lane " \
