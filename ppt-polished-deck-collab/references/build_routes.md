@@ -91,13 +91,13 @@ python scripts/check_environment.py --require-backend libreoffice
 
 ## macOS 权限注意
 
-**PowerPoint backend 在 macOS 上可能需要人工点击确认。** 第一次通过 `osascript` 或 Python 调用 PowerPoint 导出预览时，系统可能弹出权限确认框，要求当前终端或宿主应用获准控制 `Microsoft PowerPoint` 喵
+**PowerPoint backend 在 macOS 上可能需要人工点击确认。** 第一次通过 `osascript` 或 Python 调用 PowerPoint 导出预览时，系统可能弹出权限确认框，要求当前终端或宿主应用获准控制 `Microsoft PowerPoint`。
 
-**这不是脚本 bug，而是系统权限模型。** 如果用户没有点击允许，后续脚本即使路径和参数都正确，也可能因为 Automation 权限不足而失败喵
+**这不是脚本 bug，而是系统权限模型。** 如果用户没有点击允许，后续脚本即使路径和参数都正确，也可能因为 Automation 权限不足而失败。
 
 **排查顺序如下。**
-- 先看运行时是否弹出过系统权限对话框，并确认是否被人工拒绝过喵
-- 再检查 `System Settings -> Privacy & Security -> Automation`，确认当前终端、Python 宿主或 Codex 所在应用被允许控制 `Microsoft PowerPoint` 喵
-- 如果脚本在不同宿主里运行过，例如 Terminal、iTerm、IDE 或 Codex App，要分别检查这些宿主的权限状态喵
+- 先看运行时是否弹出过系统权限对话框，并确认是否被人工拒绝过。
+- 再检查 `System Settings -> Privacy & Security -> Automation`，确认当前终端、Python 宿主或当前 agent 所在宿主应用被允许控制 `Microsoft PowerPoint`。
+- 如果脚本在不同宿主里运行过，例如 Terminal、iTerm、IDE 或其他 agent App，要分别检查这些宿主的权限状态。
 
-**常见症状。** PowerPoint 预览导出在环境检查通过的前提下仍报 AppleScript 或 automation 相关错误，这时应优先怀疑权限而不是内容本身喵
+**常见症状。** PowerPoint 预览导出在环境检查通过的前提下仍报 AppleScript 或 automation 相关错误，这时应优先怀疑权限而不是内容本身。

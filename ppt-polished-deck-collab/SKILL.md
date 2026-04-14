@@ -22,9 +22,10 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 1. **先锁 deck 任务与工作空间**
 - 明确目标读者、使用场景、页面数量级、交付时间、是否有模板/品牌约束。
-- 如果用户没有现成 workspace，先按 `references/deck_workflow.md` 建立 `brief/`、`plan/`、`content/`、`assets/`、`build/`、`validation/`、`final/` 结构。
+- 如果用户没有现成 workspace，先按 `references/deck_workflow.md` 建立 `brief.md`、`deck_narrative.md`、`assets/`、`data/`、`build/`、`validation/`、`final/` 结构。
 
-2. **先做 deck plan，再做页面**
+2. **先收敛 narrative，再做页面**
+- 先写 `brief.md`，再在 `deck_narrative.md` 里收敛整套叙事、每页 intent 与页面想法，然后由脚本派生 `slide_specs.yaml`。
 - 每页先定义 `reader question`、`page task`、`reading mode`、`archetype`、`asset mode`、`validation mode`。
 - 页面原型、图表 / diagram / 语言选择先看 `references/design_support.md`。
 - 页面级视觉底线与网格规则再看 `references/slide_design_system.md`。
@@ -48,7 +49,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 **核心文档**
 - 需要统一定义 deck、slide spec、validation bundle 和文档分层时，读取 `references/principles.md`。
-- 需要建立 workspace、起草 `deck_plan` / `slide_specs`、执行主流程和确认验证证据时，读取 `references/deck_workflow.md`。
+- 需要建立 workspace、起草 `brief.md` / `deck_narrative.md`、派生 `slide_specs`、执行主流程和确认验证证据时，读取 `references/deck_workflow.md`。
 - 需要决定页面该用什么 archetype、图表、diagram、语言模式时，读取 `references/design_support.md`。
 - 需要决定某类资产该用什么 SDK、脚本、验证方式时，读取 `references/technical_support.md`。
 
@@ -62,7 +63,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 ## 质量标准
 
-- 默认交付物至少包含：`deck_plan`、可编辑 `pptx`、验证结果、逐页预览图。
+- 默认交付物至少包含：`brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、验证结果、逐页预览图。
 - 没有预览图的 deck 不算完成。
 - 需要 connector 的页面，没有结构校验结果不算完成。
 - 页面风格允许多样，但弱信息、标题层级、网格稳定性和高对比文本是底线。
@@ -91,7 +92,12 @@ python scripts/check_pptx_connectors.py \
 python scripts/lint_deck_assets.py \
   --workspace-dir <path/to/deck_workspace>
 
-# 5) 检查 diagram / chart / python figure 等模块可用性
+# 5) 从总叙事文档派生 slide specs
+python scripts/derive_slide_specs_from_narrative.py \
+  --narrative <path/to/deck_narrative.md> \
+  --out-yaml <path/to/build/generated/slide_specs.yaml>
+
+# 6) 检查 diagram / chart / python figure 等模块可用性
 python scripts/check_environment.py \
   --json-out <path/to/env_check.json>
 ```

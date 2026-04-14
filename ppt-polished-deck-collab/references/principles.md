@@ -6,11 +6,15 @@
 
 **`deck` 是最小业务对象。** `deck` 是围绕单一沟通任务组织起来的一组页面。它的核心问题是“这套材料要让谁在什么场景下理解、判断、行动”，不是“我能不能先画一张图”。
 
-**`slide_spec` 是最小页面对象。** 每一页都应先定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`。页面的版式与技术路线都应从这些字段推出，而不是在脚本里隐式决定。
+**`brief.md` 是最小全局任务文档。** 它只负责 deck 级别不会频繁变化的事实，例如目标读者、使用场景、交付标准、品牌约束、验证要求和主题边界。
+
+**`deck_narrative.md` 是最小人类主文档。** 它统一承载全局叙事、核心判断、每页 reader question、页面意图、文案想法和版式设想。对默认 workspace 而言，这份文档是人类长期维护的 canonical narrative source。
+
+**`slide_spec` 是派生出来的机器页面对象。** 每一页都应先定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`。这些字段仍然是页面构建的主键，但默认不再手工维护一份独立文档，而是从 `deck_narrative.md` 派生出来。
 
 **`validation_bundle` 是最小验收对象。** 完整交付至少包含可编辑 `pptx`、逐页预览图、结构校验结果与必要的人工复核记录。没有验证证据的 deck 不算完成。
 
-**`workspace` 是最小协作对象。** 人类与 Codex 的长期协作应围绕稳定 workspace 展开，而不是每次生成一棵新的 run 目录。workspace 的职责是让 brief、plan、assets、build、validation 和 final 始终可追溯。
+**`workspace` 是最小协作对象。** 人类与 agent 的长期协作应围绕稳定 workspace 展开，而不是每次生成一棵新的 run 目录。默认 workspace 的职责是让 `brief.md`、`deck_narrative.md`、assets、build、validation 和 final 始终可追溯。
 
 ## 文档分层
 
@@ -35,6 +39,8 @@
 **Deck-first。** 默认从整套 deck 的任务定义出发，再决定哪些页面需要 diagram、chart、icon、table 或纯文字结构。不要让单页复杂图反向支配整套 deck 的组织方式。
 
 **Workspace-first。** 默认先建立稳定工作空间，再往里补页面、资产与脚本。不要把计划、源资产、中间产物和最终交付混在同一层目录。
+
+**Lean-docs-by-default。** 默认只维护 `brief.md` 与 `deck_narrative.md` 两份人类主文档。不要把小型 demo 的全局定位、页面计划、叙事想法和术语说明拆成多份平级文档并长期双写。
 
 **High-quality 是标准，不是题材。** 这个 skill 服务的是高质量 PPT 交付标准，不限制题材。商业、技术、研究、教育、产品、运营等主题都应适配同一套质量体系。
 
@@ -72,11 +78,13 @@
 
 **`references/` 承载真正的 requirements 与方法论。** requirements、技术路线、视觉系统、页面原型、模板和环境基线都应进入 `references/`，并由 `SKILL.md` 明确指向。
 
+**机器执行入口应从叙事文档派生。** `slide_specs.yaml` 仍然是 build 友好的结构化对象，但默认应当由 `deck_narrative.md` 自动派生，而不是要求人类长期手工维护第三份平行文档。
+
 **规范文档必须能单独工作。** 一个不了解 `demo_draft` 的 agent，只看新 skill 的 `references/`，也应能理解 deck 如何规划、如何生成、如何验证。
 
 ## 交付底线
 
-**最低交付物。** 一次完整 deck 任务至少要有 `deck_plan`、可编辑 `pptx`、逐页预览图和验证结果。
+**最低交付物。** 一次完整 deck 任务至少要有 `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图和验证结果。
 
 **最低可读性。** 弱信息不能抢标题区，正文与背景必须高对比，同类对象必须挂到公共网格，一页必须存在清晰的第一视觉中心。
 

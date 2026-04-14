@@ -4,7 +4,8 @@
 定位与作用
 ----------
 这个脚本不判断页面美不美，而是判断 workspace 是否具备继续工作的最低条件。
-它适合作为开始生成 PPT 前的轻量 lint，避免 brief、plan、assets 缺失时继续往下做。
+它默认检查新的精简 workspace：`brief.md + deck_narrative.md + data/assets/build/validation/final`。
+如果检测到旧的 `brief/ plan/ content/` 结构，会给出迁移 warning，但不会静默把旧结构当成新默认。
 """
 
 from __future__ import annotations
@@ -14,15 +15,9 @@ import json
 from pathlib import Path
 
 
-REQUIRED_DIRS = (
-    "brief",
-    "plan",
-    "content",
-    "assets",
-    "build",
-    "validation",
-    "final",
-)
+REQUIRED_DIRS = ("data", "assets", "build", "validation", "final")
+REQUIRED_FILES = ("brief.md", "deck_narrative.md")
+LEGACY_HINT_DIRS = ("brief", "plan", "content")
 
 ASSET_DIRS = (
     "diagrams",
@@ -59,13 +54,20 @@ def main() -> int:
         if not ok:
             errors.append(f"缺少目录: {name}/")
 
-    plan_dir = workspace_dir / "plan"
-    deck_plan_ok = (plan_dir / "deck_plan.md").exists()
-    slide_specs_ok = (plan_dir / "slide_specs.yaml").exists()
-    if not deck_plan_ok:
-        errors.append("缺少 plan/deck_plan.md")
-    if not slide_specs_ok:
-        warnings.append("缺少 plan/slide_specs.yaml")
+    required_file_status: dict[str, bool] = {}
+    for name in REQUIRED_FILES:
+        ok = (workspace_dir / name).is_file()
+        required_file_status[name] = ok
+        if not ok:
+            errors.append(f"缺少文件: {name}")
+
+    derived_specs_ok = (workspace_dir / "build" / "generated" / "slide_specs.yaml").exists()
+    if not derived_specs_ok:
+        warnings.append("缺少 build/generated/slide_specs.yaml，可由 derive_slide_specs_from_narrative.py 派生")
+
+    legacy_dirs = [name for name in LEGACY_HINT_DIRS if (workspace_dir / name).exists()]
+    if legacy_dirs:
+        warnings.append("检测到 legacy 文档层: " + ", ".join(f"{name}/" for name in legacy_dirs))
 
     asset_counts: dict[str, int] = {}
     assets_dir = workspace_dir / "assets"
@@ -80,15 +82,17 @@ def main() -> int:
     result = {
         "workspace": str(workspace_dir),
         "required_dirs": required_dir_status,
-        "deck_plan": deck_plan_ok,
-        "slide_specs": slide_specs_ok,
+        "required_files": required_file_status,
+        "derived_slide_specs": derived_specs_ok,
+        "legacy_dirs": legacy_dirs,
         "asset_counts": asset_counts,
         "errors": errors,
         "warnings": warnings,
     }
 
     print(f"[INFO] workspace={workspace_dir}")
-    print(f"[INFO] deck_plan={deck_plan_ok} slide_specs={slide_specs_ok}")
+    print("[INFO] required_files=" + ", ".join(f"{k}:{v}" for k, v in required_file_status.items()))
+    print(f"[INFO] derived_slide_specs={derived_specs_ok}")
     print("[INFO] asset_counts=" + ", ".join(f"{k}:{v}" for k, v in asset_counts.items()))
 
     for warning in warnings:

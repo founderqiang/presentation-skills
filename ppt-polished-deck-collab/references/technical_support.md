@@ -124,7 +124,7 @@
 - 给 native chart 补更多稳定模板，例如 line、stacked、combo 的页面套路
 - 给 Python figure 补更多研究图类型和可复用 layout 规范
 
-**这些深化工作仍然要服从统一 workflow。** 不论是 diagram、Office chart 还是 Python figure，都必须回到 `deck_plan -> slide_spec -> build -> validation -> preview` 这条主链路。
+**这些深化工作仍然要服从统一 workflow。** 不论是 diagram、Office chart 还是 Python figure，都必须回到 `brief.md -> deck_narrative.md -> derived slide_specs -> build -> validation -> preview` 这条主链路。
 
 ## 细化阅读路径
 

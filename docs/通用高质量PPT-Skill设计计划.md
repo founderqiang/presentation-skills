@@ -2,6 +2,8 @@
 
 **本文定位。** 这份文档定义一个新的通用高质量 PPT skill 方案，用来承接“清楚表达、页面原型、可编辑 PPT 生成、结构校验、预览导出、视觉复核”这一整条链路。本文不直接替换现有 `ppt-complex-diagram-collab`，而是先给出一个更符合第一性原理的新 skill 设计，再决定后续迁移顺序。
 
+**当前状态说明。** 本文保留的是早期设计演进记录，其中仍然包含 `deck_plan / brief/plan/content` 这类旧分层表述。当前主线默认 workspace 已经切换到 `brief.md + deck_narrative.md + derived slide_specs.yaml`，因此当本文与 `ppt-polished-deck-collab/references/` 冲突时，应以 `references/` 下的最新文档为准。
+
 **命名约定。** 本文当前以 `ppt-polished-deck-collab` 指代新 skill。这个名字强调它服务的是高质量 deck 交付标准，而不是把题材限制在 business，也不是把任务缩成单页复杂图。
 
 ## 为什么应该新建 skill
@@ -16,7 +18,7 @@
 
 ## 新 skill 的目标
 
-**目标定义。** `ppt-polished-deck-collab` 要帮助 Codex 与人类协作产出高质量、可编辑、可验证、可复盘的 PPT deck。它默认服务于汇报、评审、提案、研究结论表达、运营复盘、路线图、架构说明，也保留扩展到更多非 business 主题的能力。
+**目标定义。** `ppt-polished-deck-collab` 要帮助人类与不同 agent 协作产出高质量、可编辑、可验证、可复盘的 PPT deck。它默认服务于汇报、评审、提案、研究结论表达、运营复盘、路线图、架构说明，也保留扩展到更多非 business 主题的能力。
 
 **默认交付。** 一次完整交付的标准产物应包含 `deck_plan`、可编辑 `pptx`、结构化验证结果、逐页预览图，以及必要的源资产说明。不是每次都必须包含 mermaid，但每次都必须有可追溯的页面计划和验证证据。
 
@@ -105,7 +107,7 @@ ppt-polished-deck-collab/
 
 **新 skill 必须以 workspace 为中心。** 旧复杂图 skill 更像“围绕某张图或某组图组织文件”。新高质量 deck skill 应以“围绕一次 deck 交付组织文件”为默认视角，让 brief、计划、内容、资产、构建结果、验证结果和最终交付各自落在稳定位置。
 
-**workspace 应服务迭代，不服务一次性生成。** 最好的工作空间不是“每次跑一个新输出目录”，而是有一套稳定主路径，让人类和 Codex 能持续在同一个 deck 上改 brief、改页面、换图表、重建 PPT、重导预览、复核差异。
+**workspace 应服务迭代，不服务一次性生成。** 最好的工作空间不是“每次跑一个新输出目录”，而是有一套稳定主路径，让人类和不同 agent 能持续在同一个 deck 上改 brief、改页面、换图表、重建 PPT、重导预览、复核差异。
 
 **workspace 应按资产生命周期分区。** deck 的信息流是 `brief -> plan -> content -> assets -> build -> validation -> final`，目录应直接反映这条链路，而不是按技术实现细节随意散落。
 
