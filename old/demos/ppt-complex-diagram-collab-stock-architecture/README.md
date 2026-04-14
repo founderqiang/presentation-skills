@@ -28,7 +28,7 @@
 ## 快速运行
 
 ```bash
-cd demos/ppt-complex-diagram-collab-stock-architecture
+cd old/demos/ppt-complex-diagram-collab-stock-architecture
 python build_editable_pptx.py
 python ../../old/ppt-complex-diagram-collab/scripts/check_pptx_connectors.py \
   --pptx pptx/stock_architecture_complex_demo.pptx \

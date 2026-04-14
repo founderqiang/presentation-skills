@@ -1,6 +1,6 @@
 # presentation-skills
 
-这是一个面向 **Codex CLI** 的 skills 集合，目标是把“做演示/写论文时反复踩坑的工作流”固化成可复盘、可协作、可复用的工具链。
+这是一个面向通用 agent CLI / assistant harness 的 skills 集合，目标是把“做演示/写论文时反复踩坑的工作流”固化成可复盘、可协作、可复用的工具链。
 
 目前主线包含 2 个持续维护的 skill，另有 1 个归档 skill：
 
@@ -11,9 +11,9 @@
 > 你问的“能不能在 README 里直接引用视频？”  
 > GitHub README 一般可以**链接**到 `mp4`，但并不稳定支持在 README 里**内嵌播放**（HTML `<video>` 也常被限制）。最佳实践是：README 放一张截图/动图做缩略图 + 链接到 Release/外链视频。
 
-## 安装（给 Codex CLI 用）
+## 安装（给 agent / assistant 用）
 
-把这个仓库的链接复制给Codex, 让他自己装. 他会提醒你需要的步骤. 
+把这个仓库的链接交给你的 agent 或 assistant，让它按宿主环境完成安装与接入。
 
 依赖安装请参考各自的 `SKILL.md`（会包含必须的系统依赖与最小命令）。
 
@@ -30,7 +30,7 @@
 ### 1) `ppt-polished-deck-collab`
 
 典型输出：
-- `deck_plan` + 可编辑 `pptx` + 逐页预览图 + 结构化验证结果
+- `brief.md` + `deck_narrative.md` + 派生 `slide_specs.yaml` + 可编辑 `pptx` + 逐页预览图 + 结构化验证结果
 
 环境检查（示例）：
 
@@ -84,7 +84,8 @@ Demo（中文/英文各一套网页与文案）：`demos/web-demo-video-synthesi
 
 ## Demos
 
-- 归档复杂图 demo：`demos/ppt-complex-diagram-collab-stock-architecture/`
+- 归档复杂图 demo：`old/demos/ppt-complex-diagram-collab-stock-architecture/`
+- 归档 polished deck demo：`old/demos/ppt-polished-deck-collab-ai-market-intelligence/`
 - 网页 demo 合成视频：`demos/web-demo-video-synthesis-financial-agent/`
 
 注意：仓库默认忽略大媒体文件（`*.mp3` / `*.mp4`），避免推送体积失控（见 `.gitignore`）。
@@ -93,10 +94,10 @@ Demo（中文/英文各一套网页与文案）：`demos/web-demo-video-synthesi
 
 下图是归档复杂图 skill 的“分层架构图风格”示例，它现在作为 `ppt-polished-deck-collab` 的 diagram module 经验来源保留：
 
-[![ppt-complex-diagram-collab preview](assets/ppt-complex-diagram-collab_demo.jpg)](demos/ppt-complex-diagram-collab-stock-architecture/README.md)
+[![ppt-complex-diagram-collab preview](assets/ppt-complex-diagram-collab_demo.jpg)](old/demos/ppt-complex-diagram-collab-stock-architecture/README.md)
 
 当前主线 `ppt-polished-deck-collab` 主要解决：
-- 整套 deck 从 `deck_plan` 到 editable `pptx`、preview、validation 的闭环。
+- 整套 deck 从 `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml` 到 editable `pptx`、preview、validation 的闭环。
 - complex diagram、native Office chart、Python figure、icon 这些资产模块的统一接入。
 - 页面原型、设计支持和技术支持的显式分层。
 
