@@ -54,11 +54,11 @@ def set_chart_theme(accent_rgb: tuple[int, int, int]) -> None:
     sns.set_theme(
         context="paper",
         style="whitegrid",
-        font_scale=1.0,
+        font_scale=1.15,
         rc={
             "axes.edgecolor": "#CBD5E1",
             "axes.labelcolor": "#334155",
-            "axes.titlesize": 11,
+            "axes.titlesize": 14,
             "axes.titleweight": "bold",
             "axes.facecolor": "#FFFFFF",
             "figure.facecolor": "#FFFFFF",
@@ -103,7 +103,7 @@ def save_ranked_bar(
             index,
             f"{value:.0f}",
             va="center",
-            fontsize=9,
+            fontsize=12,
             color="#334155",
         )
     ax.set_title(title, loc="left", pad=10)
@@ -139,7 +139,7 @@ def save_heatmap(
         ax=ax,
         vmin=vmin,
         vmax=vmax,
-        annot_kws={"fontsize": 8.5, "color": "#0F172A"},
+        annot_kws={"fontsize": 11, "color": "#0F172A"},
     )
     ax.set_title(title, loc="left", pad=10)
     ax.set_xlabel("")
@@ -177,7 +177,7 @@ def save_timeline_barh(
             f"{row[duration_col]:.0f}w",
             ha="center",
             va="center",
-            fontsize=8.5,
+            fontsize=11,
             color="white",
         )
     ax.set_title(title, loc="left", pad=10)

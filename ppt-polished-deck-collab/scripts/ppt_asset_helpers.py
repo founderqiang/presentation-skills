@@ -50,7 +50,7 @@ class NodeStyle:
     fill_rgb: tuple[int, int, int]
     line_rgb: tuple[int, int, int]
     text_rgb: tuple[int, int, int] | None = None
-    font_size: float = 10.5
+    font_size: float = 12.5
     bold: bool = True
     shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE
 
@@ -155,7 +155,7 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     sub_box = slide.shapes.add_textbox(Inches(0.74), Inches(0.57), Inches(14.1), Inches(0.28))
     sub_para = sub_box.text_frame.paragraphs[0]
     sub_para.text = subtitle
-    sub_para.font.size = Pt(11.5)
+    sub_para.font.size = Pt(14)
     sub_para.font.color.rgb = RGBColor(*palette["subtitle"])
 
     tag_box = slide.shapes.add_textbox(Inches(14.85), Inches(8.43), Inches(0.46), Inches(0.18))
@@ -163,7 +163,7 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     tag_para.text = figure_tag
     tag_para.alignment = PP_ALIGN.RIGHT
     tag_para.font.bold = True
-    tag_para.font.size = Pt(8.4)
+    tag_para.font.size = Pt(10)
     tag_para.font.color.rgb = RGBColor(*palette["muted"])
 
 
@@ -173,7 +173,7 @@ def add_caption(slide, text: str) -> None:
     box = slide.shapes.add_textbox(Inches(0.45), Inches(8.45), Inches(15.1), Inches(0.22))
     para = box.text_frame.paragraphs[0]
     para.text = text
-    para.font.size = Pt(9.5)
+    para.font.size = Pt(12)
     para.font.color.rgb = RGBColor(*palette["subtitle"])
 
 
@@ -184,7 +184,7 @@ def add_text_block(
     top: float,
     width: float,
     height: float,
-    font_size: float = 10.0,
+    font_size: float = 14.0,
     bold: bool = False,
     color_rgb: tuple[int, int, int] | None = None,
 ) -> None:
@@ -239,7 +239,7 @@ def add_panel(
     header.line.color.rgb = RGBColor(*accent_rgb)
     para = header.text_frame.paragraphs[0]
     para.font.bold = True
-    para.font.size = Pt(12.5)
+    para.font.size = Pt(14)
     para.font.color.rgb = RGBColor(*pick_contrast_text_rgb(accent_rgb))
 
 
@@ -290,7 +290,7 @@ def add_picture_card(
             content_top + image_height + 0.08,
             content_width,
             0.18,
-            font_size=8.4,
+            font_size=12,
             color_rgb=(99, 115, 141),
         )
 
@@ -339,15 +339,15 @@ def add_native_chart_card(
     plot.vary_by_categories = False
     plot.has_data_labels = True
     plot.data_labels.number_format = number_format
-    plot.data_labels.font.size = Pt(9)
+    plot.data_labels.font.size = Pt(12)
     plot.data_labels.font.color.rgb = RGBColor(57, 70, 96)
 
     if hasattr(chart, "category_axis"):
-        chart.category_axis.tick_labels.font.size = Pt(9)
+        chart.category_axis.tick_labels.font.size = Pt(12)
         chart.category_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.category_axis.has_major_gridlines = False
     if hasattr(chart, "value_axis"):
-        chart.value_axis.tick_labels.font.size = Pt(9)
+        chart.value_axis.tick_labels.font.size = Pt(12)
         chart.value_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.value_axis.has_major_gridlines = True
         chart.value_axis.major_gridlines.format.line.color.rgb = RGBColor(226, 232, 240)
