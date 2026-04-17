@@ -8,6 +8,9 @@
 - timeline 生成字幕（SRT）
 - ffmpeg 合成：母带视频 + 旁白音轨 + 烧录字幕，输出 MP4
 
+公开演示视频：
+- Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
+
 ## 目录结构
 
 - `site/`：静态网页（录屏目标）
