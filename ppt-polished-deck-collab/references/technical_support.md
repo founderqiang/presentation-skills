@@ -42,7 +42,7 @@
 | `diagram-visual` | 纯视觉流程图、层次图、研究示意图 | `python-pptx`，可选 Mermaid 草稿 | 高 | `available` | `diagram_visual` |
 | `office-chart-native` | PowerPoint / Office 原生可编辑图表 | `python-pptx chart` API | 高 | `available` | `chart_editable` |
 | `python-figure-image` | 高复杂度图、研究图、热力图、排序图 | `matplotlib` / `seaborn` / `pandas` | 低到中 | `available` | `chart_image` |
-| `table-native` | 原生表格、矩阵页、附录表 | `python-pptx` table / shape grid | 中 | `partial` | `preview_only` |
+| `table-native` | 原生数据表、明细页、附录表 | `python-pptx` table | 中 | `partial` | `preview_only` |
 | `image-hero` | 背景图、产品图、截图、照片 | 图片文件 + `python-pptx` | 低 | `available` | `preview_only` |
 | `icon-accent` | 标题旁图标、卡片锚点、导航增强 | `icon_registry.py` + `PyMuPDF` | 低 | `available` | `preview_only` |
 
@@ -82,6 +82,8 @@
 **图表先判断数字是否会继续改。** 会后高概率继续改数、改系列、改图例的页，应优先走 `office-chart-native`。一次性、视觉密度极高、超出 Office 图表表达能力的页，走 `python-figure-image`。
 
 **icon 永远是补充资产。** icon 只负责节奏增强、导航锚点和轻语义提示，不应替代主结构、主图表和主证据。
+
+**字体策略需要端到端落地。** 当 deck 存在中英混排，且 `python-pptx` 或底层 helper 只能部分写入字体信息时，可以在最终 `pptx` 上补做 XML 级字体槽位修正，统一 `latin` 与 `ea` 字体。不要把“Office 自己会选字体”当成稳定方案。
 
 ## 技术选择查表
 

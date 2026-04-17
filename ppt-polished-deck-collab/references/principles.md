@@ -48,6 +48,8 @@
 
 **Editable-by-default。** 默认优先交付可编辑对象，包括文本、形状、图表和必要的 connector。截图、整页位图和不可维护导出物只能是明确受限场景下的例外。
 
+**Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。当前推荐默认是中文使用黑体、英文使用 Arial。
+
 **Validation-by-default。** 预览导出不是可选锦上添花，而是默认要求。diagram 页的结构校验、chart 页的比例与可编辑性检查、模板页的视觉回归都属于基本交付义务。
 
 **Correct-failure。** 缺少依赖、环境不满足、模板结构不稳定、页数不匹配、connector 非真绑定时，应明确失败并暴露原因。禁止静默降级和“看起来差不多”的自我安慰。
@@ -65,6 +67,8 @@
 **资产按类型平级组织。** diagram、chart、icon、image、table 都是合法源资产。不要再让 Mermaid 冒充所有页面的默认起点。
 
 **icon 是可选增强资产。** icon 的职责是给 section、卡片和弱语义提示增加节奏感，不是每套 deck 的必需输入，也不是信息主载体。
+
+**数据表语义优先原生 table。** 只要页面本质是在展示结构化数据、行列关系、明细表头或附录数据，优先使用 Office 原生表格。shape grid 只应用在真正不是数据表语义的卡片阵列、视觉分组或轻量比较矩阵。
 
 **图表与 diagram 都应先归类再实现。** `office-chart-native`、`python-figure-image`、`diagram-connector`、`diagram-visual` 这些类型必须在 `slide_spec.asset_mode` 中显式表达，不能在脚本里临时决定。
 

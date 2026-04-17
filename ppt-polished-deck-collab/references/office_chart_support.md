@@ -36,6 +36,14 @@
 - `BAR_STACKED`
 - 其他 `python-pptx` 支持且不依赖特殊格式设置的标准 chart type
 
+## 字体一致性
+
+**原生 Office chart 也必须服从 deck 字体策略。** 不要让普通文本是一套字体，chart title、轴标签、图例和数据标签又是另一套字体。图表仍然是页面的一部分，而不是外来对象。
+
+**无品牌约束时的默认策略是。** 中文使用黑体，英文使用 Arial。对 mixed-language deck，应至少保证 category / value axis、legend、data labels 和 chart title 遵守同一策略。
+
+**只写 `font.name` 往往不够。** 某些实现路径只能稳定写入 latin 字体槽位。遇到中文仍然漂移的情况，应在最终 `pptx` 上补做字体槽位修正，把 East Asian 字体也显式写进去，而不是放任 Office 或系统自行猜测。
+
 ## 图表选择表
 
 | 证据形状 | 推荐原生 chart | 为什么 |
@@ -70,6 +78,7 @@
 - 导出逐页预览图
 - 在 PowerPoint 中点选 chart，确认不是图片
 - 抽检一页修改数据或系列颜色，确认图仍可编辑
+- 抽检一页 chart 的标题、轴标签、图例和数据标签，确认它们遵守当前 deck 的字体策略
 
 **当前相关脚本。**
 - `scripts/ppt_asset_helpers.py`

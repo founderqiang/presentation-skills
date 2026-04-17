@@ -41,6 +41,7 @@ PANEL_LABEL_HEIGHT = 0.32
 PANEL_LABEL_GAP = 0.04
 PANEL_CONTENT_INSET_X = 0.12
 PANEL_CONTENT_INSET_Y = 0.12
+DEFAULT_FONT_NAME = "Arial"
 
 
 @dataclass(frozen=True)
@@ -150,12 +151,14 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     title_para.text = title
     title_para.font.bold = True
     title_para.font.size = Pt(22)
+    title_para.font.name = DEFAULT_FONT_NAME
     title_para.font.color.rgb = RGBColor(*palette["title"])
 
     sub_box = slide.shapes.add_textbox(Inches(0.74), Inches(0.57), Inches(14.1), Inches(0.28))
     sub_para = sub_box.text_frame.paragraphs[0]
     sub_para.text = subtitle
     sub_para.font.size = Pt(14)
+    sub_para.font.name = DEFAULT_FONT_NAME
     sub_para.font.color.rgb = RGBColor(*palette["subtitle"])
 
     tag_box = slide.shapes.add_textbox(Inches(14.85), Inches(8.43), Inches(0.46), Inches(0.18))
@@ -164,6 +167,7 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     tag_para.alignment = PP_ALIGN.RIGHT
     tag_para.font.bold = True
     tag_para.font.size = Pt(10)
+    tag_para.font.name = DEFAULT_FONT_NAME
     tag_para.font.color.rgb = RGBColor(*palette["muted"])
 
 
@@ -174,6 +178,7 @@ def add_caption(slide, text: str) -> None:
     para = box.text_frame.paragraphs[0]
     para.text = text
     para.font.size = Pt(12)
+    para.font.name = DEFAULT_FONT_NAME
     para.font.color.rgb = RGBColor(*palette["subtitle"])
 
 
@@ -195,6 +200,7 @@ def add_text_block(
     para.text = text
     para.font.size = Pt(font_size)
     para.font.bold = bold
+    para.font.name = DEFAULT_FONT_NAME
     para.font.color.rgb = RGBColor(*(color_rgb or palette["subtitle"]))
 
 
@@ -240,6 +246,7 @@ def add_panel(
     para = header.text_frame.paragraphs[0]
     para.font.bold = True
     para.font.size = Pt(14)
+    para.font.name = DEFAULT_FONT_NAME
     para.font.color.rgb = RGBColor(*pick_contrast_text_rgb(accent_rgb))
 
 
@@ -340,17 +347,24 @@ def add_native_chart_card(
     plot.has_data_labels = True
     plot.data_labels.number_format = number_format
     plot.data_labels.font.size = Pt(12)
+    plot.data_labels.font.name = DEFAULT_FONT_NAME
     plot.data_labels.font.color.rgb = RGBColor(57, 70, 96)
 
     if hasattr(chart, "category_axis"):
         chart.category_axis.tick_labels.font.size = Pt(12)
+        chart.category_axis.tick_labels.font.name = DEFAULT_FONT_NAME
         chart.category_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.category_axis.has_major_gridlines = False
     if hasattr(chart, "value_axis"):
         chart.value_axis.tick_labels.font.size = Pt(12)
+        chart.value_axis.tick_labels.font.name = DEFAULT_FONT_NAME
         chart.value_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.value_axis.has_major_gridlines = True
         chart.value_axis.major_gridlines.format.line.color.rgb = RGBColor(226, 232, 240)
+    if show_legend:
+        chart.legend.font.size = Pt(11)
+        chart.legend.font.name = DEFAULT_FONT_NAME
+        chart.legend.font.color.rgb = RGBColor(57, 70, 96)
 
     if series_colors:
         for series, rgb in zip(chart.series, series_colors):

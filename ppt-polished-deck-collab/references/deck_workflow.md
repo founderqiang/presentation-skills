@@ -68,6 +68,8 @@ deck_workspace/
 
 **`build/generated/slide_specs.yaml` 放派生结构化输入。** 它是机器友好的 build 入口，但默认不应手写维护，而应从 `deck_narrative.md` 自动派生。
 
+**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `body_font_pt`、`latin_font_name`、`east_asia_font_name` 和稳定边距。没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt` 的策略。
+
 **`assets/` 放源资产。** diagram、chart、icon、image、table 是平级类型。不要让 Mermaid 变成一切页面的默认起点。
 
 **`asset_mode` 是 workflow 的桥接字段。** 设计支持通过它决定页面该用哪类资产，技术支持通过它决定该走哪条实现路线和验证模式。
@@ -108,6 +110,8 @@ deck:
   objective: "<primary decision or action>"
   theme_tokens:
     body_font_pt: 14
+    latin_font_name: "Arial"
+    east_asia_font_name: "黑体"
     left_margin_in: 0.78
     right_margin_in: 15.22
 ---
@@ -180,7 +184,7 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 **`diagram_visual`。** 无 connector 的结构图。要求显式说明不依赖 connector，并检查主方向与层级。
 
-**`chart_editable`。** 原生 Office chart 页。要求确认图表仍可编辑，并检查标签和图例。
+**`chart_editable`。** 原生 Office chart 页。要求确认图表仍可编辑，并检查标签、图例和字体策略。
 
 **`chart_image`。** 高 DPI 图表页。要求检查比例、清晰度与卡片内留白。
 

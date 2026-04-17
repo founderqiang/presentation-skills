@@ -63,12 +63,21 @@
 
 **图题和结论仍然属于 slide。** 不要把长标题和大段解释硬写在图里，图本身主要负责证据表达。
 
+## 字体与 glyph 策略
+
+**Python figure 也必须服从 deck 的字体策略。** 不要接受“普通文本和 chart 都统一了，但 figure 里又换了一套字体”的状态。
+
+**无品牌约束时，默认策略仍然是中文黑体、英文 Arial。** 如果当前 Python plotting 栈没有正确加载中文字体，应显式配置 CJK 字体，而不是默默回退到不支持中文 glyph 的默认字体。
+
+**glyph warning 应视为失败信号。** 当 `matplotlib` / `seaborn` 因字体缺失而报出中文 glyph warning 时，不应视为无关紧要。应通过显式字体配置，或改成英文图内标签 + 中文 slide caption 的方式消除 warning。
+
 ## 验证要求
 
 **当前验证重点是三件事。**
 - 图片清晰度是否足够
 - 插入 PPT 后比例是否保持
 - 图旁标题与注释是否明确表达结论
+- 生成过程是否没有字体缺失或 glyph fallback warning
 
 **推荐验证顺序。**
 - 生成 PNG
