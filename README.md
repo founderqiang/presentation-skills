@@ -2,42 +2,61 @@
 
 [中文版说明](README.zh.md)
 
-`presentation-skills` is a repository of high-quality presentation skills for agent and assistant environments. The focus is not one-off output, but reusable workflows that turn presentation decks and product demos into reproducible, editable, and validated deliverables.
+`presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. The goal is not one-off output. The goal is reusable workflows that consistently produce polished, editable, validated decks and videos that are close to real business delivery standards.
 
-These skills are not one-pass prompt dumps. They have been iterated and hardened through many real production runs, with a large amount of paid model tokens spent on workflow design, failure analysis, validation, and output review.
+These skills were not produced in one pass. They were iterated through many real runs, repeated failure analysis, output review, and workflow rewrites. A large amount of paid model tokens was spent to make the workflows, validation gates, and deliverables actually hold up in practice.
 
-## Recent Update
+## Recent Updates
+
+- `2026-04-22` `ppt-polished-deck-collab` now supports automatic quality gates for mobile-open risk, text overflow, object occlusion, and preview-layer layout failures, which materially reduces manual cleanup before delivery.
+- `2026-04-22` `ppt-polished-deck-collab` also tightened its template-first workflow, so reference template audit, editable deck build, validation, preview export, and final review happen in a fixed order.
+
+## What This Repo Provides
 
 ### `ppt-polished-deck-collab`
 
-The skill now includes a clearer three-stage quality-gate stack for editable PowerPoint delivery:
+`ppt-polished-deck-collab` produces editable, high-quality, highly automated PowerPoint decks for both business and academic use. It can build a new deck from scratch, work from a user-provided template, inherit a user’s existing slide master and layouts, and modify an existing `pptx` while preserving editability.
 
-- `package_preflight`: file/package consistency checks for mobile compatibility and external delivery safety signals
-- `structure_precheck`: structure-level checks for textbox overflow, occlusion, and compact width pressure
-- `render_review`: preview-layer checks for boundary-touch-ink and flattened-graphic review handoff
+It is designed for strategy decks, technical explainers, research talks, thesis defenses, product presentations, operations reviews, management decks, and other presentation-heavy workflows where the final artifact must still behave like a real PowerPoint file.
 
-The workflow was also tightened so that template audit, deck-level quality gates, module validation, preview export, and final visual review happen in a fixed order rather than as ad hoc post-processing.
+### `web-demo-video-synthesis`
 
-## Active Skills
+`web-demo-video-synthesis` produces narrated, subtitled, publishable videos in a highly automated way. It can turn articles, posts, product walkthroughs, web demos, and technical explanations into videos suitable for platforms such as TikTok, Xiaohongshu, and Bilibili.
 
-- `ppt-polished-deck-collab`: a deck-level skill for planning, building, previewing, and validating polished editable PowerPoint decks across business, technical, research, education, product, and operations topics.
-- `web-demo-video-synthesis`: a workflow for turning web demos into narrated, subtitled, and reproducible MP4 videos.
+It is designed for technical introductions, business demos, product explainers, marketing-style walkthroughs, and other short-form or medium-form presentation videos where reproducibility and iteration speed matter.
 
-## Archived Skills
+## Skill Details
 
-- `old/ppt-complex-diagram-collab`: archived as a historical reference for complex connector-backed diagrams and earlier PowerPoint connector workflows.
+### `ppt-polished-deck-collab`
 
-## Featured Demo
+This is the flagship deck-making skill in the repository. It is a deck-level workflow rather than a page toy. It plans the narrative, generates editable `pptx`, exports previews, validates structure, and produces evidence bundles for review and handoff.
 
-### Standard Wars Executive Deck
+Core capabilities:
+- Deck-first narrative planning with `brief.md`, `deck_narrative.md`, and derived `slide_specs.yaml`
+- Editable PowerPoint generation with `python-pptx`
+- Support for user-provided templates, slide masters, layouts, and existing `pptx` modification
+- Native Office charts, Python figures, native tables, connector-backed diagrams, and icon accents
+- Template audit plus three-stage quality gates: `package_preflight`, `structure_precheck`, and `render_review`
+- Validation bundles, preview exports, and evidence-driven final delivery
 
-This is the current flagship demo for `ppt-polished-deck-collab`. It is a 12-slide, claim-led management deck about why superior technology often loses standards wars. The demo showcases the current positioning of the skill: deck-first narrative design, editable PPT generation, validation evidence, native Office charts, Python figures, native tables, connector-backed diagrams, and icon-system support.
+Typical technical stack:
+- `python-pptx` for editable PowerPoint objects
+- PowerPoint or LibreOffice preview export
+- Connector validation via `pptx XML`
+- Structure-level and render-level quality gates
+- Optional Python figure generation via `matplotlib` / `seaborn` / `pandas`
 
-[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
+Typical workflow:
+- Audit template if one is provided
+- Lock brief and narrative
+- Build editable deck
+- Run package and structure gates
+- Run module validation
+- Export previews
+- Run render review
+- Finish with visual review and final handoff
 
-[![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
-
-Demo workspace:
+Featured demo:
 - `demos/standard-wars-executive-deck/`
 
 Key outputs:
@@ -45,22 +64,42 @@ Key outputs:
 - `demos/standard-wars-executive-deck/validation/structure/connector_report.json`
 - `demos/standard-wars-executive-deck/build/rendered/ppt_preview/`
 
-### Web Demo Video Synthesis
+[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
 
-`web-demo-video-synthesis` is also a current first-class skill in this repository. It turns a browser demo into a narrated and subtitled MP4 through a reproducible pipeline built around cues, timeline generation, recording, audio mixing, subtitles, and final rendering.
+[![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
 
-[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
+### `web-demo-video-synthesis`
 
-Demo workspace:
+This is the flagship video-making skill in the repository. It turns a source narrative into a reproducible workspace for TTS, timing, subtitles, recording, mixing, and final rendering. The result is not a one-off export. The result is a workspace that can be reviewed, edited, rerun, and published.
+
+Core capabilities:
+- Turn cues, articles, or posts into timeline-driven demo videos
+- Generate or integrate segment audio, subtitles, and final rendering
+- Preserve a reproducible workspace for iteration and partial reruns
+- Target platform-ready outputs for TikTok, Xiaohongshu, Bilibili, and similar channels
+
+Typical technical stack:
+- Timeline-driven workspace orchestration
+- TTS and subtitle generation
+- Screen recording and video compositing
+- Final MP4 rendering with reproducible intermediate assets
+
+Typical workflow:
+- Prepare workspace and cues
+- Generate segment audio
+- Build timeline
+- Record or synthesize visual track
+- Generate subtitles
+- Mix audio and video
+- Export final MP4
+
+Featured demo:
 - `demos/web-demo-video-synthesis-financial-agent/`
-
-Key outputs:
-- timeline-driven demo video workspace
-- narrated audio segments and subtitles
-- reproducible final MP4 pipeline
 
 Public demo video:
 - Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
+
+[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## Quick CLI Reference
 
