@@ -27,7 +27,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
 from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_VERTICAL_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 SITE_INDEX = {
@@ -37,7 +37,7 @@ SITE_INDEX = {
     "right": 3,
 }
 
-PANEL_LABEL_HEIGHT = 0.32
+PANEL_LABEL_HEIGHT = 0.40
 PANEL_LABEL_GAP = 0.04
 PANEL_CONTENT_INSET_X = 0.12
 PANEL_CONTENT_INSET_Y = 0.12
@@ -46,7 +46,10 @@ DEFAULT_EAST_ASIA_FONT_NAME = "黑体"
 DEFAULT_SERIF_LATIN_FONT_NAME = "Times New Roman"
 DEFAULT_SERIF_EAST_ASIA_FONT_NAME = "宋体"
 DEFAULT_FONT_NAME = DEFAULT_LATIN_FONT_NAME
-DEFAULT_LINE_SPACING_MULTIPLE = 1.5
+DEFAULT_BODY_LINE_SPACING_MULTIPLE = 1.5
+DEFAULT_TITLE_LINE_SPACING_MULTIPLE = 1.0
+DEFAULT_TITLE_PARAGRAPH_SPACE_LINES = 0.5
+DEFAULT_LINE_SPACING_MULTIPLE = DEFAULT_BODY_LINE_SPACING_MULTIPLE
 DEFAULT_TYPOGRAPHY_TOKENS = {
     "hero_title_font_pt": 24.0,
     "section_title_font_pt": 20.0,
@@ -56,6 +59,9 @@ DEFAULT_TYPOGRAPHY_TOKENS = {
     "body_font_pt": 14.0,
     "label_font_pt": 12.0,
     "caption_font_pt": 12.0,
+    "title_line_spacing_multiple": DEFAULT_TITLE_LINE_SPACING_MULTIPLE,
+    "body_line_spacing_multiple": DEFAULT_BODY_LINE_SPACING_MULTIPLE,
+    "title_paragraph_space_lines": DEFAULT_TITLE_PARAGRAPH_SPACE_LINES,
 }
 
 
@@ -139,7 +145,7 @@ def panel_body_top_offset() -> float:
 
 def panel_label_width(title: str, panel_width: float) -> float:
     """按标题长度估算 panel label 宽度。"""
-    estimate = 0.088 * len(title) + 0.55
+    estimate = 0.092 * len(title) + 0.64
     return min(panel_width, max(1.2, estimate))
 
 
@@ -167,21 +173,25 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = RGBColor(*palette["bg"])
 
-    title_box = slide.shapes.add_textbox(Inches(0.72), Inches(0.16), Inches(14.3), Inches(0.42))
+    title_box = slide.shapes.add_textbox(Inches(0.72), Inches(0.16), Inches(14.3), Inches(0.72))
     title_para = title_box.text_frame.paragraphs[0]
     title_para.text = title
     title_para.font.bold = True
     title_para.font.size = Pt(tokens["page_title_font_pt"])
     title_para.font.name = DEFAULT_FONT_NAME
-    title_para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
+    title_para.line_spacing = tokens["title_line_spacing_multiple"]
+    title_para.space_before = Pt(tokens["page_title_font_pt"] * tokens["title_paragraph_space_lines"])
+    title_para.space_after = Pt(tokens["page_title_font_pt"] * tokens["title_paragraph_space_lines"])
     title_para.font.color.rgb = RGBColor(*palette["title"])
 
-    sub_box = slide.shapes.add_textbox(Inches(0.74), Inches(0.57), Inches(14.1), Inches(0.28))
+    sub_box = slide.shapes.add_textbox(Inches(0.74), Inches(0.82), Inches(14.1), Inches(0.40))
     sub_para = sub_box.text_frame.paragraphs[0]
     sub_para.text = subtitle
     sub_para.font.size = Pt(tokens["subtitle_font_pt"])
     sub_para.font.name = DEFAULT_FONT_NAME
-    sub_para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
+    sub_para.line_spacing = tokens["title_line_spacing_multiple"]
+    sub_para.space_before = Pt(tokens["subtitle_font_pt"] * tokens["title_paragraph_space_lines"])
+    sub_para.space_after = Pt(tokens["subtitle_font_pt"] * tokens["title_paragraph_space_lines"])
     sub_para.font.color.rgb = RGBColor(*palette["subtitle"])
 
     tag_box = slide.shapes.add_textbox(Inches(14.85), Inches(8.43), Inches(0.46), Inches(0.18))
@@ -268,15 +278,23 @@ def add_panel(
         Inches(label_width),
         Inches(PANEL_LABEL_HEIGHT),
     )
-    header.text = title
     header.fill.solid()
     header.fill.fore_color.rgb = RGBColor(*accent_rgb)
     header.line.color.rgb = RGBColor(*accent_rgb)
+    header.text_frame.clear()
+    header.text_frame.word_wrap = False
+    header.text_frame.margin_left = Inches(0.08)
+    header.text_frame.margin_right = Inches(0.08)
+    header.text_frame.margin_top = Inches(0.00)
+    header.text_frame.margin_bottom = Inches(0.00)
+    header.text_frame.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
     para = header.text_frame.paragraphs[0]
+    para.text = title
+    para.alignment = PP_ALIGN.LEFT
     para.font.bold = True
     para.font.size = Pt(tokens["minor_title_font_pt"])
     para.font.name = DEFAULT_FONT_NAME
-    para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
+    para.line_spacing = 1.0
     para.font.color.rgb = RGBColor(*pick_contrast_text_rgb(accent_rgb))
 
 

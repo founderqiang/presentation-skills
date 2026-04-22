@@ -34,6 +34,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 3. **先收敛 narrative，再做页面**
 - 先写 `brief.md`，再在 `deck_narrative.md` 里收敛整套叙事、每页 intent 与页面想法，然后由脚本派生 `slide_specs.yaml`。
 - 如果存在强模板，叙事和 `slide_specs` 要围绕模板页族来写，而不是先写一套与模板脱钩的页面想象。
+- 默认 typography policy 需要显式区分标题类文本与正文类文本：标题类默认 `1.0` 倍行距并保留 `0.5` 行段前 / 段后，正文类默认 `1.5` 倍行距。
+- 在页面规划阶段，应主动告诉人类当前可用的增强资产路线，包括 `icon system`、原生 `Office chart`、`Python figure` 和 diagram 资产。如果人类对图表风格、可编辑性、图标节奏或研究图路线有偏好，应在这一阶段就明确。
 - 每页先定义 `reader question`、`page task`、`reading mode`、`archetype`、`asset mode`、`validation mode`。
 - 页面原型、图表 / diagram / 语言选择先看 `references/design_support.md`。
 - 页面级视觉底线与网格规则再看 `references/slide_design_system.md`。
@@ -65,6 +67,11 @@ description: Use when collaborating with humans to produce polished, editable, h
 8. **强制跑 preview 后质量 gate**
 - 预览图导出后，应按需要运行 `render_review`，处理结构层看不到的边界触墨和扁平化图像内部风险。
 - `render_review` 不是对 `structure_precheck` 的重复，而是成图层补位。
+
+9. **完成初稿后给人类一个修订 checkpoint**
+- 当 editable `pptx`、预览图和基础 validation 都已经齐全时，应把它明确为“可审阅的初稿”，而不是默认继续无限打磨。
+- 这时应主动告诉人类：如果需要进入更细的页面级修订，例如逐页措辞微调、视觉节奏重排、icon 补强、chart 路线切换、研究图重绘或模板细节对齐，可以继续做，但这一步通常会显著增加 token 消耗。
+- 如果人类暂时不需要详细修订，就直接交付当前初稿 bundle；如果人类要继续修订，再围绕具体页面和问题进入下一轮。
 
 ## 资源路由
 

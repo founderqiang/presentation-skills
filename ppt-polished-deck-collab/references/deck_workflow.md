@@ -19,7 +19,7 @@
 
 ## 主链路
 
-**默认主链路固定为：** `brief -> template audit(if needed) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> review -> final`。
+**默认主链路固定为：** `brief -> template audit(if needed) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> first_draft_checkpoint -> detailed_revision(optional) -> review -> final`。
 
 ```mermaid
 flowchart LR
@@ -34,8 +34,11 @@ flowchart LR
   G --> H[Module Validation]
   H --> I[Preview Export]
   I --> J[Render Review]
-  J --> K[Visual Review]
+  J --> K[First Draft Checkpoint]
   K --> L[Final Delivery]
+  K --> M[Detailed Revision Optional]
+  M --> N[Visual Review]
+  N --> L[Final Delivery]
 ```
 
 **先锁两份主文档，再 build。** 没有 `brief.md` 和 `deck_narrative.md` 时，不应直接开始生成 PPT。否则全局约束、页面意图与文案想法都会漂。
@@ -44,9 +47,13 @@ flowchart LR
 
 **`slide_specs.yaml` 默认应派生，不应双写。** 机器执行仍然需要结构化字段，但默认应从 `deck_narrative.md` 生成，而不是要求人类长期维护第三份并行文档。
 
+**在 narrative 阶段就要把增强资产选项告诉人类。** agent 应明确说明当前可用的 `icon system`、原生 `Office chart`、`Python figure`、diagram 与原生表格等路线，让人类按需指定更偏编辑性、更偏研究表达、还是更偏视觉节奏的方向。
+
 **先 build 后 gate，再做模块验证。** 先确认文件包一致性和结构层排版没有明显失控，再去看 connector、chart 和模板细节。
 
 **preview 之后还要补一次成图级 gate。** `render_review` 专门处理结构层看不到的边界触墨和扁平化图像风险，不要把逐页 preview 本身误当成结构化检查。
+
+**初稿完成后要显式停一次。** 当 editable `pptx`、预览图和基础 validation 齐全时，应把它定义为“可审阅初稿”，并主动问人类是否要进入更细的详细修订。详细修订通常涉及逐页微调、图表路线切换、icon 节奏增强、模板细节对齐和措辞重写，token 消耗会明显更高。
 
 **先结构验证，再视觉微调。** 如果某页同时有 connector 问题和版式问题，先修结构，再修样式。
 
@@ -81,7 +88,7 @@ deck_workspace/
 
 **`build/generated/slide_specs.yaml` 放派生结构化输入。** 它是机器友好的 build 入口，但默认不应手写维护，而应从 `deck_narrative.md` 自动派生。
 
-**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`line_spacing_multiple`、`latin_font_name`、`east_asia_font_name` 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt`、默认行距 `1.5` 倍的策略。
+**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`title_line_spacing_multiple`、`body_line_spacing_multiple`、`title_paragraph_space_lines`、`latin_font_name`、`east_asia_font_name` 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt`、标题 `1.0` 倍行距、正文 `1.5` 倍行距、标题段前段后 `0.5` 行的策略。
 
 **`assets/` 放源资产。** diagram、chart、icon、image、table 是平级类型。不要让 Mermaid 变成一切页面的默认起点。
 
@@ -209,7 +216,9 @@ deck:
     body_font_pt: 14
     label_font_pt: 12
     caption_font_pt: 12
-    line_spacing_multiple: 1.5
+    title_line_spacing_multiple: 1.0
+    body_line_spacing_multiple: 1.5
+    title_paragraph_space_lines: 0.5
     latin_font_name: "Arial"
     east_asia_font_name: "黑体"
     left_margin_in: 0.78

@@ -25,6 +25,8 @@
 
 **设计支持不替代技术支持。** “这页适合原生 Office chart 还是 Python figure”先是设计选择，再交给技术支持去决定 SDK、脚本和验证方式。
 
+**这些资产路线应主动向人类公开。** agent 不应把 `icon system`、原生 `Office chart`、`Python figure`、diagram 和原生表格当成内部实现细节，而应在页面规划或初稿 review 时明确告诉人类这些能力可用，让人类按需反馈和选择。
+
 ## 页面任务总表
 
 | `page_task` | 读者真正要解决的问题 | 推荐 `reading_mode` | 推荐 archetype | 优先资产 | 标题语言模式 |

@@ -54,7 +54,9 @@
 
 **Editable-by-default。** 默认优先交付可编辑对象，包括文本、形状、图表和必要的 connector。截图、整页位图和不可维护导出物只能是明确受限场景下的例外。
 
-**Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。默认至少应定义 `hero_title`、`section_title`、`page_title`、`subtitle`、`minor_title`、`body`、`label`、`caption` 这几类字号 token。当前推荐默认是中文使用黑体、英文使用 Arial、正文 `14pt` 且为最广泛使用的主档位、默认行距 `1.5` 倍。
+**Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。默认至少应定义 `hero_title`、`section_title`、`page_title`、`subtitle`、`minor_title`、`body`、`label`、`caption` 这几类字号 token。当前推荐默认是中文使用黑体、英文使用 Arial、正文 `14pt` 且为最广泛使用的主档位。
+
+**标题和正文的行距职责不同。** 标题类文本的职责是建立阅读节奏、信息层级和视觉锚点，它不是连续阅读段落，因此默认应使用 `1.0` 倍行距，并保留 `0.5` 行的段前与段后空间来控制节奏。正文类文本承担连续阅读与信息吸收，默认应使用 `1.5` 倍行距，不应因为容器紧张就回退到更挤的行距。
 
 **默认字体有两套稳定组合。** 无额外要求时，默认采用中文 `黑体`、英文 `Arial`。如果任务明确需要更书面、serif 风格，可切换到中文 `宋体`、英文 `Times New Roman`。
 
