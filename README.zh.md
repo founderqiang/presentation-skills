@@ -2,28 +2,63 @@
 
 [English README](README.md)
 
-`presentation-skills` 是一个面向 agent / assistant 环境的优质 presentation skills 仓库，重点不是一次性产出，而是把演示文稿和产品 demo 生产变成可复跑、可编辑、可验证的完整工作流。
+`presentation-skills` 是一个面向 agent / assistant 环境的开源 presentation 工具仓库，目标是提供高质量、接近商业交付标准的工作流，而不是一次性的内容生成结果。
 
-## 当前主线技能
+这里的重点不是“生成一页图”或“临时拼一版演示”，而是把演示文稿和产品 demo 的生产过程变成可复跑、可编辑、可验证、可交付的完整流水线。
 
-- `ppt-polished-deck-collab`：面向整套 deck 的高质量 PPT 技能，强调叙事规划、editable `pptx`、预览导出、结构校验和交付证据。
-- `web-demo-video-synthesis`：把网页 demo 做成配音、字幕、时间线驱动、可复现 MP4 的工作流。
+这些 skills 不是一轮 prompt 产物。它们经过了大量真实任务中的反复迭代、失败分析、产物复核和工作流重写，并且为此消耗了大量真实付费 token，才把流程、验证链和最终输出收敛到当前这个水平。
 
-## 归档技能
+## 最近更新
 
-- `old/ppt-complex-diagram-collab`：归档的旧复杂图技能，保留为历史经验来源。
+- `2026-04-22` `ppt-polished-deck-collab` 现在支持自动质量 gate，可以检查移动端打开风险、文本出格、对象遮挡和预览层排版失误，从而显著减少交付前的人类返工。
+- `2026-04-22` `ppt-polished-deck-collab` 进一步收紧了 template-first 动线，现在模板审计、editable deck 构建、验证、预览导出和最终复核会按固定顺序执行。
 
-## 主展示 Demo
+## 这个仓库提供什么
 
-### Standard Wars Executive Deck
+### `ppt-polished-deck-collab`
 
-这是 `ppt-polished-deck-collab` 当前的正式展示 demo。它是一套 12 页、以 claim 为主线的管理层 deck，主题是“为什么更好的技术经常输掉标准战”。这个 demo 集中展示了 skill 当前的能力定位：deck-first narrative、editable PPT、验证闭环、原生 Office chart、Python figure、原生表格、connector diagram 和 icon system。
+`ppt-polished-deck-collab` 用来生产可编辑、高质量、高度自动化的 PowerPoint deck，覆盖商业和学术两类用途。它既可以从零构建一整套 deck，也可以基于用户提供的模板工作，还可以继承用户已有 `pptx` 的母版和版式，并在保留可编辑性的前提下修改现有文件。
 
-[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
+它适用于策略汇报、技术说明、研究汇报、论文答辩、产品演示、运营复盘、管理层 deck 等需要最终产物仍然表现为“真正 PowerPoint 文件”的场景。
 
-[![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
+### `web-demo-video-synthesis`
 
-Demo 工作空间：
+`web-demo-video-synthesis` 用来高度自动化地生产带配音、带字幕、可直接发布的视频。它可以把文章、帖子、产品 walkthrough、网页 demo 和技术介绍转成适合 TikTok、小红书、Bilibili 等平台发布的视频内容。
+
+它适用于技术介绍、商业 demo、产品解释、营销式演示和其他强调可复现、可迭代、产出速度快的视频生产场景。
+
+## Skill 详情
+
+### `ppt-polished-deck-collab`
+
+这是仓库里当前主打的 deck 制作 skill。它不是一个“单页小工具”，而是一套 deck 级工作流。它负责规划叙事、生成 editable `pptx`、导出逐页预览、做结构验证，并为 review 和 handoff 产出证据 bundle。
+
+核心能力：
+- 基于 `brief.md`、`deck_narrative.md` 和派生 `slide_specs.yaml` 的 deck-first narrative 规划
+- 基于 `python-pptx` 的 editable PowerPoint 生成
+- 支持用户提供模板、继承 slide master / layout、以及修改现有 `pptx`
+- 支持原生 Office chart、Python figure、原生表格、connector-backed diagram 和 icon accent
+- 支持模板审计，以及 `package_preflight`、`structure_precheck`、`render_review` 三段式质量 gate
+- 支持 validation bundle、预览导出和 evidence-driven final delivery
+
+典型技术栈：
+- 用 `python-pptx` 生成可编辑 PowerPoint 对象
+- 用 PowerPoint 或 LibreOffice 导出高保真预览
+- 用 `pptx XML` 做 connector 校验
+- 用结构层和成图层质量 gate 做自动验证
+- 用 `matplotlib` / `seaborn` / `pandas` 生成 Python figure
+
+典型工作流：
+- 如果有模板，先做模板审计
+- 锁定 brief 和 narrative
+- 构建 editable deck
+- 执行 package 与 structure 两层质量 gate
+- 执行模块级 validation
+- 导出逐页预览
+- 执行 render review
+- 最后做 visual review 和 final handoff
+
+主展示 demo：
 - `demos/standard-wars-executive-deck/`
 
 关键输出：
@@ -31,22 +66,42 @@ Demo 工作空间：
 - `demos/standard-wars-executive-deck/validation/structure/connector_report.json`
 - `demos/standard-wars-executive-deck/build/rendered/ppt_preview/`
 
-### Web Demo Video Synthesis
+[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
 
-`web-demo-video-synthesis` 也是这个仓库当前主打的优秀 skill。它把浏览器里的网页 demo 变成带配音、字幕和时间线驱动的可复现 MP4，主链路围绕 cues、timeline、录屏、音频混合、字幕和最终渲染展开。
+[![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
 
-[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
+### `web-demo-video-synthesis`
 
-Demo 工作空间：
+这是仓库里当前主打的视频制作 skill。它会把源叙事转成一个可复现的 workspace，涵盖 TTS、时间轴、字幕、录制、混音和最终渲染。最终产物不是一次性导出，而是一套可以复核、可以编辑、可以重跑、可以发布的视频工作空间。
+
+核心能力：
+- 把 cues、文章或帖子转成 timeline-driven demo video
+- 生成或接入分段音频、字幕和最终渲染结果
+- 保留可复现 workspace，支持局部重跑和多轮迭代
+- 面向 TikTok、小红书、Bilibili 等平台输出可发布视频
+
+典型技术栈：
+- 时间轴驱动的 workspace 编排
+- TTS 与字幕生成
+- 录屏与视频合成
+- 带中间产物的可复现 MP4 渲染
+
+典型工作流：
+- 准备 workspace 和 cues
+- 生成分段音频
+- 构建 timeline
+- 录制或合成视觉轨道
+- 生成字幕
+- 混合音视频
+- 导出 final MP4
+
+主展示 demo：
 - `demos/web-demo-video-synthesis-financial-agent/`
 
-关键输出：
-- timeline 驱动的 demo 视频工作空间
-- 分段配音音频与字幕
-- 可复现的最终 MP4 合成流水线
-
-公开演示视频：
+公开视频：
 - Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
+
+[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## 快速 CLI 参考
 
@@ -65,7 +120,26 @@ python ppt-polished-deck-collab/scripts/check_environment.py \
 python demos/standard-wars-executive-deck/build/build_deck.py
 ```
 
-校验 connector 页：
+执行 deck 级 package preflight：
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_package_preflight.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --fail-on error
+```
+
+执行 structure precheck：
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_structure_precheck.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --inventory-out demos/standard-wars-executive-deck/validation/structure_precheck/shape_inventory.json \
+  --fail-on error
+```
+
+校验 connector 页面：
 
 ```bash
 python ppt-polished-deck-collab/scripts/check_pptx_connectors.py \
@@ -75,7 +149,7 @@ python ppt-polished-deck-collab/scripts/check_pptx_connectors.py \
   --min-connectors 7
 ```
 
-导出逐页预览图：
+导出逐页预览：
 
 ```bash
 python ppt-polished-deck-collab/scripts/export_pptx_previews.py \
@@ -83,6 +157,16 @@ python ppt-polished-deck-collab/scripts/export_pptx_previews.py \
   --out-dir demos/standard-wars-executive-deck/build/rendered/ppt_preview \
   --backend auto \
   --json-out demos/standard-wars-executive-deck/validation/manifests/preview_manifest.json
+```
+
+预览导出后执行 render review：
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --preview-dir demos/standard-wars-executive-deck/build/rendered/ppt_preview \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --fail-on error
 ```
 
 ### `web-demo-video-synthesis`
@@ -108,7 +192,7 @@ flowchart LR
 ## 仓库结构
 
 - `ppt-polished-deck-collab/`：当前主线 polished deck skill
-- `web-demo-video-synthesis/`：当前主线 web demo 合成视频 skill
+- `web-demo-video-synthesis/`：当前主线 web demo 视频合成 skill
 - `demos/`：正式注册的 demo 工作空间
 - `old/`：归档技能和历史 demo
 - `assets/`：根 README 使用的预览图资产
