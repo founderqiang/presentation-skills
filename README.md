@@ -4,6 +4,20 @@
 
 `presentation-skills` is a repository of high-quality presentation skills for agent and assistant environments. The focus is not one-off output, but reusable workflows that turn presentation decks and product demos into reproducible, editable, and validated deliverables.
 
+These skills are not one-pass prompt dumps. They have been iterated and hardened through many real production runs, with a large amount of paid model tokens spent on workflow design, failure analysis, validation, and output review.
+
+## Recent Update
+
+### `ppt-polished-deck-collab`
+
+The skill now includes a clearer three-stage quality-gate stack for editable PowerPoint delivery:
+
+- `package_preflight`: file/package consistency checks for mobile compatibility and external delivery safety signals
+- `structure_precheck`: structure-level checks for textbox overflow, occlusion, and compact width pressure
+- `render_review`: preview-layer checks for boundary-touch-ink and flattened-graphic review handoff
+
+The workflow was also tightened so that template audit, deck-level quality gates, module validation, preview export, and final visual review happen in a fixed order rather than as ad hoc post-processing.
+
 ## Active Skills
 
 - `ppt-polished-deck-collab`: a deck-level skill for planning, building, previewing, and validating polished editable PowerPoint decks across business, technical, research, education, product, and operations topics.
@@ -65,6 +79,25 @@ Build the featured demo:
 python demos/standard-wars-executive-deck/build/build_deck.py
 ```
 
+Run deck-level package preflight:
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_package_preflight.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --fail-on error
+```
+
+Run structure precheck:
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_structure_precheck.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --inventory-out demos/standard-wars-executive-deck/validation/structure_precheck/shape_inventory.json \
+  --fail-on error
+```
+
 Validate the connector-backed page:
 
 ```bash
@@ -83,6 +116,16 @@ python ppt-polished-deck-collab/scripts/export_pptx_previews.py \
   --out-dir demos/standard-wars-executive-deck/build/rendered/ppt_preview \
   --backend auto \
   --json-out demos/standard-wars-executive-deck/validation/manifests/preview_manifest.json
+```
+
+Run render review after preview export:
+
+```bash
+python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
+  --pptx demos/standard-wars-executive-deck/build/pptx/standard_wars_executive_deck.pptx \
+  --preview-dir demos/standard-wars-executive-deck/build/rendered/ppt_preview \
+  --workspace-dir demos/standard-wars-executive-deck \
+  --fail-on error
 ```
 
 ### `web-demo-video-synthesis`

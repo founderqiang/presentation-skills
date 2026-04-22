@@ -52,10 +52,14 @@
 
 **当前已经收口的脚本能力如下。**
 - `scripts/check_environment.py`
+- `scripts/check_pptx_package_preflight.py`
+- `scripts/check_pptx_structure_precheck.py`
+- `scripts/check_pptx_render_review.py`
 - `scripts/export_pptx_previews.py`
 - `scripts/check_pptx_connectors.py`
 - `scripts/lint_deck_assets.py`
 - `scripts/icon_registry.py`
+- `scripts/ppt_quality_helpers.py`
 - `scripts/ppt_asset_helpers.py`
 - `scripts/python_figure_helpers.py`
 
@@ -96,10 +100,15 @@
 | 摘要页、结论页、章节页 | `text-layout-native` + 可选 `icon-accent` | 以语言和层次为主 | 先找图再拼页 |
 | 截图、产品界面、品牌大图 | `image-hero` | 图片本身就是证据 | 用大量形状手工重画 |
 
+**deck 级质量 gate 分两段。** `package_preflight` 与 `structure_precheck` 负责 `build` 后的文件级与结构级检查；`render_review` 负责 `preview` 后的成图级检查。
+
 ## 验证映射
 
 | 技术模块 | 最低验证证据 |
 | --- | --- |
+| `package_preflight` | 时间戳归档的 `package_preflight_YYYYMMDD_HHMMSS.json/.md` |
+| `structure_precheck` | 时间戳归档的 `structure_precheck_YYYYMMDD_HHMMSS.json/.md` + 可选 `shape_inventory.json` |
+| `render_review` | 时间戳归档的 `render_review_YYYYMMDD_HHMMSS.json/.md` |
 | `text-layout-native` | 逐页预览图 + 人工复核 |
 | `diagram-connector` | connector 报告 + 逐页预览图 |
 | `diagram-visual` | 逐页预览图 + 主路径人工复核 |
@@ -131,6 +140,8 @@
 ## 细化阅读路径
 
 **选 backend、环境和导出路线时，继续读 `build_routes.md`。** 它负责更细的实现路线与环境注意事项。
+
+**做 deck 级文件安全 / 兼容性 / 结构排版 / 成图级 gate 时，继续读 `quality_gates.md`。** 它负责 `package_preflight`、`structure_precheck` 与 `render_review` 的职责分层、输出目录和失败语义。
 
 **做复杂图时，继续读 `diagram_support.md`。** 它负责 connector、视觉语法、edge budget 和 Mermaid 草稿层的使用边界。
 

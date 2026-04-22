@@ -6,6 +6,8 @@
 
 **`deck` 是最小业务对象。** `deck` 是围绕单一沟通任务组织起来的一组页面。它的核心问题是“这套材料要让谁在什么场景下理解、判断、行动”，不是“我能不能先画一张图”。
 
+**`template` 是页面系统对象。** 当用户给一个参考 `pptx` 时，它承载的是封面页族、内容页族、末页页族、母版元素、layout 占位和字号梯度。它默认不是配色灵感板。
+
 **`brief.md` 是最小全局任务文档。** 它只负责 deck 级别不会频繁变化的事实，例如目标读者、使用场景、交付标准、品牌约束、验证要求和主题边界。
 
 **`deck_narrative.md` 是最小人类主文档。** 它统一承载全局叙事、核心判断、每页 reader question、页面意图、文案想法和版式设想。对默认 workspace 而言，这份文档是人类长期维护的 canonical narrative source。
@@ -42,15 +44,25 @@
 
 **Lean-docs-by-default。** 默认只维护 `brief.md` 与 `deck_narrative.md` 两份人类主文档。不要把小型 demo 的全局定位、页面计划、叙事想法和术语说明拆成多份平级文档并长期双写。
 
+**Template-as-system。** 当任务附带参考 `pptx` 时，默认目标是继承同一套页面系统，而不是只模仿颜色和背景。页族、母版元素、layout 占位和字号纪律都属于模板约束。
+
+**Template audit 先于 build route。** 是否走模板改写、`master-first / layout-first` 还是品牌重建，建立在模板取证之上。取证至少覆盖预览页族、layout / master 结构、共享元素归属、真实文字与字号层级、最小 PoC 结论。
+
 **High-quality 是标准，不是题材。** 这个 skill 服务的是高质量 PPT 交付标准，不限制题材。商业、技术、研究、教育、产品、运营等主题都应适配同一套质量体系。
 
 **技术支持与设计支持显式分层。** `design_support` 负责决定页面如何被读懂、该用什么图表与语言，`technical_support` 负责决定这些设计如何以可编辑、可验证的方式落地。
 
 **Editable-by-default。** 默认优先交付可编辑对象，包括文本、形状、图表和必要的 connector。截图、整页位图和不可维护导出物只能是明确受限场景下的例外。
 
-**Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。当前推荐默认是中文使用黑体、英文使用 Arial。
+**Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。默认至少应定义 `hero_title`、`section_title`、`page_title`、`subtitle`、`minor_title`、`body`、`label`、`caption` 这几类字号 token。当前推荐默认是中文使用黑体、英文使用 Arial、正文 `14pt` 且为最广泛使用的主档位、默认行距 `1.5` 倍。
+
+**默认字体有两套稳定组合。** 无额外要求时，默认采用中文 `黑体`、英文 `Arial`。如果任务明确需要更书面、serif 风格，可切换到中文 `宋体`、英文 `Times New Roman`。
+
+**有模板时先继承字号系统。** 只要参考 `pptx` 已经有稳定的标题、正文、图注、页脚和页码字号梯度，就应优先沿用模板自己的层级。正文 `14pt` 只是没有明确模板纪律时的回退值。
 
 **Validation-by-default。** 预览导出不是可选锦上添花，而是默认要求。diagram 页的结构校验、chart 页的比例与可编辑性检查、模板页的视觉回归都属于基本交付义务。
+
+**Deck-level quality gates 先于 final delivery。** `package_preflight` 负责文件包一致性、移动端兼容风险与外发安全信号；`structure_precheck` 负责结构层的文本边界、遮挡与布局风险；`render_review` 负责预览导出后的边界触墨与扁平化图像内部风险。它们共同构成 final delivery 前的质量 gate。
 
 **Correct-failure。** 缺少依赖、环境不满足、模板结构不稳定、页数不匹配、connector 非真绑定时，应明确失败并暴露原因。禁止静默降级和“看起来差不多”的自我安慰。
 
@@ -61,6 +73,8 @@
 **一页只选一个主原型。** 一页可以混合图、数、文，但不应同时承担两个主 archetype。`decision logic` 页不应偷偷兼做 dashboard，`war-room board` 也不应再塞成 appendix。
 
 **原型比模板更重要。** archetype 是稳定的页面语法，模板只是某个视觉实例。skill 应优先沉淀 archetype，而不是堆积大量长得不一样但逻辑重复的样板页。
+
+**强模板任务先继承再映射原型。** archetype 仍然决定页面任务，但封面、正式页、章节页和末页要先落到模板已有页族，再在该页族内完成表达。
 
 ## 资产层原则
 

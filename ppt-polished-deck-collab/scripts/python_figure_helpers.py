@@ -25,6 +25,9 @@ _MPLCONFIGDIR = Path(tempfile.gettempdir()) / "presentation_skills_mplconfig"
 _MPLCONFIGDIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(_MPLCONFIGDIR))
 
+FIGURE_TITLE_FONT_PT = 16
+FIGURE_LABEL_FONT_PT = 12
+
 
 def _load_plot_libs():
     """延迟导入图表依赖，避免无关场景被强行要求安装。"""
@@ -58,7 +61,7 @@ def set_chart_theme(accent_rgb: tuple[int, int, int]) -> None:
         rc={
             "axes.edgecolor": "#CBD5E1",
             "axes.labelcolor": "#334155",
-            "axes.titlesize": 14,
+            "axes.titlesize": FIGURE_TITLE_FONT_PT,
             "axes.titleweight": "bold",
             "axes.facecolor": "#FFFFFF",
             "figure.facecolor": "#FFFFFF",
@@ -103,7 +106,7 @@ def save_ranked_bar(
             index,
             f"{value:.0f}",
             va="center",
-            fontsize=12,
+            fontsize=FIGURE_LABEL_FONT_PT,
             color="#334155",
         )
     ax.set_title(title, loc="left", pad=10)
@@ -139,7 +142,7 @@ def save_heatmap(
         ax=ax,
         vmin=vmin,
         vmax=vmax,
-        annot_kws={"fontsize": 11, "color": "#0F172A"},
+        annot_kws={"fontsize": FIGURE_LABEL_FONT_PT, "color": "#0F172A"},
     )
     ax.set_title(title, loc="left", pad=10)
     ax.set_xlabel("")
@@ -177,7 +180,7 @@ def save_timeline_barh(
             f"{row[duration_col]:.0f}w",
             ha="center",
             va="center",
-            fontsize=11,
+            fontsize=FIGURE_LABEL_FONT_PT,
             color="white",
         )
     ax.set_title(title, loc="left", pad=10)

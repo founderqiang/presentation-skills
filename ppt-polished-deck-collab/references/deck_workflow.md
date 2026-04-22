@@ -19,23 +19,34 @@
 
 ## 主链路
 
-**默认主链路固定为：** `brief -> narrative -> derive slide_specs -> assets -> build -> validation -> preview -> review -> final`。
+**默认主链路固定为：** `brief -> template audit(if needed) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> review -> final`。
 
 ```mermaid
 flowchart LR
   A[brief.md] --> B[deck_narrative.md]
+  A --> T[Template Audit]
+  T --> B
   B --> C[Derived slide_specs.yaml]
   C --> D[Assets]
   D --> E[Editable PPT Build]
-  E --> F[Validation]
-  F --> G[Preview Export]
-  G --> H[Visual Review]
-  H --> I[Final Delivery]
+  E --> F[Package Preflight]
+  F --> G[Structure Precheck]
+  G --> H[Module Validation]
+  H --> I[Preview Export]
+  I --> J[Render Review]
+  J --> K[Visual Review]
+  K --> L[Final Delivery]
 ```
 
 **先锁两份主文档，再 build。** 没有 `brief.md` 和 `deck_narrative.md` 时，不应直接开始生成 PPT。否则全局约束、页面意图与文案想法都会漂。
 
+**有参考 `pptx` 时，模板取证是前置动作。** 先判断页族、母版、layout 和字号系统，再写 narrative。否则很容易把“模板继承”做成“风格模仿”。
+
 **`slide_specs.yaml` 默认应派生，不应双写。** 机器执行仍然需要结构化字段，但默认应从 `deck_narrative.md` 生成，而不是要求人类长期维护第三份并行文档。
+
+**先 build 后 gate，再做模块验证。** 先确认文件包一致性和结构层排版没有明显失控，再去看 connector、chart 和模板细节。
+
+**preview 之后还要补一次成图级 gate。** `render_review` 专门处理结构层看不到的边界触墨和扁平化图像风险，不要把逐页 preview 本身误当成结构化检查。
 
 **先结构验证，再视觉微调。** 如果某页同时有 connector 问题和版式问题，先修结构，再修样式。
 
@@ -64,11 +75,13 @@ deck_workspace/
 
 **`brief.md` 放全局任务输入。** 目标读者、使用场景、模板约束、品牌要求、交付标准和验证要求都应在这里固定。它回答的是“为什么做这套 deck”和“哪些约束不能碰”。
 
+**模板取证结果默认回写到 `brief.md`。** 不默认新增一份长期维护的 `template_audit.md`。页族判断、母版元素、字号系统和路线选择应作为 deck 级事实沉淀回主文档。
+
 **`deck_narrative.md` 放整套叙事与页面想法。** 全局 narrative、核心判断、每页 reader question、文案想法、资产设想和版式意图都在这一份文档里，不再拆成 `deck_plan + content + terminology` 多份平级文档长期双写。
 
 **`build/generated/slide_specs.yaml` 放派生结构化输入。** 它是机器友好的 build 入口，但默认不应手写维护，而应从 `deck_narrative.md` 自动派生。
 
-**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `body_font_pt`、`latin_font_name`、`east_asia_font_name` 和稳定边距。没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt` 的策略。
+**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`line_spacing_multiple`、`latin_font_name`、`east_asia_font_name` 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt`、默认行距 `1.5` 倍的策略。
 
 **`assets/` 放源资产。** diagram、chart、icon、image、table 是平级类型。不要让 Mermaid 变成一切页面的默认起点。
 
@@ -78,7 +91,78 @@ deck_workspace/
 
 **`validation/` 放证据。** connector 报告、preview manifest、review note、asset lint 结果都应集中落在这里。
 
+**`validation/` 还应承载 deck 级 quality gates。** 至少建议固定 `package_preflight/` 与 `structure_precheck/` 两个目录，让文件级问题和页面结构问题分开沉淀，不要混成一份大杂烩报告。
+**preview 导出后还应有 `render_review/`。** 它服务成图层问题，不应再塞回 `structure_precheck/`。
+
 **`final/` 放交付物。** 给用户和评审会看的最终 deck 与 handoff 说明只放在这里。
+
+## Deck 级 Quality Gates
+
+**`package_preflight` 先看文件包是否干净。** 这一步关注 slide 数与包内元信息一致性、section 扩展是否残留旧引用、是否存在移动端高风险嵌入对象，以及其他会让微信 / WPS 这类脆弱解析器直接拒绝打开的信号。
+
+**`structure_precheck` 再看结构层排版是否失控。** 这一步关注文本框 fit、文字遮挡和结构化对象内部标签风险。它属于 fail-fast 检查，不替代最终 preview review。
+
+**`render_review` 最后补成图层问题。** 这一步在 preview 图导出后执行，关注边界触墨和扁平化图像内部文字风险。它和结构预检不是替代关系。
+
+**推荐目录如下。**
+
+```text
+validation/
+  package_preflight/
+    history/
+      package_preflight_YYYYMMDD_HHMMSS.json
+      package_preflight_YYYYMMDD_HHMMSS.md
+  structure_precheck/
+    history/
+      structure_precheck_YYYYMMDD_HHMMSS.json
+      structure_precheck_YYYYMMDD_HHMMSS.md
+    shape_inventory.json
+  render_review/
+    history/
+      render_review_YYYYMMDD_HHMMSS.json
+      render_review_YYYYMMDD_HHMMSS.md
+```
+
+**推荐命令如下。**
+
+```bash
+python scripts/check_pptx_package_preflight.py \
+  --pptx <path/to/deck.pptx> \
+  --workspace-dir <path/to/deck_workspace> \
+  --fail-on error
+
+python scripts/check_pptx_structure_precheck.py \
+  --pptx <path/to/deck.pptx> \
+  --workspace-dir <path/to/deck_workspace> \
+  --inventory-out <path/to/deck_workspace/validation/structure_precheck/shape_inventory.json> \
+  --fail-on error
+
+python scripts/check_pptx_render_review.py \
+  --pptx <path/to/deck.pptx> \
+  --preview-dir <path/to/deck_workspace/build/rendered/ppt_preview> \
+  --workspace-dir <path/to/deck_workspace> \
+  --fail-on error
+```
+
+## 模板取证最小要求
+
+**模板取证的目标是确认页面系统。** 需要回答“哪些是模板级约束，哪些只是原页面内容”，而不是只记录颜色看起来像什么。
+
+**最小检查固定为五项。**
+- 导出模板逐页预览，识别封面页族、正式页族、章节页族和末页页族。
+- 读取 `slide layout` 与 `slide master`，确认共享 logo、页脚、装饰角、页码和标题区属于哪一层。
+- 读取模板里的真实文字与字号层级，至少覆盖封面标题、正式页标题、正文、图注、页脚和页码。
+- 做最小 PoC 验证继承关系，例如新建一张 `Blank` layout 页，只放普通文本，检查关键母版元素是否自动出现。
+- 明确当前任务采用 `master-first / layout-first`、混合复用还是 `branded rebuild`。
+
+**优先用脚本把模板审计结果落盘。** 推荐先运行下面的命令，把模板取证结果沉淀到 `validation/template_audit/`，再把关键结论回写进 `brief.md`。
+
+```bash
+python scripts/audit_pptx_template.py \
+  --pptx <path/to/reference_template.pptx> \
+  --json-out <path/to/deck_workspace/validation/template_audit/template_audit.json> \
+  --md-out <path/to/deck_workspace/validation/template_audit/template_audit.md>
+```
 
 ## `brief.md` 最小模板
 
@@ -89,9 +173,17 @@ deck_workspace/
 - 目标读者：
 - 主使用场景：
 - 目标动作：
+- 参考模板文件：
 - 模板 / 品牌约束：
 - 交付物要求：
 - 验证要求：
+
+## 模板取证
+- 页面系统判断：
+- 关键母版 / layout 元素：
+- 字号系统：
+- 计划采用的构建路线：
+- 最小 PoC 结论：
 
 ## 风格与边界
 - 风格参考：
@@ -109,7 +201,15 @@ deck:
   scenario: "<primary scenario>"
   objective: "<primary decision or action>"
   theme_tokens:
+    hero_title_font_pt: 24
+    section_title_font_pt: 20
+    page_title_font_pt: 24
+    subtitle_font_pt: 18
+    minor_title_font_pt: 16
     body_font_pt: 14
+    label_font_pt: 12
+    caption_font_pt: 12
+    line_spacing_multiple: 1.5
     latin_font_name: "Arial"
     east_asia_font_name: "黑体"
     left_margin_in: 0.78
@@ -188,7 +288,7 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 **`chart_image`。** 高 DPI 图表页。要求检查比例、清晰度与卡片内留白。
 
-**`template_locked`。** 强模板页。要求确认关键品牌元素未漂移，并通过预览做高保真复核。
+**`template_locked`。** 强模板页。要求确认关键品牌元素未漂移，通过预览做高保真复核，并检查页面层没有重复插入母版元素。
 
 ## 交付底线
 

@@ -41,7 +41,22 @@ PANEL_LABEL_HEIGHT = 0.32
 PANEL_LABEL_GAP = 0.04
 PANEL_CONTENT_INSET_X = 0.12
 PANEL_CONTENT_INSET_Y = 0.12
-DEFAULT_FONT_NAME = "Arial"
+DEFAULT_LATIN_FONT_NAME = "Arial"
+DEFAULT_EAST_ASIA_FONT_NAME = "黑体"
+DEFAULT_SERIF_LATIN_FONT_NAME = "Times New Roman"
+DEFAULT_SERIF_EAST_ASIA_FONT_NAME = "宋体"
+DEFAULT_FONT_NAME = DEFAULT_LATIN_FONT_NAME
+DEFAULT_LINE_SPACING_MULTIPLE = 1.5
+DEFAULT_TYPOGRAPHY_TOKENS = {
+    "hero_title_font_pt": 24.0,
+    "section_title_font_pt": 20.0,
+    "page_title_font_pt": 24.0,
+    "subtitle_font_pt": 18.0,
+    "minor_title_font_pt": 16.0,
+    "body_font_pt": 14.0,
+    "label_font_pt": 12.0,
+    "caption_font_pt": 12.0,
+}
 
 
 @dataclass(frozen=True)
@@ -51,7 +66,7 @@ class NodeStyle:
     fill_rgb: tuple[int, int, int]
     line_rgb: tuple[int, int, int]
     text_rgb: tuple[int, int, int] | None = None
-    font_size: float = 12.5
+    font_size: float = DEFAULT_TYPOGRAPHY_TOKENS["label_font_pt"]
     bold: bool = True
     shape_type: MSO_SHAPE = MSO_SHAPE.RECTANGLE
 
@@ -72,6 +87,11 @@ def default_palette() -> dict[str, tuple[int, int, int]]:
         "teal": (13, 148, 136),
         "slate": (100, 116, 139),
     }
+
+
+def default_typography_tokens() -> dict[str, float]:
+    """返回 deck 默认字号 token。"""
+    return dict(DEFAULT_TYPOGRAPHY_TOKENS)
 
 
 def tint(rgb: tuple[int, int, int], alpha: float) -> tuple[int, int, int]:
@@ -143,6 +163,7 @@ def new_presentation() -> Presentation:
 def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     """为页面添加统一标题头。"""
     palette = default_palette()
+    tokens = default_typography_tokens()
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = RGBColor(*palette["bg"])
 
@@ -150,15 +171,17 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     title_para = title_box.text_frame.paragraphs[0]
     title_para.text = title
     title_para.font.bold = True
-    title_para.font.size = Pt(22)
+    title_para.font.size = Pt(tokens["page_title_font_pt"])
     title_para.font.name = DEFAULT_FONT_NAME
+    title_para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     title_para.font.color.rgb = RGBColor(*palette["title"])
 
     sub_box = slide.shapes.add_textbox(Inches(0.74), Inches(0.57), Inches(14.1), Inches(0.28))
     sub_para = sub_box.text_frame.paragraphs[0]
     sub_para.text = subtitle
-    sub_para.font.size = Pt(14)
+    sub_para.font.size = Pt(tokens["subtitle_font_pt"])
     sub_para.font.name = DEFAULT_FONT_NAME
+    sub_para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     sub_para.font.color.rgb = RGBColor(*palette["subtitle"])
 
     tag_box = slide.shapes.add_textbox(Inches(14.85), Inches(8.43), Inches(0.46), Inches(0.18))
@@ -166,19 +189,22 @@ def add_slide_header(slide, figure_tag: str, title: str, subtitle: str) -> None:
     tag_para.text = figure_tag
     tag_para.alignment = PP_ALIGN.RIGHT
     tag_para.font.bold = True
-    tag_para.font.size = Pt(10)
+    tag_para.font.size = Pt(tokens["caption_font_pt"])
     tag_para.font.name = DEFAULT_FONT_NAME
+    tag_para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     tag_para.font.color.rgb = RGBColor(*palette["muted"])
 
 
 def add_caption(slide, text: str) -> None:
     """在页底添加简短说明。"""
     palette = default_palette()
+    tokens = default_typography_tokens()
     box = slide.shapes.add_textbox(Inches(0.45), Inches(8.45), Inches(15.1), Inches(0.22))
     para = box.text_frame.paragraphs[0]
     para.text = text
-    para.font.size = Pt(12)
+    para.font.size = Pt(tokens["caption_font_pt"])
     para.font.name = DEFAULT_FONT_NAME
+    para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     para.font.color.rgb = RGBColor(*palette["subtitle"])
 
 
@@ -189,18 +215,20 @@ def add_text_block(
     top: float,
     width: float,
     height: float,
-    font_size: float = 14.0,
+    font_size: float | None = None,
     bold: bool = False,
     color_rgb: tuple[int, int, int] | None = None,
 ) -> None:
     """添加纯文本块。"""
     palette = default_palette()
+    tokens = default_typography_tokens()
     box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     para = box.text_frame.paragraphs[0]
     para.text = text
-    para.font.size = Pt(font_size)
+    para.font.size = Pt(font_size if font_size is not None else tokens["body_font_pt"])
     para.font.bold = bold
     para.font.name = DEFAULT_FONT_NAME
+    para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     para.font.color.rgb = RGBColor(*(color_rgb or palette["subtitle"]))
 
 
@@ -215,6 +243,7 @@ def add_panel(
     body_fill_rgb: tuple[int, int, int] | None = None,
 ) -> None:
     """添加亮色 label 与浅色正文底块组合的 panel。"""
+    tokens = default_typography_tokens()
     body_top = top + panel_body_top_offset()
     body_height = max(0.24, height - panel_body_top_offset())
 
@@ -245,8 +274,9 @@ def add_panel(
     header.line.color.rgb = RGBColor(*accent_rgb)
     para = header.text_frame.paragraphs[0]
     para.font.bold = True
-    para.font.size = Pt(14)
+    para.font.size = Pt(tokens["minor_title_font_pt"])
     para.font.name = DEFAULT_FONT_NAME
+    para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
     para.font.color.rgb = RGBColor(*pick_contrast_text_rgb(accent_rgb))
 
 
@@ -297,7 +327,7 @@ def add_picture_card(
             content_top + image_height + 0.08,
             content_width,
             0.18,
-            font_size=12,
+            font_size=DEFAULT_TYPOGRAPHY_TOKENS["caption_font_pt"],
             color_rgb=(99, 115, 141),
         )
 
@@ -346,23 +376,23 @@ def add_native_chart_card(
     plot.vary_by_categories = False
     plot.has_data_labels = True
     plot.data_labels.number_format = number_format
-    plot.data_labels.font.size = Pt(12)
+    plot.data_labels.font.size = Pt(DEFAULT_TYPOGRAPHY_TOKENS["label_font_pt"])
     plot.data_labels.font.name = DEFAULT_FONT_NAME
     plot.data_labels.font.color.rgb = RGBColor(57, 70, 96)
 
     if hasattr(chart, "category_axis"):
-        chart.category_axis.tick_labels.font.size = Pt(12)
+        chart.category_axis.tick_labels.font.size = Pt(DEFAULT_TYPOGRAPHY_TOKENS["label_font_pt"])
         chart.category_axis.tick_labels.font.name = DEFAULT_FONT_NAME
         chart.category_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.category_axis.has_major_gridlines = False
     if hasattr(chart, "value_axis"):
-        chart.value_axis.tick_labels.font.size = Pt(12)
+        chart.value_axis.tick_labels.font.size = Pt(DEFAULT_TYPOGRAPHY_TOKENS["label_font_pt"])
         chart.value_axis.tick_labels.font.name = DEFAULT_FONT_NAME
         chart.value_axis.tick_labels.font.color.rgb = RGBColor(74, 85, 104)
         chart.value_axis.has_major_gridlines = True
         chart.value_axis.major_gridlines.format.line.color.rgb = RGBColor(226, 232, 240)
     if show_legend:
-        chart.legend.font.size = Pt(11)
+        chart.legend.font.size = Pt(DEFAULT_TYPOGRAPHY_TOKENS["label_font_pt"])
         chart.legend.font.name = DEFAULT_FONT_NAME
         chart.legend.font.color.rgb = RGBColor(57, 70, 96)
 
@@ -403,6 +433,7 @@ def add_node(
     for para in shape.text_frame.paragraphs:
         para.font.size = Pt(style.font_size)
         para.font.bold = style.bold
+        para.line_spacing = DEFAULT_LINE_SPACING_MULTIPLE
         para.font.color.rgb = RGBColor(*text_rgb)
     return shape
 
