@@ -1,8 +1,10 @@
 # Document Workflow
 
-**这份文档的定位。** 本文定义 `word-polished-doc-collab` 的默认 workspace 结构、`docx <-> markdown <-> docx` 的协作流程，以及表题、图题、表注在 Markdown 中的稳定语义约定。
+**这份文档的定位。** 本文定义 `word-polished-doc-collab` 的精细模式默认 workspace 结构、`docx <-> markdown <-> docx` 的协作流程，以及表题、图题、表注、图注和来源说明在 Markdown 中的稳定语义约定。
 
 ## 推荐 workspace
+
+**轻量模式优先使用最小 workspace。** 对单篇、快速、弱验证任务，优先使用 `lightweight_mode.md` 里的 `doc.md + assets + out` 结构，不要被精细模式目录拖重。
 
 **工作区应该把“来源、编辑、构建、验证”分开。** 推荐结构如下：
 
@@ -13,12 +15,15 @@ doc-workspace/
 │   └── <doc-slug>/
 │       ├── <doc-slug>.md
 │       ├── assets/
-│       └── meta.json
+│       ├── meta.json
+│       └── [asset_manifest.json]
 ├── build/
 │   └── docx/
 ├── scripts/
 └── temp/
 ```
+
+**`asset_manifest.json` 只在复杂视觉资产出现时引入。** 多张图表、Office 原生对象、Python figure、来源说明和 preset 级图文系统都属于“该文件该出现”的信号；不要在纯文本或极简图片文档里为凑结构硬塞一个空 manifest。
 
 ## 数据流
 
@@ -29,9 +34,10 @@ flowchart LR
     B --> D[markdown/<doc>/assets/*]
     C --> E[markdown revision]
     D --> E
-    E --> F[markdown to docx build]
-    F --> G[build/docx/*.docx]
-    G --> H[manual visual QA + style QA]
+    E --> F[style profile + optional asset manifest]
+    F --> G[markdown to docx build]
+    G --> H[build/docx/*.docx]
+    H --> I[manual visual QA + style QA]
 ```
 
 ## 默认工作流
@@ -42,9 +48,11 @@ flowchart LR
 
 **第三步是只在 Markdown 里做持续编辑。** 文本修改、结构调整、表题表注补齐、图片替换都优先在 Markdown 层完成。导出的 `.docx` 是交付物，不是长期维护源。
 
-**第四步是把版式映射放在构建器。** 统一字体、字号、行距、段前段后、表图标题位置和表格密度都应在构建阶段集中设置，而不是由作者手工在 Markdown 中模拟。
+**第四步是先锁 `style_profile`，并在需要时补上 `asset_manifest`。** 精细模式应在构建前明确 active style、caption 位置；只要文档开始混用多张图、多种资产模式、来源说明或可编辑对象要求，就把这些信息写进 `asset_manifest`。
 
-**第五步是导出后强制复核。** 至少复核标题层级、表格宽度、图片缩放、分页和字体槽位。没有复核的导出物不算完成。
+**第五步是把版式映射放在构建器。** 统一字体、字号、首行缩进、行距、段前段后、caption 位置、图注来源说明和表格密度都应在构建阶段集中设置，而不是由作者手工在 Markdown 中模拟。
+
+**第六步是导出后复核。** 精细模式默认强制复核标题层级、表格宽度、图片缩放、分页、字体槽位和资产可编辑性。轻量模式只有在用户明确要求 review 时才执行这一步。
 
 ## Markdown 语义约定
 
@@ -53,7 +61,7 @@ flowchart LR
 **表题使用单独段落并位于表上方。** 推荐写法：
 
 ```md
-表题：表 1 费用分摊明细
+表 1 费用分摊明细
 
 | 项目 | 金额 |
 | --- | ---: |
@@ -61,21 +69,36 @@ flowchart LR
 | 托管费 | 20 |
 ```
 
+**表题语义由“相对位置 + 编号样式”共同决定。** 单独成段、紧邻表格上方，并且文本本身符合 `表 1 ...`、`表 3-2 ...` 这类编号题注样式时，应被识别成 `table_title`，而不是普通正文。
+
 **表注使用单独段落并位于表下方。** 推荐写法：
 
 ```md
 表注：金额单位为人民币万元，数据截至 2026-04-29。
 ```
 
-**图题使用单独段落并位于图片下方。** 推荐写法：
+**图题使用单独段落，位置跟随 active `caption_policy`。** `cn_song_times` 默认位于图片下方，某些 preset 可以显式要求图上方。默认中文正式文档推荐写法如下：
 
 ```md
 ![费用流程图](assets/fee_flow.png)
 
-图题：图 1 费用审批流程
+图 1 费用审批流程
 ```
 
+**图题语义同样优先依赖“相对位置 + 编号样式”。** 单独成段、紧邻图片上方或下方，并且文本本身符合 `图 1 ...`、`Exhibit 2 ...` 等题注样式时，应被识别成 `figure_title`。
+
+**图注和来源说明要独立成段。** 推荐写法：
+
+```md
+图注：样本区间为 2021-2025 年，口径为合并报表。
+来源：公司公告，团队测算。
+```
+
+**`figure_note` 和 `source_note` 不应揉进图像本体。** 它们是文档语义块，不是图片像素的一部分。
+
 **图表资产要相对引用。** 图片、Python figure 和未来的导出图都应放在文档目录的 `assets/` 下，并通过相对路径引用，保证工作区可搬运。
+
+**Markdown 不要手工模拟中文首行缩进。** 正文段落不需要写前导空格或全角空格，首行缩进应由构建器按中文正式文档规则统一落地。
 
 ## `meta.json` 的职责
 
@@ -85,13 +108,27 @@ flowchart LR
 - `assets_dir`
 - `output_docx`
 - `style_profile`
+- `workflow_mode`
 
 **`style_profile` 应该进入元数据。** 这样构建脚本才能知道这份文档默认用 `cn_song_times`、`cn_kaiti_times` 还是 `cn_heiti_arial`。
 
+## `asset_manifest.json` 的职责
+
+**`asset_manifest.json` 负责绑定复杂视觉资产。** 它只在文档存在非平凡视觉资产时出现，推荐至少保存：
+- `asset_id`
+- `asset_mode`
+- `source_file` 或 `generator_script`
+- `caption_position`
+- `figure_note`
+- `source_note`
+- `editable_required`
+
+**`asset_manifest` 是精细模式的重要抓手。** 只要文档里有多张图、多种资产模式、Office 原生对象、来源说明或 preset 式图文系统，就不应再靠隐式约定管理这些资产。
+
 ## 适合自动化的部分
 
-**结构抽取适合自动化。** 段落、标题、表格、图片、元数据的抽取与回写，适合脚本处理。
+**结构抽取适合自动化。** 段落、标题、表格、图片、元数据、图注和来源说明的抽取与回写，适合脚本处理。
 
-**版式映射适合自动化。** 正文字号、标题梯度、表格密度、caption 位置和字体槽位，适合统一写在构建器里。
+**版式映射适合自动化。** 正文字号、标题梯度、表格密度、caption 位置、图注来源说明和字体槽位，适合统一写在构建器里。
 
 **最终视觉判断仍需要人工。** 页尾孤行、超宽表格、图片模糊、分页位置和法务类特殊格式，仍应人工复核。
