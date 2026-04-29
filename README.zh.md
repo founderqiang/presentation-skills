@@ -12,6 +12,7 @@
 
 - `2026-04-22` `ppt-polished-deck-collab` 现在支持自动质量 gate，可以检查移动端打开风险、文本出格、对象遮挡和预览层排版失误，从而显著减少交付前的人类返工。
 - `2026-04-22` `ppt-polished-deck-collab` 进一步收紧了 template-first 动线，现在模板审计、editable deck 构建、验证、预览导出和最终复核会按固定顺序执行。
+- `2026-04-29` 新增 `word-polished-doc-collab`，把 Markdown、DOCX 与 Python 文档资产的往返协作抽象成独立 skill，并明确了中文宋体 / 楷体 / 黑体与英文 Times / Arial 的字体 profile、标题梯度、表题图题表注位置与质量 gate。
 
 ## 这个仓库提供什么
 
@@ -20,6 +21,12 @@
 `ppt-polished-deck-collab` 用来生产可编辑、高质量、高度自动化的 PowerPoint deck，覆盖商业和学术两类用途。它既可以从零构建一整套 deck，也可以基于用户提供的模板工作，还可以继承用户已有 `pptx` 的母版和版式，并在保留可编辑性的前提下修改现有文件。
 
 它适用于策略汇报、技术说明、研究汇报、论文答辩、产品演示、运营复盘、管理层 deck 等需要最终产物仍然表现为“真正 PowerPoint 文件”的场景。
+
+### `word-polished-doc-collab`
+
+`word-polished-doc-collab` 用来把 Markdown、DOCX 和 Python 生成的文档资产组织成正式、统一、可复跑的 Word 交付流程。它强调中英文字体组合、标题梯度、段前段后、行距、表题图题表注位置和交付前复核，而不是一次性导出一个“差不多能交”的 `.docx`。
+
+它适用于合同、制度、说明文档、研究附录、业务报告、董事会或投委会附件等需要正式 Word 交付、且后续还要持续维护内容源的场景。
 
 ### `web-demo-video-synthesis`
 
@@ -69,6 +76,25 @@
 [![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
 
 [![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
+
+### `word-polished-doc-collab`
+
+这是仓库里新的 Word 文档协作 skill。它不是“导出一个 docx 的小脚本说明”，而是一套文档级工作流。它负责锁定 source of truth、规范 Markdown 语义、定义字体 profile、统一标题和正文节奏，并为表格、图片、Python 图和未来的 Office 原生图表提供稳定接入位。
+
+核心能力：
+- 围绕 `doc_workspace`、`canonical_markdown`、`style_profile` 和 `validation_bundle` 组织长期协作
+- 支持 `docx -> markdown -> docx` 与 `markdown -> docx` 两类主路线
+- 显式定义 `中文宋体 + 英文 Times New Roman` 的默认版式，以及 `楷体 + Times New Roman`、`黑体 + Arial` 的可选 profile
+- 固化正文 `小四 12pt`、正文与标题 `1.5` 倍行距、段前段后 `0.5` 行、表格 `五号 / 小五`、表题图题表注位置
+- 为 Python figure 和未来的 Office 原生 chart 预留清晰的接入路线
+- 定义 source integrity、style contract、font slot integrity 和 visual review 四层质量 gate
+
+关键文档：
+- `word-polished-doc-collab/SKILL.md`
+- `word-polished-doc-collab/references/principles.md`
+- `word-polished-doc-collab/references/doc_workflow.md`
+- `word-polished-doc-collab/references/typography_profiles.md`
+- `word-polished-doc-collab/references/local_pipeline_case_study.md`
 
 ### `web-demo-video-synthesis`
 
@@ -169,6 +195,22 @@ python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
   --fail-on error
 ```
 
+### `word-polished-doc-collab`
+
+这个 skill 当前以 **workflow + references** 为主，宿主项目可以按自己的实现提供脚本。一个已经被验证过的宿主命名方式是：
+
+```bash
+python scripts/doc_pipeline.py docx-to-md
+python scripts/doc_pipeline.py md-to-docx
+python scripts/doc_pipeline.py rebuild-all
+```
+
+建议先读：
+- `word-polished-doc-collab/references/principles.md`
+- `word-polished-doc-collab/references/doc_workflow.md`
+- `word-polished-doc-collab/references/typography_profiles.md`
+- `word-polished-doc-collab/references/local_pipeline_case_study.md`
+
 ### `web-demo-video-synthesis`
 
 核心产物模式：
@@ -192,6 +234,7 @@ flowchart LR
 ## 仓库结构
 
 - `ppt-polished-deck-collab/`：当前主线 polished deck skill
+- `word-polished-doc-collab/`：当前主线 Word 文档协作 skill
 - `web-demo-video-synthesis/`：当前主线 web demo 视频合成 skill
 - `demos/`：正式注册的 demo 工作空间
 - `old/`：归档技能和历史 demo

@@ -10,6 +10,7 @@ These skills were not produced in one pass. They were iterated through many real
 
 - `2026-04-22` `ppt-polished-deck-collab` now supports automatic quality gates for mobile-open risk, text overflow, object occlusion, and preview-layer layout failures, which materially reduces manual cleanup before delivery.
 - `2026-04-22` `ppt-polished-deck-collab` also tightened its template-first workflow, so reference template audit, editable deck build, validation, preview export, and final review happen in a fixed order.
+- `2026-04-29` Added `word-polished-doc-collab`, which turns Markdown, DOCX, and Python-generated document assets into a dedicated Word workflow with explicit Chinese-English font profiles, heading scale, caption placement, and quality gates.
 
 ## What This Repo Provides
 
@@ -18,6 +19,12 @@ These skills were not produced in one pass. They were iterated through many real
 `ppt-polished-deck-collab` produces editable, high-quality, highly automated PowerPoint decks for both business and academic use. It can build a new deck from scratch, work from a user-provided template, inherit a user’s existing slide master and layouts, and modify an existing `pptx` while preserving editability.
 
 It is designed for strategy decks, technical explainers, research talks, thesis defenses, product presentations, operations reviews, management decks, and other presentation-heavy workflows where the final artifact must still behave like a real PowerPoint file.
+
+### `word-polished-doc-collab`
+
+`word-polished-doc-collab` turns Markdown, DOCX, and Python-generated document assets into a formal, repeatable Word delivery workflow. It focuses on explicit Chinese-English font pairing, heading scale, line spacing, paragraph spacing, table and figure title placement, and delivery review instead of one-off DOCX export.
+
+It is designed for contracts, policies, explanatory notes, research appendices, operating reports, board or investment committee attachments, and other Word-first workflows where the content source must remain maintainable after delivery.
 
 ### `web-demo-video-synthesis`
 
@@ -67,6 +74,25 @@ Key outputs:
 [![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
 
 [![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
+
+### `word-polished-doc-collab`
+
+This is the new Word-document collaboration skill in the repository. It is not just a note about exporting a DOCX. It is a document-level workflow that locks the source of truth, keeps Markdown semantic, defines reusable typography profiles, and gives tables, images, Python figures, and future Office-native charts a stable home.
+
+Core capabilities:
+- Long-lived collaboration around `doc_workspace`, `canonical_markdown`, `style_profile`, and `validation_bundle`
+- Support for both `docx -> markdown -> docx` and `markdown -> docx`
+- Explicit default typography for `Chinese SimSun + English Times New Roman`, plus optional `KaiTi + Times New Roman` and `HeiTi + Arial` profiles
+- Fixed rules for body text `12pt`, heading and body line spacing `1.5`, paragraph spacing `0.5` lines, table text `10.5pt / 9pt`, and table-title / figure-title / table-caption placement
+- Clear extension paths for Python figures and future Office-native charts
+- Four quality gates: source integrity, style contract, font-slot integrity, and visual review
+
+Key docs:
+- `word-polished-doc-collab/SKILL.md`
+- `word-polished-doc-collab/references/principles.md`
+- `word-polished-doc-collab/references/doc_workflow.md`
+- `word-polished-doc-collab/references/typography_profiles.md`
+- `word-polished-doc-collab/references/local_pipeline_case_study.md`
 
 ### `web-demo-video-synthesis`
 
@@ -167,6 +193,22 @@ python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
   --fail-on error
 ```
 
+### `word-polished-doc-collab`
+
+This skill currently ships primarily as a workflow and references layer, so host projects are expected to provide the concrete conversion scripts. One proven host naming pattern is:
+
+```bash
+python scripts/doc_pipeline.py docx-to-md
+python scripts/doc_pipeline.py md-to-docx
+python scripts/doc_pipeline.py rebuild-all
+```
+
+Read first:
+- `word-polished-doc-collab/references/principles.md`
+- `word-polished-doc-collab/references/doc_workflow.md`
+- `word-polished-doc-collab/references/typography_profiles.md`
+- `word-polished-doc-collab/references/local_pipeline_case_study.md`
+
 ### `web-demo-video-synthesis`
 
 Core output pattern:
@@ -190,6 +232,7 @@ Demo:
 ## Repository Layout
 
 - `ppt-polished-deck-collab/`: active polished-deck skill
+- `word-polished-doc-collab/`: active Word-document collaboration skill
 - `web-demo-video-synthesis/`: active web-demo-to-video skill
 - `demos/`: registered demo workspaces
 - `old/`: archived skills and historical demos
