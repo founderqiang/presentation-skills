@@ -129,13 +129,32 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 
 ## 典型宿主命令
 
-如果宿主工作区已经具备类似 `doc_pipeline.py` 的实现，常见命令会是：
+如果宿主工作区已经具备自己的 `doc_pipeline.py`，常见命令会是：
 
 ```bash
 python scripts/doc_pipeline.py docx-to-md
 python scripts/doc_pipeline.py md-to-docx
 python scripts/doc_pipeline.py rebuild-all
 ```
+
+如果宿主工作区还没有自己的实现，这个 skill 现在自带一套参考脚本：
+
+```bash
+python scripts/init_doc_workspace.py <workspace-dir> --mode refined --doc-slug <doc-slug>
+python scripts/check_word_environment.py
+python scripts/lint_doc_markdown.py --meta markdown/<doc-slug>/meta.json
+python scripts/build_docx.py --meta markdown/<doc-slug>/meta.json
+python scripts/export_docx_preview.py --meta markdown/<doc-slug>/meta.json
+python scripts/run_docx_qa.py --meta markdown/<doc-slug>/meta.json
+```
+
+这套脚本的职责边界很明确：
+- `init_doc_workspace.py` 负责初始化轻量或精细 workspace
+- `check_word_environment.py` 负责检查 `python-docx`、LibreOffice、Poppler 和字体探测能力
+- `lint_doc_markdown.py` 负责在 build 前检查标题层级、caption 语义、图片路径和 `asset_manifest`
+- `build_docx.py` 负责按 active `style_profile` 生成 `.docx`
+- `export_docx_preview.py` 负责导出 PDF 和逐页 PNG
+- `run_docx_qa.py` 负责执行字体槽位、段落契约、表格对齐、section 栏数和 asset 路线 QA
 
 ## 额外说明
 

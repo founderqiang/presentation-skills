@@ -6,6 +6,8 @@
 
 **这些 gate 必须跟随 active `workflow_mode`、`style_profile` 和 `asset_manifest`。** 不允许一边选择 Bain/BCG/McKinsey preset，一边还用默认中文正式文档的固定题注位置去误判。
 
+**推荐把 gate 显式分成 build 前和 build 后两段。** `lint_doc_markdown.py` 负责 build 前的源语义 gate，`run_docx_qa.py` 负责 build 后的结构与版式 gate。不要跳过前者直接盯着 `.docx` 修结果。
+
 ## Gate 1: Source Integrity
 
 **先检查源是否完整。** 至少确认：

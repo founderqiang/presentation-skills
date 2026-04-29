@@ -25,6 +25,8 @@ doc-workspace/
 
 **`asset_manifest.json` 只在复杂视觉资产出现时引入。** 多张图表、Office 原生对象、Python figure、来源说明和 preset 级图文系统都属于“该文件该出现”的信号；不要在纯文本或极简图片文档里为凑结构硬塞一个空 manifest。
 
+**`scripts/` 目录建议只放宿主自己的包装命令。** 如果宿主项目还没有本地实现，可以直接调用 skill 自带的参考脚本；只有当项目需要额外的资产生成、模板 patch 或一键编排时，再在 workspace 内补自己的 `scripts/`。
+
 ## 数据流
 
 ```mermaid
@@ -53,6 +55,21 @@ flowchart LR
 **第五步是把版式映射放在构建器。** 统一字体、字号、首行缩进、行距、段前段后、caption 位置、图注来源说明和表格密度都应在构建阶段集中设置，而不是由作者手工在 Markdown 中模拟。
 
 **第六步是导出后复核。** 精细模式默认强制复核标题层级、表格宽度、图片缩放、分页、字体槽位和资产可编辑性。轻量模式只有在用户明确要求 review 时才执行这一步。
+
+## 参考脚本
+
+**这套 skill 现在提供一条可直接执行的参考脚本链。** 推荐顺序如下：
+
+```bash
+python scripts/check_word_environment.py
+python scripts/init_doc_workspace.py <workspace-dir> --mode refined --doc-slug <doc-slug>
+python scripts/lint_doc_markdown.py --meta markdown/<doc-slug>/meta.json
+python scripts/build_docx.py --meta markdown/<doc-slug>/meta.json
+python scripts/export_docx_preview.py --meta markdown/<doc-slug>/meta.json
+python scripts/run_docx_qa.py --meta markdown/<doc-slug>/meta.json
+```
+
+**不要把这些脚本理解成一个黑盒 pipeline。** 它们分别覆盖环境探测、workspace 初始化、源语义 lint、DOCX 构建、preview 导出和自动 QA 六件事。这样做的好处是每一步失败都能暴露清楚，不需要在一个万能脚本里倒查上下文。
 
 ## Markdown 语义约定
 
