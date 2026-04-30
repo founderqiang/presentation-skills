@@ -2,11 +2,25 @@
 
 [English README](README.md)
 
-`presentation-skills` 是一个面向 agent / assistant 环境的开源 presentation 工具仓库，重点覆盖真实交付里会被拿去给人看的三类产物：精修 PowerPoint deck、正式 Word 文档和可发布 demo 视频。
+**TL;DR。** `presentation-skills` 是一组面向真实交付的 production-grade skills，覆盖精修 PowerPoint deck、正式 Word 文档和可发布 demo 视频。
 
-这里的重点不是“生成一页图”或“临时拼一版演示”，而是把 deck、doc 和 video 的生产过程变成可复跑、可编辑、可验证、可交付的完整流水线。
+| Skill | 适合场景 | Demo 亮点 |
+| --- | --- | --- |
+| `ppt-polished-deck-collab` | 可编辑 executive deck、策略叙事、技术说明、研究汇报 | 12 页 deck，包含 Office 原生图表、connector diagram、preview export 和 validation evidence |
+| `word-polished-doc-collab` | 正式报告、董事会附件、研究附录、制度文档、咨询风格 Word 交付 | 中文轻量正式报告 + 英文精细咨询报告，包含 preview 和 QA bundle |
+| `web-demo-video-synthesis` | 产品 walkthrough、网页 demo、带旁白解释视频、可发布短视频 | 网页、配音、字幕、录屏和最终 MP4 的端到端流水线 |
+
+`presentation-skills` 是一个面向 agent / assistant 环境的开源 presentation 工具仓库。这里的重点不是“生成一页图”或“临时拼一版演示”，而是把 deck、doc 和 video 的生产过程变成可复跑、可编辑、可验证、可交付的完整流水线。
 
 这些 skills 不是一轮 prompt 产物。它们经过了大量真实任务中的反复迭代、失败分析、产物复核和工作流重写，并且为此消耗了大量真实付费 token，才把流程、验证链和最终输出收敛到当前这个水平。
+
+## Demo Gallery
+
+[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
+
+[![Word 精细咨询报告 demo 跨栏页](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
+
+[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## 最近更新
 
@@ -74,8 +88,6 @@
 - `demos/standard-wars-executive-deck/validation/structure/connector_report.json`
 - `demos/standard-wars-executive-deck/build/rendered/ppt_preview/`
 
-[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
-
 [![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
 
 ### `word-polished-doc-collab`
@@ -117,8 +129,6 @@
 - `word-polished-doc-collab/references/typography_profiles.md`
 - `word-polished-doc-collab/references/local_pipeline_case_study.md`
 
-[![Word 精细咨询报告 demo 跨栏页](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
-
 ### `web-demo-video-synthesis`
 
 这是仓库里当前主打的视频制作 skill。它会把源叙事转成一个可复现的 workspace，涵盖 TTS、时间轴、字幕、录制、混音和最终渲染。最终产物不是一次性导出，而是一套可以复核、可以编辑、可以重跑、可以发布的视频工作空间。
@@ -149,8 +159,6 @@
 
 公开视频：
 - Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
-
-[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## 快速 CLI 参考
 

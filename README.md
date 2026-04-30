@@ -2,11 +2,25 @@
 
 [中文版说明](README.zh.md)
 
-`presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. It focuses on the artifacts people actually hand over: polished PowerPoint decks, formal Word documents, and publishable demo videos.
+**TL;DR.** `presentation-skills` is a collection of production-grade skills for making the artifacts people actually hand over: polished PowerPoint decks, formal Word documents, and publishable demo videos.
 
-The goal is not one-off output. The goal is reusable workflows that consistently produce polished, editable, validated deliverables close to real business delivery standards.
+| Skill | Best For | Demo Signal |
+| --- | --- | --- |
+| `ppt-polished-deck-collab` | Editable executive decks, strategy narratives, technical explainers, research talks | 12-slide deck with native charts, connector diagrams, preview export, and validation evidence |
+| `word-polished-doc-collab` | Formal reports, board attachments, research appendices, policy docs, consulting-style Word deliverables | Lightweight Chinese report plus refined English consulting report with preview and QA bundle |
+| `web-demo-video-synthesis` | Product walkthroughs, narrated web demos, short-form explainers, publishable demo videos | End-to-end webpage, voiceover, subtitles, screen recording, and final MP4 pipeline |
+
+`presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. The goal is reusable workflows that consistently produce polished, editable, validated deliverables close to real business delivery standards.
 
 These skills were not produced in one pass. They were iterated through many real runs, repeated failure analysis, output review, and workflow rewrites. A large amount of paid model tokens was spent to make the workflows, validation gates, and deliverables actually hold up in practice.
+
+## Demo Gallery
+
+[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
+
+[![Word refined consulting-report demo spread](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
+
+[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## Recent Updates
 
@@ -74,8 +88,6 @@ Key outputs:
 - `demos/standard-wars-executive-deck/validation/structure/connector_report.json`
 - `demos/standard-wars-executive-deck/build/rendered/ppt_preview/`
 
-[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
-
 [![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
 
 ### `word-polished-doc-collab`
@@ -116,8 +128,6 @@ Key docs:
 - `word-polished-doc-collab/references/typography_profiles.md`
 - `word-polished-doc-collab/references/local_pipeline_case_study.md`
 
-[![Word refined consulting-report demo spread](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
-
 ### `web-demo-video-synthesis`
 
 This is the flagship video-making skill in the repository. It turns a source narrative into a reproducible workspace for TTS, timing, subtitles, recording, mixing, and final rendering. The result is not a one-off export. The result is a workspace that can be reviewed, edited, rerun, and published.
@@ -148,8 +158,6 @@ Featured demo:
 
 Public demo video:
 - Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
-
-[![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
 ## Quick CLI Reference
 
