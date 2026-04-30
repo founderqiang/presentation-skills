@@ -1,10 +1,10 @@
 # Preset Style Guides for `word-polished-doc-collab`
 
-**定位。** 本文档用于放入 `word-polished-doc-collab/references/`，作为三套可复用的咨询报告风格预设指南。它描述视觉特征、`style_profile` 配置、Markdown 语义、DOCX 构建路线、图表资产路线和交付前 QA。三套风格分别对应：`bcg_dark_teal_report`、`bain_red_pe_report`、`mckinsey_blue_article`。
+**定位。** 本文档用于放入 `word-polished-doc-collab/references/`，作为三套可复用的咨询报告风格预设指南。它描述视觉特征、`style_profile` 配置、Markdown 语义、DOCX 构建路线、图表资产路线和交付前 QA。三套风格分别对应：`teal_consulting_report`、`red_private_equity_report`、`blue_editorial_article`。
 
 **使用边界。** 这些 preset 提供版式和视觉语言的工程化近似方案。除非用户拥有授权资产，构建时不应嵌入或仿制任何公司 logo、商标、专有字体和受版权保护的原图。封面图、章节图和图标应由用户提供、由 Python 生成，或使用已授权素材。
 
-**接入方式。** 当用户明确要求“BCG 风格”“Bain 红色 PE 报告风格”“McKinsey 文章风格”或引用相似样例时，默认按精细模式读取本文档，再联读 `typography_profiles.md`、`technical_support.md`、`build_routes.md` 和 `quality_gates.md`。精细模式下，`meta.json` 中的 `style_profile` 应写入本文定义的 preset 名称；只有用户明确接受轻量近似时，才跳过完整 preset workspace。
+**接入方式。** 当用户明确要求深青色双栏咨询报告、红色投资报告、蓝色 editorial article，或引用相似样例时，默认按精细模式读取本文档，再联读 `typography_profiles.md`、`technical_support.md`、`build_routes.md` 和 `quality_gates.md`。精细模式下，`meta.json` 中的 `style_profile` 应写入本文定义的 preset 名称；只有用户明确接受轻量近似时，才跳过完整 preset workspace。
 
 **语言范围。** 本文三套 preset 默认服务英文咨询报告。凡是涉及双栏、窄栏、英文 serif/sans-serif 组合、`Notes`/`Source` 英文题注体系的条款，都以英文正文为前提，不应反向推导为中文正式文档默认规范。
 
@@ -16,7 +16,7 @@
   "markdown_file": "markdown/report/report.md",
   "assets_dir": "markdown/report/assets",
   "output_docx": "build/docx/report.docx",
-  "style_profile": "bcg_dark_teal_report"
+  "style_profile": "teal_consulting_report"
 }
 ```
 
@@ -69,7 +69,7 @@ Exhibit 1  The forces reshaping the market
 
 **资产路线应沿用 deck skill 的分流思路。** 在 preset 模式下，优先把数据插图分成 `office_native_chart`、`office_native_illustration` 和 `python_figure` 三类，再决定每一页或每一节使用哪条路线，并把这些决策写进 `asset_manifest`。
 
-## 2. Preset A: `bcg_dark_teal_report`
+## 2. Preset A: `teal_consulting_report`
 
 ### 2.1 视觉目标
 
@@ -82,7 +82,7 @@ Exhibit 1  The forces reshaping the market
 ### 2.2 `style_profile` 配置
 
 ```yaml
-style_profile: bcg_dark_teal_report
+style_profile: teal_consulting_report
 workflow_mode: refined
 page:
   size: A4
@@ -195,11 +195,11 @@ caption_policy:
 
 **正文页。** 默认双栏英文正文。段落短、图表多时保持两栏；长推理段落可切为单栏 `body_single_column`，但同一章节内不要频繁切换。项目符号使用绿色圆点或短横，项目正文中可加粗关键词。
 
-**Exhibit。** 关系图、矩阵、流程图建议走 Python figure。当前 preset 的 `caption_policy` 明确把 `figure_title` 放在图上方，`figure_note/source_note` 放在图下方。若要做 BCG 式大数字与矩阵，可以在 Python 中定义色板：绿色主色、亮青连线、暖橙强调、浅灰背景。图像宽度默认 100% 页面文本区，密集图可独占整页。
+**Exhibit。** 关系图、矩阵、流程图建议走 Python figure。当前 preset 的 `caption_policy` 明确把 `figure_title` 放在图上方，`figure_note/source_note` 放在图下方。若要做深青色咨询风格的大数字与矩阵，可以在 Python 中定义色板：绿色主色、亮青连线、暖橙强调、浅灰背景。图像宽度默认 100% 页面文本区，密集图可独占整页。
 
 **QA。** 检查封面图是否满版、标题是否压在安全区内、章节 opener 的 hero image 是否被拉伸、双栏栏距是否稳定、页脚是否在所有正文页一致、Exhibit 文本是否小到不可读。
 
-## 3. Preset B: `bain_red_pe_report`
+## 3. Preset B: `red_private_equity_report`
 
 ### 3.1 视觉目标
 
@@ -212,7 +212,7 @@ caption_policy:
 ### 3.2 `style_profile` 配置
 
 ```yaml
-style_profile: bain_red_pe_report
+style_profile: red_private_equity_report
 workflow_mode: refined
 page:
   size: Letter
@@ -233,7 +233,7 @@ fonts:
   chart_latin: Arial
   chart_cjk: Microsoft YaHei
 colors:
-  bain_red: "#E40000"
+  accent_red: "#E40000"
   red_dark: "#B80000"
   black: "#111111"
   text: "#222222"
@@ -326,7 +326,7 @@ caption_policy:
 
 **QA。** 检查页眉细线是否贯穿正文页、Figure 编号是否连续、红色强调是否只用于编号/重点数据/封面区、图表 Notes 是否没有溢出、章节 opener 的白色标题卡片是否覆盖在安全区内。
 
-## 4. Preset C: `mckinsey_blue_article`
+## 4. Preset C: `blue_editorial_article`
 
 ### 4.1 视觉目标
 
@@ -339,7 +339,7 @@ caption_policy:
 ### 4.2 `style_profile` 配置
 
 ```yaml
-style_profile: mckinsey_blue_article
+style_profile: blue_editorial_article
 workflow_mode: refined
 page:
   size: Letter
@@ -446,17 +446,17 @@ caption_policy:
 
 **封面。** 使用 Letter 纸。顶部品牌位保留为文本或合法图片资产；中部文本块从页面左侧约 1.3in 处开始，宽度约 5.3in。标题使用 serif，字号大、行距紧。下半页插入满宽蓝色主题图，高度约 3.1in。页底左侧放日期。
 
-**正文页。** 使用窄单栏，正文宽度约 4.9in 到 5.3in。相比 Bain，段落更松、留白更多。正文使用无衬线以提高屏幕阅读体验，标题使用 serif 保持出版感。这个 preset 显式覆盖默认中文正式文档规则，段落之间用段后距，不用首行缩进。
+**正文页。** 使用窄单栏，正文宽度约 4.9in 到 5.3in。相比红色投资报告 preset，段落更松、留白更多。正文使用无衬线以提高屏幕阅读体验，标题使用 serif 保持出版感。这个 preset 显式覆盖默认中文正式文档规则，段落之间用段后距，不用首行缩进。
 
 **Exhibit。** 当前 preset 的 `caption_policy` 把 `figure_title` 放在图上方。Exhibit 先写 `Exhibit 1`，再写一行较大的黑色标题，随后插入图像或 Office shape。环形图、流程模块和图标网格建议用 Python figure 或 SVG 资产；图标统一使用深蓝底白线或深蓝线框。Source 位于图下方左侧，小号浅灰。
 
 **分页。** 尽量避免一页内出现过多图表。每个 Exhibit 上下至少保留 12pt 空白。长正文保持连续阅读，不使用双栏。页面底部孤行可通过手工 QA 或 keep-with-next 规则处理。
 
-**QA。** 检查封面标题是否保持 serif 大标题效果、正文栏宽是否明显窄于 Bain、蓝色主题图是否不失真、Exhibit 是否有充足留白、页脚文章名和页码是否位置稳定。
+**QA。** 检查封面标题是否保持 serif 大标题效果、正文栏宽是否明显窄于红色投资报告 preset、蓝色主题图是否不失真、Exhibit 是否有充足留白、页脚文章名和页码是否位置稳定。
 
 ## 5. Preset 对照表
 
-| 配置项 | `bcg_dark_teal_report` | `bain_red_pe_report` | `mckinsey_blue_article` |
+| 配置项 | `teal_consulting_report` | `red_private_equity_report` | `blue_editorial_article` |
 | --- | --- | --- | --- |
 | 适用内容 | 风险、技术、AI、韧性、供应链 | PE、金融、市场年度报告 | 管理观点、AI/数字化文章 |
 | 页面 | A4 | Letter | Letter |
@@ -474,7 +474,7 @@ caption_policy:
 **资源路由规则。** 这部分定义 preset 进入主 skill 后的推荐路由：
 
 ```md
-- 当用户要求套用 BCG、Bain、McKinsey 或咨询报告视觉 preset 时，读取 `references/preset_style_guides.md`。
+- 当用户要求套用深青咨询、红色投资、蓝色 editorial article 或其他同类咨询报告视觉 preset 时，读取 `references/preset_style_guides.md`。
 - 这类 preset 请求默认走精细模式，因为它已经显式引入模板化 style contract、caption override 和资产路线。
 - 只有当用户明确要求轻量近似、接受不追求完整模板还原与验证证据时，才允许走轻量模式并只读取目标 preset 的配置块。
 - 如果用户要求长期复用、批量生成、可编辑图表、封面模板或自动 QA，走精细模式，并联读 `build_routes.md`、`technical_support.md`、`quality_gates.md`。
@@ -487,9 +487,9 @@ allowed_style_profiles:
   - cn_song_times
   - cn_kaiti_times
   - cn_heiti_arial
-  - bcg_dark_teal_report
-  - bain_red_pe_report
-  - mckinsey_blue_article
+  - teal_consulting_report
+  - red_private_equity_report
+  - blue_editorial_article
 ```
 
 ## 7. 构建器实现清单
@@ -498,13 +498,13 @@ allowed_style_profiles:
 
 **字体槽位。** 所有 run 必须显式设置 `w:ascii`、`w:hAnsi`、`w:eastAsia`、`w:cs`。CJK 与 Latin 字体按 role 分别设置。图表中的文字如果由 Python 生成，应使用同一组可用字体或以 SVG/PNG 固化。
 
-**页眉页脚。** Bain 需要页眉横线和居中 running title；BCG 需要左右页脚信息；McKinsey 需要右下文章名和页码。页眉页脚建议使用独立 section 管理，避免封面继承正文页眉。
+**页眉页脚。** 红色投资报告 preset 需要页眉横线和居中 running title；深青咨询 preset 需要左右页脚信息；蓝色 editorial article 需要右下文章名和页码。页眉页脚建议使用独立 section 管理，避免封面继承正文页眉。
 
-**多栏。** BCG 正文需要 section columns，且双栏策略默认只用于英文咨询正文。`python-docx` 对 columns 支持不足时，应使用 OOXML patch 写入 `w:cols`。章节 opener 可拆为标题/图片 section 和正文双栏 section。
+**多栏。** 深青咨询 preset 的正文需要 section columns，且双栏策略默认只用于英文咨询正文。`python-docx` 对 columns 支持不足时，应使用 OOXML patch 写入 `w:cols`。章节 opener 可拆为标题/图片 section 和正文双栏 section。
 
 **背景与图文叠放。** 封面、红色大色块、白色标题卡片和图片压底属于高精度视觉对象。稳定实现优先顺序是：DOCX 模板占位符、封面整页 PNG、OOXML 文本框/形状 patch、普通段落和表格模拟。
 
-**图表资产。** Bain 图表优先 Office native chart；BCG 和 McKinsey 的复杂 exhibit 优先 Python figure 或 SVG。所有图表都要有 `figure_title`、`figure_note`、`source_note`、连续编号，并在 `asset_manifest` 中登记来源和可编辑性。
+**图表资产。** 红色投资报告 preset 的图表优先 Office native chart；深青咨询和蓝色 editorial article 的复杂 exhibit 优先 Python figure 或 SVG。所有图表都要有 `figure_title`、`figure_note`、`source_note`、连续编号，并在 `asset_manifest` 中登记来源和可编辑性。
 
 ## 8. 交付前 QA
 

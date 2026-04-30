@@ -2,7 +2,9 @@
 
 [中文版说明](README.zh.md)
 
-`presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. The goal is not one-off output. The goal is reusable workflows that consistently produce polished, editable, validated decks and videos that are close to real business delivery standards.
+`presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. It focuses on the artifacts people actually hand over: polished PowerPoint decks, formal Word documents, and publishable demo videos.
+
+The goal is not one-off output. The goal is reusable workflows that consistently produce polished, editable, validated deliverables close to real business delivery standards.
 
 These skills were not produced in one pass. They were iterated through many real runs, repeated failure analysis, output review, and workflow rewrites. A large amount of paid model tokens was spent to make the workflows, validation gates, and deliverables actually hold up in practice.
 
@@ -11,6 +13,7 @@ These skills were not produced in one pass. They were iterated through many real
 - `2026-04-22` `ppt-polished-deck-collab` now supports automatic quality gates for mobile-open risk, text overflow, object occlusion, and preview-layer layout failures, which materially reduces manual cleanup before delivery.
 - `2026-04-22` `ppt-polished-deck-collab` also tightened its template-first workflow, so reference template audit, editable deck build, validation, preview export, and final review happen in a fixed order.
 - `2026-04-29` Added `word-polished-doc-collab`, which turns Markdown, DOCX, and Python-generated document assets into a dedicated Word workflow with explicit Chinese-English font profiles, heading scale, caption placement, and quality gates.
+- `2026-04-30` Registered two polished `word-polished-doc-collab` demos under `demos/`: a rich lightweight Chinese formal-report sample and a refined English consulting-report sample with full preview and QA evidence.
 
 ## What This Repo Provides
 
@@ -22,7 +25,7 @@ It is designed for strategy decks, technical explainers, research talks, thesis 
 
 ### `word-polished-doc-collab`
 
-`word-polished-doc-collab` turns Markdown, DOCX, and Python-generated document assets into a formal, repeatable Word delivery workflow. It focuses on explicit Chinese-English font pairing, heading scale, line spacing, paragraph spacing, table and figure title placement, and delivery review instead of one-off DOCX export.
+`word-polished-doc-collab` turns Markdown, DOCX, and Python-generated document assets into formal Word deliverables that can survive real review. It focuses on explicit Chinese-English font pairing, heading scale, line spacing, paragraph spacing, table and figure title placement, and delivery evidence instead of one-off DOCX export.
 
 It is designed for contracts, policies, explanatory notes, research appendices, operating reports, board or investment committee attachments, and other Word-first workflows where the content source must remain maintainable after delivery.
 
@@ -77,15 +80,34 @@ Key outputs:
 
 ### `word-polished-doc-collab`
 
-This is the new Word-document collaboration skill in the repository. It is not just a note about exporting a DOCX. It is a document-level workflow that locks the source of truth, keeps Markdown semantic, defines reusable typography profiles, and gives tables, images, Python figures, and future Office-native charts a stable home.
+This is the repository’s Word-document collaboration skill. It turns a loose Markdown or DOCX drafting process into a disciplined document workspace: semantic source, explicit typography, stable captions, preview evidence, and QA reports that make the final `.docx` easier to trust.
 
 Core capabilities:
-- Long-lived collaboration around `doc_workspace`, `canonical_markdown`, `style_profile`, and `validation_bundle`
+- Mode-aware routing for `lightweight` and `refined` document workflows
+- Reference CLI bundle with `init_doc_workspace.py`, `check_word_environment.py`, `lint_doc_markdown.py`, `build_docx.py`, `export_docx_preview.py`, and `run_docx_qa.py`
 - Support for both `docx -> markdown -> docx` and `markdown -> docx`
-- Explicit default typography for `Chinese SimSun + English Times New Roman`, plus optional `KaiTi + Times New Roman` and `HeiTi + Arial` profiles
-- Fixed rules for body text `12pt`, heading and body line spacing `1.5`, paragraph spacing `0.5` lines, table text `10.5pt / 9pt`, and table-title / figure-title / table-caption placement
-- Clear extension paths for Python figures and future Office-native charts
-- Four quality gates: source integrity, style contract, font-slot integrity, and visual review
+- Explicit default typography for `Chinese SimSun + English Times New Roman`, plus optional `KaiTi + Times New Roman`, `HeiTi + Arial`, and generic English consulting presets
+- Fixed rules for body text `12pt`, heading and body line spacing `1.5`, paragraph spacing `0.5` lines, table text `10.5pt / 9pt`, table-title bolding, and caption placement
+- Asset routing for static images, Python figures, and future Office-native objects
+- Quality gates for source integrity, style contract, font-slot integrity, section layout, asset manifest integrity, and visual review
+
+Typical workflow:
+- Choose `lightweight` or `refined` based on formality, chart density, and validation needs
+- Initialize a clean workspace
+- Lock semantic Markdown and the active `style_profile`
+- Lint the source before build
+- Build the `.docx`, export the preview bundle, and run QA when required
+- Finish with a visual review note and handoff-ready evidence
+
+Featured demos:
+- `demos/word-lightweight-industrial-operations-brief/`
+- `demos/word-refined-industrial-service-transformation/`
+
+Key outputs:
+- `demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx`
+- `demos/word-lightweight-industrial-operations-brief/out/preview/industrial_operations_brief.pdf`
+- `demos/word-refined-industrial-service-transformation/build/docx/industrial_service_transformation.docx`
+- `demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md`
 
 Key docs:
 - `word-polished-doc-collab/SKILL.md`
@@ -93,6 +115,8 @@ Key docs:
 - `word-polished-doc-collab/references/doc_workflow.md`
 - `word-polished-doc-collab/references/typography_profiles.md`
 - `word-polished-doc-collab/references/local_pipeline_case_study.md`
+
+[![Word refined consulting-report demo spread](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
 
 ### `web-demo-video-synthesis`
 
@@ -195,12 +219,49 @@ python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
 
 ### `word-polished-doc-collab`
 
-This skill currently ships primarily as a workflow and references layer, so host projects are expected to provide the concrete conversion scripts. One proven host naming pattern is:
+Environment check:
 
 ```bash
-python scripts/doc_pipeline.py docx-to-md
-python scripts/doc_pipeline.py md-to-docx
-python scripts/doc_pipeline.py rebuild-all
+python word-polished-doc-collab/scripts/check_word_environment.py
+```
+
+Build the lightweight featured demo:
+
+```bash
+python word-polished-doc-collab/scripts/build_docx.py \
+  --markdown demos/word-lightweight-industrial-operations-brief/doc.md \
+  --output demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx \
+  --style-profile cn_song_times \
+  --json-out demos/word-lightweight-industrial-operations-brief/out/build_report.json
+```
+
+Export the lightweight preview bundle:
+
+```bash
+python word-polished-doc-collab/scripts/export_docx_preview.py \
+  --docx demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx \
+  --preview-dir demos/word-lightweight-industrial-operations-brief/out/preview \
+  --json-out demos/word-lightweight-industrial-operations-brief/out/preview_report.json
+```
+
+Run the refined demo end to end:
+
+```bash
+python word-polished-doc-collab/scripts/lint_doc_markdown.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json
+
+python word-polished-doc-collab/scripts/build_docx.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/build_report.json
+
+python word-polished-doc-collab/scripts/export_docx_preview.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/preview_report.json
+
+python word-polished-doc-collab/scripts/run_docx_qa.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/qa_report.json \
+  --md-out demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md
 ```
 
 Read first:
@@ -241,6 +302,8 @@ Demo:
 ## Demos
 
 - Registered polished deck demo: `demos/standard-wars-executive-deck/`
+- Registered Word lightweight demo: `demos/word-lightweight-industrial-operations-brief/`
+- Registered Word refined demo: `demos/word-refined-industrial-service-transformation/`
 - Registered web demo synthesis demo: `demos/web-demo-video-synthesis-financial-agent/`
 - Archived complex diagram demo: `old/demos/ppt-complex-diagram-collab-stock-architecture/`
 - Archived polished deck demo: `old/demos/ppt-polished-deck-collab-ai-market-intelligence/`

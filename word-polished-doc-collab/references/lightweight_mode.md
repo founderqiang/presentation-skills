@@ -9,7 +9,7 @@
 - 规则已经明确，重点是把版式落对
 - 当前不需要 Office 原生 chart / illustration、复杂模板继承、preset 级还原、OOXML patch、自动 QA
 
-**preset 请求默认不归轻量模式。** 如果用户明确要求 Bain/BCG/McKinsey 等 preset、模板继承或咨询报告级图文系统，应默认升级到精细模式；只有用户明确接受“轻量近似、不追求完整 preset 契约”时，才继续留在轻量模式。
+**preset 请求默认不归轻量模式。** 如果用户明确要求英文咨询 preset、投资报告 preset、模板继承或咨询报告级图文系统，应默认升级到精细模式；只有用户明确接受“轻量近似、不追求完整 preset 契约”时，才继续留在轻量模式。
 
 ## 最小 workspace
 

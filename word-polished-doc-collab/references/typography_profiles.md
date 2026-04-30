@@ -96,7 +96,7 @@
 - 段前：`0`
 - 段后：`0.5` 行
 
-**preset 可以显式覆盖 `figure_title` 的位置。** 例如 Bain 式报告常把 Figure 标题放在图上方，McKinsey 式 article 常把 `Exhibit` 标题放在图上方，但这必须写进 preset 配置或其口头定义中。
+**preset 可以显式覆盖 `figure_title` 的位置。** 例如红色投资报告 preset 常把 Figure 标题放在图上方，蓝色 editorial article preset 常把 `Exhibit` 标题放在图上方，但这必须写进 preset 配置或其口头定义中。
 
 ## 可选字体 profile
 

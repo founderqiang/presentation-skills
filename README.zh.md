@@ -2,9 +2,9 @@
 
 [English README](README.md)
 
-`presentation-skills` 是一个面向 agent / assistant 环境的开源 presentation 工具仓库，目标是提供高质量、接近商业交付标准的工作流，而不是一次性的内容生成结果。
+`presentation-skills` 是一个面向 agent / assistant 环境的开源 presentation 工具仓库，重点覆盖真实交付里会被拿去给人看的三类产物：精修 PowerPoint deck、正式 Word 文档和可发布 demo 视频。
 
-这里的重点不是“生成一页图”或“临时拼一版演示”，而是把演示文稿和产品 demo 的生产过程变成可复跑、可编辑、可验证、可交付的完整流水线。
+这里的重点不是“生成一页图”或“临时拼一版演示”，而是把 deck、doc 和 video 的生产过程变成可复跑、可编辑、可验证、可交付的完整流水线。
 
 这些 skills 不是一轮 prompt 产物。它们经过了大量真实任务中的反复迭代、失败分析、产物复核和工作流重写，并且为此消耗了大量真实付费 token，才把流程、验证链和最终输出收敛到当前这个水平。
 
@@ -13,6 +13,7 @@
 - `2026-04-22` `ppt-polished-deck-collab` 现在支持自动质量 gate，可以检查移动端打开风险、文本出格、对象遮挡和预览层排版失误，从而显著减少交付前的人类返工。
 - `2026-04-22` `ppt-polished-deck-collab` 进一步收紧了 template-first 动线，现在模板审计、editable deck 构建、验证、预览导出和最终复核会按固定顺序执行。
 - `2026-04-29` 新增 `word-polished-doc-collab`，把 Markdown、DOCX 与 Python 文档资产的往返协作抽象成独立 skill，并明确了中文宋体 / 楷体 / 黑体与英文 Times / Arial 的字体 profile、标题梯度、表题图题表注位置与质量 gate。
+- `2026-04-30` 在 `demos/` 下正式注册两个 `word-polished-doc-collab` 门面样例：一个内容丰富的中文轻量正式报告 demo，一个带完整 preview 与 QA 证据链的英文精细咨询报告 demo。
 
 ## 这个仓库提供什么
 
@@ -24,7 +25,7 @@
 
 ### `word-polished-doc-collab`
 
-`word-polished-doc-collab` 用来把 Markdown、DOCX 和 Python 生成的文档资产组织成正式、统一、可复跑的 Word 交付流程。它强调中英文字体组合、标题梯度、段前段后、行距、表题图题表注位置和交付前复核，而不是一次性导出一个“差不多能交”的 `.docx`。
+`word-polished-doc-collab` 用来把 Markdown、DOCX 和 Python 生成的文档资产组织成正式、统一、可复跑的 Word 交付流程。它关注中英文字体组合、标题梯度、段前段后、行距、表题图题表注位置和交付证据，让 `.docx` 不只是导出成功，而是能经得住审阅。
 
 它适用于合同、制度、说明文档、研究附录、业务报告、董事会或投委会附件等需要正式 Word 交付、且后续还要持续维护内容源的场景。
 
@@ -79,15 +80,35 @@
 
 ### `word-polished-doc-collab`
 
-这是仓库里新的 Word 文档协作 skill。它不是“导出一个 docx 的小脚本说明”，而是一套文档级工作流。它负责锁定 source of truth、规范 Markdown 语义、定义字体 profile、统一标题和正文节奏，并为表格、图片、Python 图和未来的 Office 原生图表提供稳定接入位。
+这是仓库里的 Word 文档协作 skill。它把松散的 Markdown 或 DOCX 草稿过程收敛成一套正式文档工作区：语义化 source、明确字体 profile、稳定题注规则、可复核 preview evidence，以及能解释交付质量的 QA 报告。
 
 核心能力：
+- 按 `lightweight` 与 `refined` 两条模式路由 Word 文档工作流
+- 提供 `init_doc_workspace.py`、`check_word_environment.py`、`lint_doc_markdown.py`、`build_docx.py`、`export_docx_preview.py`、`run_docx_qa.py` 六个参考 CLI
 - 围绕 `doc_workspace`、`canonical_markdown`、`style_profile` 和 `validation_bundle` 组织长期协作
 - 支持 `docx -> markdown -> docx` 与 `markdown -> docx` 两类主路线
-- 显式定义 `中文宋体 + 英文 Times New Roman` 的默认版式，以及 `楷体 + Times New Roman`、`黑体 + Arial` 的可选 profile
-- 固化正文 `小四 12pt`、正文与标题 `1.5` 倍行距、段前段后 `0.5` 行、表格 `五号 / 小五`、表题图题表注位置
-- 为 Python figure 和未来的 Office 原生 chart 预留清晰的接入路线
-- 定义 source integrity、style contract、font slot integrity 和 visual review 四层质量 gate
+- 显式定义 `中文宋体 + 英文 Times New Roman` 的默认版式，以及 `楷体 + Times New Roman`、`黑体 + Arial` 和通用英文咨询 preset
+- 固化正文 `小四 12pt`、正文与标题 `1.5` 倍行距、段前段后 `0.5` 行、表格 `五号 / 小五`、表题加粗与题注位置
+- 为静态图片、Python figure 和未来的 Office 原生 chart / illustration 预留清晰的接入路线
+- 定义 source integrity、style contract、font slot integrity、section layout、asset manifest integrity 和 visual review 多层质量 gate
+
+典型工作流：
+- 先根据正式程度、图表复杂度和验证要求选择 `lightweight` 或 `refined`
+- 初始化干净 workspace
+- 锁定语义 Markdown 和 active `style_profile`
+- 在 build 前执行源语义 lint
+- 生成 `.docx`，导出 preview evidence，并在需要时执行 QA
+- 最后补 visual review 记录与交付证据
+
+主展示 demo：
+- `demos/word-lightweight-industrial-operations-brief/`
+- `demos/word-refined-industrial-service-transformation/`
+
+关键输出：
+- `demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx`
+- `demos/word-lightweight-industrial-operations-brief/out/preview/industrial_operations_brief.pdf`
+- `demos/word-refined-industrial-service-transformation/build/docx/industrial_service_transformation.docx`
+- `demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md`
 
 关键文档：
 - `word-polished-doc-collab/SKILL.md`
@@ -95,6 +116,8 @@
 - `word-polished-doc-collab/references/doc_workflow.md`
 - `word-polished-doc-collab/references/typography_profiles.md`
 - `word-polished-doc-collab/references/local_pipeline_case_study.md`
+
+[![Word 精细咨询报告 demo 跨栏页](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
 
 ### `web-demo-video-synthesis`
 
@@ -197,12 +220,49 @@ python ppt-polished-deck-collab/scripts/check_pptx_render_review.py \
 
 ### `word-polished-doc-collab`
 
-这个 skill 当前以 **workflow + references** 为主，宿主项目可以按自己的实现提供脚本。一个已经被验证过的宿主命名方式是：
+环境检查：
 
 ```bash
-python scripts/doc_pipeline.py docx-to-md
-python scripts/doc_pipeline.py md-to-docx
-python scripts/doc_pipeline.py rebuild-all
+python word-polished-doc-collab/scripts/check_word_environment.py
+```
+
+构建轻量主展示 demo：
+
+```bash
+python word-polished-doc-collab/scripts/build_docx.py \
+  --markdown demos/word-lightweight-industrial-operations-brief/doc.md \
+  --output demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx \
+  --style-profile cn_song_times \
+  --json-out demos/word-lightweight-industrial-operations-brief/out/build_report.json
+```
+
+导出轻量 preview bundle：
+
+```bash
+python word-polished-doc-collab/scripts/export_docx_preview.py \
+  --docx demos/word-lightweight-industrial-operations-brief/out/industrial_operations_brief.docx \
+  --preview-dir demos/word-lightweight-industrial-operations-brief/out/preview \
+  --json-out demos/word-lightweight-industrial-operations-brief/out/preview_report.json
+```
+
+跑通精细 demo 的完整链路：
+
+```bash
+python word-polished-doc-collab/scripts/lint_doc_markdown.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json
+
+python word-polished-doc-collab/scripts/build_docx.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/build_report.json
+
+python word-polished-doc-collab/scripts/export_docx_preview.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/preview_report.json
+
+python word-polished-doc-collab/scripts/run_docx_qa.py \
+  --meta demos/word-refined-industrial-service-transformation/markdown/industrial_service_transformation/meta.json \
+  --json-out demos/word-refined-industrial-service-transformation/temp/qa/qa_report.json \
+  --md-out demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md
 ```
 
 建议先读：
@@ -243,6 +303,8 @@ flowchart LR
 ## Demos
 
 - 正式 polished deck demo：`demos/standard-wars-executive-deck/`
+- 正式 Word 轻量 demo：`demos/word-lightweight-industrial-operations-brief/`
+- 正式 Word 精细 demo：`demos/word-refined-industrial-service-transformation/`
 - 正式 web demo synthesis demo：`demos/web-demo-video-synthesis-financial-agent/`
 - 归档复杂图 demo：`old/demos/ppt-complex-diagram-collab-stock-architecture/`
 - 归档 polished deck demo：`old/demos/ppt-polished-deck-collab-ai-market-intelligence/`
