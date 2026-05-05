@@ -9,6 +9,7 @@
 | `ppt-polished-deck-collab` | Editable executive decks, strategy narratives, technical explainers, research talks | 12-slide deck with native charts, connector diagrams, preview export, and validation evidence |
 | `word-polished-doc-collab` | Formal reports, board attachments, research appendices, policy docs, consulting-style Word deliverables | Lightweight Chinese report plus refined English consulting report with preview and QA bundle |
 | `web-demo-video-synthesis` | Product walkthroughs, narrated web demos, short-form explainers, publishable demo videos | End-to-end webpage, voiceover, subtitles, screen recording, and final MP4 pipeline |
+| `xhs-markdown-card-collab` | Publishable Xiaohongshu image-card posts from Markdown, research/job posts, structured note-style social content | Demo bundles with PNG cards, preview HTML, metadata JSON, and theme variation under a locked typography contract |
 
 `presentation-skills` is an open-source repository of high-quality, commercial-grade presentation tools for agent and assistant environments. The goal is reusable workflows that consistently produce polished, editable, validated deliverables close to real business delivery standards.
 
@@ -28,6 +29,8 @@ These skills were not produced in one pass. They were iterated through many real
 - `2026-04-22` `ppt-polished-deck-collab` also tightened its template-first workflow, so reference template audit, editable deck build, validation, preview export, and final review happen in a fixed order.
 - `2026-04-29` Added `word-polished-doc-collab`, which turns Markdown, DOCX, and Python-generated document assets into a dedicated Word workflow with explicit Chinese-English font profiles, heading scale, caption placement, and quality gates.
 - `2026-04-30` Registered two polished `word-polished-doc-collab` demos under `demos/`: a rich lightweight Chinese formal-report sample and a refined English consulting-report sample with full preview and QA evidence.
+- `2026-05-04` Added `xhs-markdown-card-collab`, which turns Markdown into publishable Xiaohongshu image cards through explicit cover front matter, browser-based pagination, locked typography contracts, and style-direction guidance that avoids repetitive “AI card” convergence.
+- `2026-05-05` Upgraded the XHS fictional demo set from source-only examples into actual exported demo bundles under `demos/`, each with rendered PNG cards, preview HTML, metadata JSON, and a documented theme assignment.
 
 ## What This Repo Provides
 
@@ -48,6 +51,12 @@ It is designed for contracts, policies, explanatory notes, research appendices, 
 `web-demo-video-synthesis` produces narrated, subtitled, publishable videos in a highly automated way. It can turn articles, posts, product walkthroughs, web demos, and technical explanations into videos suitable for platforms such as TikTok, Xiaohongshu, and Bilibili.
 
 It is designed for technical introductions, business demos, product explainers, marketing-style walkthroughs, and other short-form or medium-form presentation videos where reproducibility and iteration speed matter.
+
+### `xhs-markdown-card-collab`
+
+`xhs-markdown-card-collab` turns Markdown or lightly structured text into publishable Xiaohongshu image-card posts. It focuses on explicit cover metadata, stable Chinese typography, browser-based pagination, visual QA, and style variation without re-breaking proven type-size ranges.
+
+It is designed for job posts, lab recruiting posts, research-note threads, structured commentary cards, product explainers, and other social content where the output must still read cleanly on a phone rather than merely “fit into a PNG”.
 
 ## Skill Details
 
@@ -159,11 +168,30 @@ Featured demo:
 Public demo video:
 - Bilibili: https://www.bilibili.com/video/BV1j6NwzaEDZ/
 
+### `xhs-markdown-card-collab`
+
+This is the repository’s Xiaohongshu image-card workflow skill. It treats content cleanup, cover planning, typography control, browser pagination, and image review as one workflow instead of as separate ad hoc styling steps.
+
+Core capabilities:
+- Explicit YAML front matter for cover title, role line, badges, and highlights
+- Markdown cleanup that prefers semantic headings, standard lists, and light emphasis over rewriting the source
+- Browser-based pagination for Chinese text, lists, and mixed English strings
+- Locked typography guidance with validated size bands for cover, body, spacing, and frame width
+- Style-direction guidance to vary tone, layout, and theme without collapsing into repetitive AI-looking cards
+- Visual QA rules for cover density, orphan headings, over-wide borders, empty pages, and mobile readability
+
+Key docs:
+- `xhs-markdown-card-collab/SKILL.md`
+- `xhs-markdown-card-collab/references/workflow.md`
+- `xhs-markdown-card-collab/references/typography_lock.md`
+- `xhs-markdown-card-collab/references/style_directions.md`
+
 ## Repository Layout
 
 - `ppt-polished-deck-collab/`: active polished-deck skill
 - `word-polished-doc-collab/`: active Word-document collaboration skill
 - `web-demo-video-synthesis/`: active web-demo-to-video skill
+- `xhs-markdown-card-collab/`: active Xiaohongshu Markdown-card skill
 - `demos/`: registered demo workspaces
 - `old/`: archived skills and historical demos
 - `assets/`: root-level preview assets used by the repository README
@@ -174,5 +202,18 @@ Public demo video:
 - Registered Word lightweight demo: `demos/word-lightweight-industrial-operations-brief/`
 - Registered Word refined demo: `demos/word-refined-industrial-service-transformation/`
 - Registered web demo synthesis demo: `demos/web-demo-video-synthesis-financial-agent/`
+- Registered XHS recruiting-style demo: `demos/xhs-fictional-north-quay-lab-recruiting/`
+- Registered XHS research-note demo: `demos/xhs-fictional-grid-storage-research-note/`
+- Registered XHS product-explainer demo: `demos/xhs-fictional-orbitops-product-explainer/`
+- Registered XHS weekly-brief demo: `demos/xhs-fictional-ridership-weekly-brief/`
 - Archived complex diagram demo: `old/demos/ppt-complex-diagram-collab-stock-architecture/`
 - Archived polished deck demo: `old/demos/ppt-polished-deck-collab-ai-market-intelligence/`
+
+## XHS Demo Set
+
+The `xhs-markdown-card-collab` skill now includes four fully fictional demos under `demos/` with actual exported deliverables, so the workflow can be understood without relying on any real recruiting, research, or product copy:
+
+- `demos/xhs-fictional-north-quay-lab-recruiting/`: institution recruiting / lab intake style, exported with `lumen`
+- `demos/xhs-fictional-grid-storage-research-note/`: research-summary / framework-note style, exported with `ink`
+- `demos/xhs-fictional-orbitops-product-explainer/`: product-explainer / capability-card style, exported with `clay`
+- `demos/xhs-fictional-ridership-weekly-brief/`: weekly-brief / data-quick-take style, exported with `ink`
