@@ -22,12 +22,13 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 1. **先锁 deck 任务与工作空间**
 - 明确目标读者、使用场景、页面数量级、交付时间、是否有模板/品牌约束。
+- 如果没有参考 `pptx` 但有明确风格参考，先锁 `typography_profile` 与 `domain_profile`，并写清允许借鉴的视觉范式、禁止使用的品牌元素、免责声明和风险边界。
 - 如果用户没有现成 workspace，先按 `references/deck_workflow.md` 建立 `brief.md`、`deck_narrative.md`、`assets/`、`data/`、`build/`、`validation/`、`final/` 结构。
 
 2. **有参考 `pptx` 时先做模板取证**
 - 先导出模板预览图，识别封面页族、正式页族、章节页族和末页页族。
 - 再读 `slide layout` 与 `slide master`，确认哪些元素属于母版、哪些属于 layout、哪些只是页面内容。
-- 读取模板里的真实文字与字号层级，至少覆盖封面标题、正式页标题、正文、图注、页脚和页码。正文 `14pt` 只是无模板约束时的回退基线。
+- 读取模板里的真实文字与字号层级，至少覆盖封面标题、正式页标题、正文、图注、页脚和页码。中文正文小四约 `12pt` 是无模板约束时的回退基线，英文或现代商务风格可按 style profile 使用更大的正文主档位。
 - 用最小 PoC 验证继承关系，例如新建一张 `Blank` layout 页，只放一段普通文本，确认 logo、角标、页码是否自动出现。
 - 不要把“照着模板做”理解成配色模仿。默认应理解为继承同一套页面系统。
 
@@ -35,6 +36,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 - 先写 `brief.md`，再在 `deck_narrative.md` 里收敛整套叙事、每页 intent 与页面想法，然后由脚本派生 `slide_specs.yaml`。
 - 如果存在强模板，叙事和 `slide_specs` 要围绕模板页族来写，而不是先写一套与模板脱钩的页面想象。
 - 默认 typography policy 需要显式区分标题类文本与正文类文本：标题类默认 `1.0` 倍行距并保留 `0.5` 行段前 / 段后，正文类默认 `1.5` 倍行距。
+- 中文任务在没有模板或品牌约束时，默认采用中文宋体、英文 Times New Roman；正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、`1.5` 倍行距；表格五号约 `10.5pt`、单倍行距、段前段后 `0`、无特殊缩进、上下居中、表头居中、index / 类目列与文本列居左、财务数值列靠右。
+- `typography_profile` 管字体、字号、段落和表格基础排版；`domain_profile` 管研报、答辩、发布会等题材范式，不要把某个 domain 的配色和版心规则写成所有中文 deck 的默认。
 - 在页面规划阶段，应主动告诉人类当前可用的增强资产路线，包括 `icon system`、原生 `Office chart`、`Python figure` 和 diagram 资产。如果人类对图表风格、可编辑性、图标节奏或研究图路线有偏好，应在这一阶段就明确。
 - 每页先定义 `reader question`、`page task`、`reading mode`、`archetype`、`asset mode`、`validation mode`。
 - 页面原型、图表 / diagram / 语言选择先看 `references/design_support.md`。
@@ -62,14 +65,14 @@ description: Use when collaborating with humans to produce polished, editable, h
 - 所有 deck 都必须导出逐页预览图。
 - diagram 页按需要执行 connector 校验。
 - 强模板页要额外检查母版元素是否稳定继承、页面层是否出现重复 logo / 页脚 / 装饰。
-- 视觉复核顺序固定为 `fatal -> warning -> preference`。
 
 8. **强制跑 preview 后质量 gate**
 - 预览图导出后，应按需要运行 `render_review`，处理结构层看不到的边界触墨和扁平化图像内部风险。
 - `render_review` 不是对 `structure_precheck` 的重复，而是成图层补位。
+- `render_review` 之后必须看逐页 preview 或 contact sheet 做人工 visual review，复核顺序固定为 `fatal -> warning -> preference`。
 
 9. **完成初稿后给人类一个修订 checkpoint**
-- 当 editable `pptx`、预览图和基础 validation 都已经齐全时，应把它明确为“可审阅的初稿”，而不是默认继续无限打磨。
+- 当 editable `pptx`、预览图、基础 validation 和 visual review 结论都已经齐全时，应把它明确为“可审阅的初稿”，而不是默认继续无限打磨。
 - 这时应主动告诉人类：如果需要进入更细的页面级修订，例如逐页措辞微调、视觉节奏重排、icon 补强、chart 路线切换、研究图重绘或模板细节对齐，可以继续做，但这一步通常会显著增加 token 消耗。
 - 如果人类暂时不需要详细修订，就直接交付当前初稿 bundle；如果人类要继续修订，再围绕具体页面和问题进入下一轮。
 

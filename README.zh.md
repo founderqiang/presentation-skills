@@ -6,7 +6,7 @@
 
 | Skill | 适合场景 | Demo 亮点 |
 | --- | --- | --- |
-| `ppt-polished-deck-collab` | 可编辑 executive deck、策略叙事、技术说明、研究汇报 | 12 页 deck，包含 Office 原生图表、connector diagram、preview export 和 validation evidence |
+| `ppt-polished-deck-collab` | 可编辑 executive deck、策略叙事、技术说明、研究汇报、中文正式研报 | 11 页 Apple FY2025 财报点评 deck，包含 Office 原生图表、原生表格、preview export 和 validation evidence |
 | `word-polished-doc-collab` | 正式报告、董事会附件、研究附录、制度文档、咨询风格 Word 交付 | 中文轻量正式报告 + 英文精细咨询报告，包含 preview 和 QA bundle |
 | `web-demo-video-synthesis` | 产品 walkthrough、网页 demo、带旁白解释视频、可发布短视频 | 网页、配音、字幕、录屏和最终 MP4 的端到端流水线 |
 | `xhs-markdown-card-collab` | 从 Markdown 生成可发布的小红书图文卡片、研究/招聘帖子、结构化笔记型内容 | 导出的虚构 demo 成品，包含 PNG 卡片、预览 HTML、metadata JSON，以及在锁定字号合同下的主题变化示例 |
@@ -17,14 +17,26 @@
 
 ## Demo Gallery
 
-[![Standard Wars Executive Deck cover](assets/standard-wars-executive-deck_cover.png)](demos/standard-wars-executive-deck/README.md)
+| PowerPoint 研报型 demo | PowerPoint 策略叙事型 demo |
+| --- | --- |
+| [![Apple FY2025 财报点评 contact sheet](assets/apple-financial-report-review_contact-sheet.png)](demos/apple-financial-report-review/README.md) | [![标准战争 executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md) |
+| 当前主展示 `ppt-polished-deck-collab` demo：正式财报点评 deck，包含原生图表、原生表格和验证证据链。 | 归档但仍然保留展示价值的 `ppt-polished-deck-collab` demo：策略叙事 deck，包含结构图、对比矩阵和管理层问题清单。 |
 
 [![Word 精细咨询报告 demo 跨栏页](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
 
 [![Web Demo Video Synthesis preview](demos/web-demo-video-synthesis-financial-agent/assets/preview_en.png)](demos/web-demo-video-synthesis-financial-agent/README.md)
 
+## Prompt 示例
+
+![Apple 财报点评 deck 的 prompt 示例](assets/ppt-prompt-example.jpg)
+
+这个 prompt 示例明确了 workspace 位置、数据来源、参考风格、免责声明和 `ppt-polished-deck-collab` 技能路线。Apple demo 展示的是从这类任务输入到可复跑研报工作区的完整产物，而不是一次性生成的单个 PPT 文件。
+
 ## 最近更新
 
+- `2026-05-10` 在 README 中保留归档的 Standard Wars executive deck 作为第二个 `ppt-polished-deck-collab` 展示样例，并新增 contact sheet 资产链接到归档工作区。
+- `2026-05-10` 将 `ppt-polished-deck-collab` 主展示 demo 替换为 Apple FY2025 财报点评 deck，覆盖 SEC 数据底稿、可编辑 Office 图表、原生表格、预览导出和 validation reports。
+- `2026-05-10` 为 `ppt-polished-deck-collab` 增加中文正式材料的默认排版规则：中文宋体、英文 Times New Roman、正文小四、首行缩进、段前段后 `0.5` 行、正文 `1.5` 倍行距，以及财务表格对齐规则。
 - `2026-04-22` `ppt-polished-deck-collab` 现在支持自动质量 gate，可以检查移动端打开风险、文本出格、对象遮挡和预览层排版失误，从而显著减少交付前的人类返工。
 - `2026-04-22` `ppt-polished-deck-collab` 进一步收紧了 template-first 动线，现在模板审计、editable deck 构建、验证、预览导出和最终复核会按固定顺序执行。
 - `2026-04-29` 新增 `word-polished-doc-collab`，把 Markdown、DOCX 与 Python 文档资产的往返协作抽象成独立 skill，并明确了中文宋体 / 楷体 / 黑体与英文 Times / Arial 的字体 profile、标题梯度、表题图题表注位置与质量 gate。
@@ -89,15 +101,21 @@
 - 执行 render review
 - 最后做 visual review 和 final handoff
 
-主展示 demo：
-- `demos/standard-wars-executive-deck/`
+展示样例：
+- 当前研报型 demo：`demos/apple-financial-report-review/`
+- 归档策略叙事型 demo：`old/demos/standard-wars-executive-deck/`
 
 关键输出：
-- `demos/standard-wars-executive-deck/final/standard_wars_executive_deck.pptx`
-- `demos/standard-wars-executive-deck/validation/structure/connector_report.json`
-- `demos/standard-wars-executive-deck/build/rendered/ppt_preview/`
+- `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pptx`
+- `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pdf`
+- `demos/apple-financial-report-review/build/rendered/contact_sheet.png`
+- `demos/apple-financial-report-review/validation/package_preflight/history/`
+- `demos/apple-financial-report-review/validation/structure_precheck/history/`
+- `demos/apple-financial-report-review/validation/render_review/history/`
 
-[![Standard Wars Executive Deck networking page](assets/standard-wars-executive-deck_networking.png)](demos/standard-wars-executive-deck/README.md)
+[![Apple FY2025 收入与净利润页](assets/apple-financial-report-review_revenue-page.png)](demos/apple-financial-report-review/README.md)
+
+[![标准战争 executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md)
 
 ### `word-polished-doc-collab`
 
@@ -199,7 +217,7 @@
 
 ## Demos
 
-- 正式 polished deck demo：`demos/standard-wars-executive-deck/`
+- 正式 polished deck demo：`demos/apple-financial-report-review/`
 - 正式 Word 轻量 demo：`demos/word-lightweight-industrial-operations-brief/`
 - 正式 Word 精细 demo：`demos/word-refined-industrial-service-transformation/`
 - 正式 web demo synthesis demo：`demos/web-demo-video-synthesis-financial-agent/`
@@ -209,6 +227,7 @@
 - 正式 XHS 周报快评型 demo：`demos/xhs-fictional-ridership-weekly-brief/`
 - 归档复杂图 demo：`old/demos/ppt-complex-diagram-collab-stock-architecture/`
 - 归档 polished deck demo：`old/demos/ppt-polished-deck-collab-ai-market-intelligence/`
+- 归档 polished deck demo：`old/demos/standard-wars-executive-deck/`
 
 ## XHS Demo 组
 

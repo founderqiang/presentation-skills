@@ -40,7 +40,7 @@
 
 **原生 Office chart 也必须服从 deck 字体策略。** 不要让普通文本是一套字体，chart title、轴标签、图例和数据标签又是另一套字体。图表仍然是页面的一部分，而不是外来对象。
 
-**无品牌约束时的默认策略是。** 中文使用黑体，英文使用 Arial。对 mixed-language deck，应至少保证 category / value axis、legend、data labels 和 chart title 遵守同一策略。
+**无品牌约束时的中文默认策略是。** 中文使用宋体，英文使用 Times New Roman。对 mixed-language deck，应至少保证 category / value axis、legend、data labels 和 chart title 遵守同一策略。现代商务、产品或强模板任务可以通过 style profile 切换到中文黑体、英文 Arial。
 
 **只写 `font.name` 往往不够。** 某些实现路径只能稳定写入 latin 字体槽位。遇到中文仍然漂移的情况，应在最终 `pptx` 上补做字体槽位修正，把 East Asian 字体也显式写进去，而不是放任 Office 或系统自行猜测。
 
@@ -69,6 +69,8 @@
 - “Q3 的增长主要来自两条产品线”
 
 **注释应只写图上最关键的两三处。** 不要把图例、标签和正文讲成三遍同样的话。
+
+**正式研报 / 财报点评图表应补齐读图结构。** 这类页面默认需要图号、发现式图题、单位说明、来源注和必要的数据表。图表下方数据表按中文 table policy 处理：五号约 `10.5pt`、单倍行距、上下居中、表头居中、文本列居左、财务数值列靠右。
 
 ## 验证要求
 

@@ -42,7 +42,7 @@
 | `diagram-visual` | 纯视觉流程图、层次图、研究示意图 | `python-pptx`，可选 Mermaid 草稿 | 高 | `available` | `diagram_visual` |
 | `office-chart-native` | PowerPoint / Office 原生可编辑图表 | `python-pptx chart` API | 高 | `available` | `chart_editable` |
 | `python-figure-image` | 高复杂度图、研究图、热力图、排序图 | `matplotlib` / `seaborn` / `pandas` | 低到中 | `available` | `chart_image` |
-| `table-native` | 原生数据表、明细页、附录表 | `python-pptx` table | 中 | `partial` | `preview_only` |
+| `table-native` | 原生数据表、明细页、附录表 | `python-pptx` table | 中 | `available` | `preview_only` + `visual_review` |
 | `image-hero` | 背景图、产品图、截图、照片 | 图片文件 + `python-pptx` | 低 | `available` | `preview_only` |
 | `icon-accent` | 标题旁图标、卡片锚点、导航增强 | `icon_registry.py` + `PyMuPDF` | 低 | `available` | `preview_only` |
 
@@ -89,6 +89,8 @@
 
 **字体策略需要端到端落地。** 当 deck 存在中英混排，且 `python-pptx` 或底层 helper 只能部分写入字体信息时，可以在最终 `pptx` 上补做 XML 级字体槽位修正，统一 `latin` 与 `ea` 字体。不要把“Office 自己会选字体”当成稳定方案。
 
+**表格语义需要显式传入。** `table-native` 页应在 build 脚本或页面 spec 中声明 `numeric_columns`、`index_columns`、`text_columns` 或等价字段。表头默认居中，index / 类目列和文本列居左，财务数值列靠右，所有单元格上下居中。不要只靠“第几列以后都是数字”的隐式推断，除非该表非常小且已在代码里写清楚例外。
+
 ## 技术选择查表
 
 | 页面特征 | 推荐技术模块 | 原因 | 不推荐路线 |
@@ -97,6 +99,7 @@
 | 管理层流程解释页 | `diagram-visual` | 阅读负担低，结构够清晰 | 默认上 connector |
 | KPI 趋势页要周周改数 | `office-chart-native` | 数据和图例可继续编辑 | 把折线图烤成图片 |
 | 研究热力图、密集散点、复杂排序图 | `python-figure-image` | 表达能力强 | 强行用 Office chart 拼凑 |
+| 明细数据、财务表、附录表 | `table-native` | 行列语义清晰且可继续编辑 | 用 shape grid 冒充数据表 |
 | 摘要页、结论页、章节页 | `text-layout-native` + 可选 `icon-accent` | 以语言和层次为主 | 先找图再拼页 |
 | 截图、产品界面、品牌大图 | `image-hero` | 图片本身就是证据 | 用大量形状手工重画 |
 
@@ -114,6 +117,7 @@
 | `diagram-visual` | 逐页预览图 + 主路径人工复核 |
 | `office-chart-native` | 逐页预览图 + 图表可编辑性确认 |
 | `python-figure-image` | 逐页预览图 + 比例 / 清晰度检查 |
+| `table-native` | 逐页预览图 + 表格列语义、上下居中、表头居中、文本 / 数值对齐人工复核 |
 | `icon-accent` | 逐页预览图 + 颜色 / 对比度检查 |
 
 ## 与旧复杂图 skill 的衔接

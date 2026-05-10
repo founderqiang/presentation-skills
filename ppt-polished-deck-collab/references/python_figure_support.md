@@ -67,7 +67,7 @@
 
 **Python figure 也必须服从 deck 的字体策略。** 不要接受“普通文本和 chart 都统一了，但 figure 里又换了一套字体”的状态。
 
-**无品牌约束时，默认策略仍然是中文黑体、英文 Arial。** 如果当前 Python plotting 栈没有正确加载中文字体，应显式配置 CJK 字体，而不是默默回退到不支持中文 glyph 的默认字体。
+**无品牌约束时，中文任务默认使用宋体与 Times New Roman。** 如果当前 Python plotting 栈没有正确加载中文字体，应显式配置 CJK 字体，或按 style profile 切换到可用的中文黑体 / 英文 Arial 组合，而不是默默回退到不支持中文 glyph 的默认字体。
 
 **glyph warning 应视为失败信号。** 当 `matplotlib` / `seaborn` 因字体缺失而报出中文 glyph warning 时，不应视为无关紧要。应通过显式字体配置，或改成英文图内标签 + 中文 slide caption 的方式消除 warning。
 

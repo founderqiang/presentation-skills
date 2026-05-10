@@ -10,7 +10,7 @@
 
 ## 在主链路中的位置
 
-**推荐主链路。** `brief -> template audit(if needed) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> final`
+**推荐主链路。** `brief -> style/domain profile lock -> template audit(if pptx) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review/contact_sheet -> first_draft_checkpoint -> final`
 
 **执行顺序必须固定。**
 - 先跑 `package_preflight`，确认 deck 文件本身没有内部不一致和移动端高风险信号。
@@ -18,7 +18,7 @@
 - 再跑 `connector`、`chart_editable` 等模块级 validation。
 - 再做逐页 preview。
 - 预览图落盘后跑 `render_review`，补足结构层看不到的边界触墨和扁平化图像风险。
-- 最后才做人工 visual review。
+- 最后看逐页 preview 或 contact sheet，做人工 visual review，再进入 first draft checkpoint 或 final。
 
 ## Validation Bundle
 
@@ -44,6 +44,8 @@ validation/
 **这三个 bundle 都属于 deck 级证据。** 它们不是某一页的 `validation_mode` 替代品，而是 final delivery 前的统一质量 gate。
 
 **推荐优先使用 `--workspace-dir` 自动归档。** 这样每次执行都会按标准目录写入带时间戳的 `json + md` 报告，后续更适合回溯、对比和复盘。
+
+**visual review 也应留下证据。** 推荐在 `validation/visual/review_log.md` 或 final handoff 中记录最新 preview 路径、contact sheet 路径、fatal / warning / preference 结论，以及是否存在人工接受的 residual risk。
 
 ## 问题类型分层
 
@@ -140,6 +142,8 @@ python scripts/check_pptx_render_review.py \
 **deck 级 gate 分成两段。** `package_preflight` 与 `structure_precheck` 在 `build` 后立即执行；`render_review` 在 preview 导出后执行。
 
 **模块级 validation 不能替代 deck 级 gate。** connector 通过不代表文件能在移动端打开；逐页 preview 正常也不代表 `docProps` 和 `sectionLst` 一致；结构预检通过也不代表图片内部标签没有互相打架。
+
+**typography 与 table profile 需要进入 visual review。** 中文正式材料的宋体 / Times 字体槽、正文段落、表格上下居中、表头居中和财务数值右对齐可以作为后续结构检查增强，但当前 gate 仍以 fail-fast 为主。研报质感、版心纪律、图号单位和免责声明位置应在 preview contact sheet 与人工 visual review 中确认，不能仅凭 `render_review` 通过就进入 final。
 
 ## 当前脚本
 

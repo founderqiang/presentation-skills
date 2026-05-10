@@ -19,13 +19,14 @@
 
 ## 主链路
 
-**默认主链路固定为：** `brief -> template audit(if needed) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> first_draft_checkpoint -> detailed_revision(optional) -> review -> final`。
+**默认主链路固定为：** `brief -> style/domain profile lock -> template audit(if pptx) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> first_draft_checkpoint -> detailed_revision(optional) -> final`。
 
 ```mermaid
 flowchart LR
-  A[brief.md] --> B[deck_narrative.md]
+  A[brief.md] --> P[Style / Domain Profile Lock]
   A --> T[Template Audit]
-  T --> B
+  T --> P
+  P --> B[deck_narrative.md]
   B --> C[Derived slide_specs.yaml]
   C --> D[Assets]
   D --> E[Editable PPT Build]
@@ -34,16 +35,18 @@ flowchart LR
   G --> H[Module Validation]
   H --> I[Preview Export]
   I --> J[Render Review]
-  J --> K[First Draft Checkpoint]
+  J --> V[Visual Review / Contact Sheet]
+  V --> K[First Draft Checkpoint]
   K --> L[Final Delivery]
   K --> M[Detailed Revision Optional]
-  M --> N[Visual Review]
-  N --> L[Final Delivery]
+  M --> E
 ```
 
 **先锁两份主文档，再 build。** 没有 `brief.md` 和 `deck_narrative.md` 时，不应直接开始生成 PPT。否则全局约束、页面意图与文案想法都会漂。
 
 **有参考 `pptx` 时，模板取证是前置动作。** 先判断页族、母版、layout 和字号系统，再写 narrative。否则很容易把“模板继承”做成“风格模仿”。
+
+**无模板但有风格参考时，先锁 profile。** 如果用户没有给参考 `pptx`，但明确要求正式研报、仿券商研报、产品发布会、学术答辩或某类行业范式，应在 `brief.md` 中先固化 `typography_profile`、`domain_profile`、允许借鉴的视觉范式、禁止使用的品牌元素、免责声明和风险边界，再写 narrative。
 
 **`slide_specs.yaml` 默认应派生，不应双写。** 机器执行仍然需要结构化字段，但默认应从 `deck_narrative.md` 生成，而不是要求人类长期维护第三份并行文档。
 
@@ -53,7 +56,9 @@ flowchart LR
 
 **preview 之后还要补一次成图级 gate。** `render_review` 专门处理结构层看不到的边界触墨和扁平化图像风险，不要把逐页 preview 本身误当成结构化检查。
 
-**初稿完成后要显式停一次。** 当 editable `pptx`、预览图和基础 validation 齐全时，应把它定义为“可审阅初稿”，并主动问人类是否要进入更细的详细修订。详细修订通常涉及逐页微调、图表路线切换、icon 节奏增强、模板细节对齐和措辞重写，token 消耗会明显更高。
+**final 前必须做 visual review。** `render_review` 通过只说明成图层没有触发自动阻断；它不证明页面已经像目标文体、版心已经稳定、表格语义对齐已经自然。final 前必须看逐页 preview 或 contact sheet，并按 `fatal -> warning -> preference` 记录人工 visual review 结论。
+
+**初稿完成后要显式停一次。** 当 editable `pptx`、预览图、基础 validation 和 visual review 结论齐全时，应把它定义为“可审阅初稿”，并主动问人类是否要进入更细的详细修订。详细修订通常涉及逐页微调、图表路线切换、icon 节奏增强、模板细节对齐和措辞重写，token 消耗会明显更高。
 
 **先结构验证，再视觉微调。** 如果某页同时有 connector 问题和版式问题，先修结构，再修样式。
 
@@ -88,7 +93,11 @@ deck_workspace/
 
 **`build/generated/slide_specs.yaml` 放派生结构化输入。** 它是机器友好的 build 入口，但默认不应手写维护，而应从 `deck_narrative.md` 自动派生。
 
-**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`title_line_spacing_multiple`、`body_line_spacing_multiple`、`title_paragraph_space_lines`、`latin_font_name`、`east_asia_font_name` 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，可默认采用中文黑体、英文 Arial、正文 `14pt`、标题 `1.0` 倍行距、正文 `1.5` 倍行距、标题段前段后 `0.5` 行的策略。
+**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `typography_profile`、`domain_profile`、`hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`title_line_spacing_multiple`、`body_line_spacing_multiple`、`title_paragraph_space_lines`、`body_first_line_indent_chars`、`body_paragraph_space_lines`、`latin_font_name`、`east_asia_font_name`、表格 token 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，中文任务默认采用中文宋体、英文 Times New Roman、正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、正文 `1.5` 倍行距、标题 `1.0` 倍行距的策略。
+
+**`typography_profile` 和 `domain_profile` 各司其职。** `typography_profile` 管字体、字号、段落和表格基础排版，例如 `zh_formal`；`domain_profile` 管题材文体与页面范式，例如 `financial_report_review` 需要图号、单位、来源注、免责声明、低饱和配色和稳定页眉页脚。不要把研报视觉纪律写进所有中文 deck 的 typography 默认。
+
+**表格 token 应显式写入 theme。** 中文任务默认表格 token 包括 `table_font_pt: 10.5`、`table_line_spacing_multiple: 1.0`、`table_paragraph_space_lines: 0`、`table_first_line_indent_chars: 0`、`table_vertical_anchor: middle`、`table_header_alignment: center`、`table_index_alignment: left`、`table_text_alignment: left`、`table_numeric_alignment: right`。财务报表、经营指标和百分比列应显式进入 `numeric_columns` 或等价字段。
 
 **`assets/` 放源资产。** diagram、chart、icon、image、table 是平级类型。不要让 Mermaid 变成一切页面的默认起点。
 
@@ -101,7 +110,7 @@ deck_workspace/
 **`validation/` 还应承载 deck 级 quality gates。** 至少建议固定 `package_preflight/` 与 `structure_precheck/` 两个目录，让文件级问题和页面结构问题分开沉淀，不要混成一份大杂烩报告。
 **preview 导出后还应有 `render_review/`。** 它服务成图层问题，不应再塞回 `structure_precheck/`。
 
-**`final/` 放交付物。** 给用户和评审会看的最终 deck 与 handoff 说明只放在这里。
+**`final/` 放交付物。** 给用户和评审会看的最终 deck 与 handoff 说明只放在这里。final 前应能指向最新 preview、三段质量 gate 和 visual review 结论。
 
 ## Deck 级 Quality Gates
 
@@ -194,7 +203,11 @@ python scripts/audit_pptx_template.py \
 
 ## 风格与边界
 - 风格参考：
+- typography_profile：
+- domain_profile：
 - 允许使用的素材：
+- 禁止使用的品牌元素：
+- 免责声明 / 风险边界：
 - 不允许发生的错误：
 ```
 
@@ -208,19 +221,32 @@ deck:
   scenario: "<primary scenario>"
   objective: "<primary decision or action>"
   theme_tokens:
+    typography_profile: "zh_formal"
+    domain_profile: null
     hero_title_font_pt: 24
     section_title_font_pt: 20
     page_title_font_pt: 24
-    subtitle_font_pt: 18
-    minor_title_font_pt: 16
-    body_font_pt: 14
-    label_font_pt: 12
-    caption_font_pt: 12
+    subtitle_font_pt: 16
+    minor_title_font_pt: 14
+    body_font_pt: 12
+    label_font_pt: 10.5
+    caption_font_pt: 9
     title_line_spacing_multiple: 1.0
     body_line_spacing_multiple: 1.5
     title_paragraph_space_lines: 0.5
-    latin_font_name: "Arial"
-    east_asia_font_name: "黑体"
+    body_first_line_indent_chars: 2
+    body_paragraph_space_lines: 0.5
+    latin_font_name: "Times New Roman"
+    east_asia_font_name: "宋体"
+    table_font_pt: 10.5
+    table_line_spacing_multiple: 1.0
+    table_paragraph_space_lines: 0
+    table_first_line_indent_chars: 0
+    table_vertical_anchor: "middle"
+    table_header_alignment: "center"
+    table_index_alignment: "left"
+    table_text_alignment: "left"
+    table_numeric_alignment: "right"
     left_margin_in: 0.78
     right_margin_in: 15.22
 ---
@@ -299,8 +325,10 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 **`template_locked`。** 强模板页。要求确认关键品牌元素未漂移，通过预览做高保真复核，并检查页面层没有重复插入母版元素。
 
+**`visual_review`。** 所有 deck 都需要 final 前 visual review。正式中文材料还应检查 typography profile 与 table profile 是否兑现；研报型 deck 还应检查图号、单位、来源注、免责声明、页眉页脚、低饱和配色和版心纪律。
+
 ## 交付底线
 
-**完整交付至少包含六项。** `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、与页面验证模式相匹配的验证结果。
+**完整交付至少包含七项。** `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、与页面验证模式相匹配的验证结果、final 前 visual review 结论。
 
 **每次修改都要有新证据。** 修复后必须能指出新的 `pptx`、新的 preview，或新的结构校验结果。
