@@ -45,7 +45,7 @@ DEFAULT_LATIN_FONT_NAME = "Arial"
 DEFAULT_EAST_ASIA_FONT_NAME = "黑体"
 DEFAULT_SERIF_LATIN_FONT_NAME = "Times New Roman"
 DEFAULT_SERIF_EAST_ASIA_FONT_NAME = "宋体"
-DEFAULT_FONT_NAME = DEFAULT_SERIF_LATIN_FONT_NAME
+DEFAULT_FONT_NAME = DEFAULT_LATIN_FONT_NAME
 DEFAULT_BODY_LINE_SPACING_MULTIPLE = 1.5
 DEFAULT_TITLE_LINE_SPACING_MULTIPLE = 1.0
 DEFAULT_TITLE_PARAGRAPH_SPACE_LINES = 0.5
@@ -54,20 +54,14 @@ DEFAULT_TYPOGRAPHY_TOKENS = {
     "hero_title_font_pt": 24.0,
     "section_title_font_pt": 20.0,
     "page_title_font_pt": 24.0,
-    "subtitle_font_pt": 16.0,
-    "minor_title_font_pt": 14.0,
-    "body_font_pt": 12.0,
-    "label_font_pt": 10.5,
-    "caption_font_pt": 9.0,
+    "subtitle_font_pt": 18.0,
+    "minor_title_font_pt": 16.0,
+    "body_font_pt": 14.0,
+    "label_font_pt": 12.0,
+    "caption_font_pt": 12.0,
     "title_line_spacing_multiple": DEFAULT_TITLE_LINE_SPACING_MULTIPLE,
     "body_line_spacing_multiple": DEFAULT_BODY_LINE_SPACING_MULTIPLE,
     "title_paragraph_space_lines": DEFAULT_TITLE_PARAGRAPH_SPACE_LINES,
-    "latin_font_name": DEFAULT_SERIF_LATIN_FONT_NAME,
-    "east_asia_font_name": DEFAULT_SERIF_EAST_ASIA_FONT_NAME,
-    "table_font_pt": 10.5,
-    "table_line_spacing_multiple": 1.0,
-    "table_paragraph_space_lines": 0.0,
-    "table_first_line_indent_chars": 0.0,
 }
 
 
@@ -101,7 +95,7 @@ def default_palette() -> dict[str, tuple[int, int, int]]:
     }
 
 
-def default_typography_tokens() -> dict[str, float | str]:
+def default_typography_tokens() -> dict[str, float]:
     """返回 deck 默认字号 token。"""
     return dict(DEFAULT_TYPOGRAPHY_TOKENS)
 

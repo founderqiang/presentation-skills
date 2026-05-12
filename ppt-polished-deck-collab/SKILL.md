@@ -8,6 +8,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 ## 概览
 把“讲清楚任务 + 做出高质量页面 + 交付可编辑 PPT + 给出验证证据”作为同一个任务完成。
 默认服务的是 **deck 级任务**，不是单页复杂图，也不是只会套模板。
+这个 skill 的工作方式是轻量的 deck 编译系统：先把用户需求、模板约束、页面叙事和资产需求收敛成可执行合同，再让图表、Python figure、diagram、icon、图片和生图模块按 slot 生产资产，最后组装原生 `pptx` 并验证。
+这个 skill 本身是高质量 PPT 的知识库。agent 必须主动使用里面的规范、经验、脚本和质量 gate；不能聊完需求后凭记忆直接动手，做到一半也不能忘记 deck contract、页面合同、资产 slot、typography / table policy、模板取证和验证链路。
 
 ## 什么时候用
 
@@ -20,82 +22,80 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 按下面顺序执行，避免把 PPT 任务退化成“边画边想”。
 
-1. **先锁 deck 任务与工作空间**
-- 明确目标读者、使用场景、页面数量级、交付时间、是否有模板/品牌约束。
-- 如果没有参考 `pptx` 但有明确风格参考，先锁 `typography_profile` 与 `domain_profile`，并写清允许借鉴的视觉范式、禁止使用的品牌元素、免责声明和风险边界。
-- 如果用户没有现成 workspace，先按 `references/deck_workflow.md` 建立 `brief.md`、`deck_narrative.md`、`assets/`、`data/`、`build/`、`validation/`、`final/` 结构。
+1. **用通俗语言确认需求，不把内部字段抛给用户**
+- 先问清这份 PPT 是发给别人自己看懂，还是主要配合现场讲；有没有必须沿用的模板、旧 PPT 或品牌素材；更像商业汇报、技术说明、研究材料，还是发布会 / 分享型演示；后续是否还会频繁改数据、图表或结构。
+- 内部可以记录 `source_context`、`delivery_context`、`communication_profile`、`visual_profile`、`density_profile`、`editability_profile`，但对用户应使用自然语言确认。
+- 简单任务走轻量路径，不强制完整展开所有合同字段；整套 deck、强模板、多模块资产、正式外发或复杂图表任务才完整使用合同链路。
+- 对于正式 deck、模板约束、多模块资产、强风格设计、复杂图表或外发材料，agent 必须按资源路由主动读取相关 reference，并在 build / validation 前回查对应规范。不要只读 `SKILL.md` 就开始画页面。
 
-2. **有参考 `pptx` 时先做模板取证**
-- 先导出模板预览图，识别封面页族、正式页族、章节页族和末页页族。
-- 再读 `slide layout` 与 `slide master`，确认哪些元素属于母版、哪些属于 layout、哪些只是页面内容。
-- 读取模板里的真实文字与字号层级，至少覆盖封面标题、正式页标题、正文、图注、页脚和页码。中文正文小四约 `12pt` 是无模板约束时的回退基线，英文或现代商务风格可按 style profile 使用更大的正文主档位。
-- 用最小 PoC 验证继承关系，例如新建一张 `Blank` layout 页，只放一段普通文本，确认 logo、角标、页码是否自动出现。
+2. **先锁 source / template，再锁 deck contract**
+- 如果用户给了模板、旧 PPT、品牌素材或风格样张，先判断它是 `template_locked`、`template_guided`、`content_migration`、`brand_assets_only` 还是 `no_template`。
+- `template_locked` 必须先做模板取证：导出预览图，识别封面页族、正式页族、章节页族和末页页族；读取 slide layout / master；确认共享 logo、页脚、页码、装饰元素属于哪一层；读取真实字号系统；用最小 PoC 验证继承关系。
 - 不要把“照着模板做”理解成配色模仿。默认应理解为继承同一套页面系统。
+- 如果没有模板但有风格诉求，先锁 style / domain profile、可借鉴边界、禁止品牌元素、免责声明和风险边界。
 
-3. **先收敛 narrative，再做页面**
-- 先写 `brief.md`，再在 `deck_narrative.md` 里收敛整套叙事、每页 intent 与页面想法，然后由脚本派生 `slide_specs.yaml`。
-- 如果存在强模板，叙事和 `slide_specs` 要围绕模板页族来写，而不是先写一套与模板脱钩的页面想象。
+3. **建立 workspace 与 deck contract**
+- 如果用户没有现成 workspace，先按 `references/workflow/deck_workflow.md` 建立 `brief.md`、`deck_narrative.md`、`assets/`、`data/`、`build/`、`validation/`、`final/` 结构。
+- `deck_contract` 应记录目标读者、使用场景、目标动作、模板约束、是否自解释、业务类型、视觉方向、信息密度、可编辑性要求、默认 typography / table policy 和验证要求。
 - 默认 typography policy 需要显式区分标题类文本与正文类文本：标题类默认 `1.0` 倍行距并保留 `0.5` 行段前 / 段后，正文类默认 `1.5` 倍行距。
 - 中文任务在没有模板或品牌约束时，默认采用中文宋体、英文 Times New Roman；正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、`1.5` 倍行距；表格五号约 `10.5pt`、单倍行距、段前段后 `0`、无特殊缩进、上下居中、表头居中、index / 类目列与文本列居左、财务数值列靠右。
-- `typography_profile` 管字体、字号、段落和表格基础排版；`domain_profile` 管研报、答辩、发布会等题材范式，不要把某个 domain 的配色和版心规则写成所有中文 deck 的默认。
-- 在页面规划阶段，应主动告诉人类当前可用的增强资产路线，包括 `icon system`、原生 `Office chart`、`Python figure` 和 diagram 资产。如果人类对图表风格、可编辑性、图标节奏或研究图路线有偏好，应在这一阶段就明确。
-- 每页先定义 `reader question`、`page task`、`reading mode`、`archetype`、`asset mode`、`validation mode`。
-- 页面原型、图表 / diagram / 语言选择先看 `references/design_support.md`。
-- 页面级视觉底线与网格规则再看 `references/slide_design_system.md`。
+- 有模板时，模板真实字号系统优先于通用默认；中文默认只是无模板、无品牌约束时的回退基线。
 
-4. **再选技术路线**
-- 先看 `references/technical_support.md`，明确这页对应的实现模块和验证要求。
-- 再看 `references/build_routes.md`，确认当前环境能走哪条具体 backend 路线。
-- 对强模板任务，优先在 `master-first / layout-first` 与 `branded rebuild` 之间做选择，不要默认重画。
-- 不要把某一条路线写死为唯一正解。模板改写、空白页直生、品牌重建、PowerPoint 导出、LibreOffice 导出都可以是有效选项。
+4. **收敛 narrative，再派生 slide contracts**
+- 先写 `brief.md` 和 `deck_narrative.md`，再派生 `slide_specs.yaml`。叙事必须服从 deck contract，不能绕开模板、传播场景和可编辑性要求重新想象页面。
+- 每页至少定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`、`key_message`。
+- 需要更完整控制时，再补 `layout_recipe`、`rhythm_role`、`asset_slots`、`visual_constraints`、`profile_validation_rules`。
+- 页面原型、图表 / diagram / 语言选择先看 `references/design/design_support.md`；页面级视觉底线与网格规则再看 `references/design/slide_design_system.md`；风格 profile 看 `references/core/style_profiles.md`。
 
-5. **再生成 editable PPT**
-- 优先保留文本、形状、图表、connector 的可编辑性。
-- 不是所有页面都需要 Mermaid，也不是所有 diagram 页都需要 connector。
-- 如果页面属于复杂结构图并且后续要拖动维护，必须使用真正绑定的 connector。
+5. **统一做 asset plan，不让模块各自抢入口**
+- 所有图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都通过 `asset_slot` 进入页面。
+- 准确数据且会后要改数，优先 `office-chart-native` 或 `table-native`；复杂研究图、热力图、排序图，优先 `python-figure-image`；后续要拖动维护的流程图 / 架构图 / dataflow，走 `diagram-connector`；只服务解释的结构图，走 `diagram-visual`；节奏增强用 `icon-accent`；氛围图、场景图、产品情境图和强风格 hero 图走 `image-generation`。
+- GPT 生图有两条 backend：API backend 直接生成图片；manual web backend 由 agent 写出 prompt 文档，标记为 `pending_user_generation`，等用户把图片放回 workspace 后再登记为同一个 slot 的 output。
+
+6. **再选 build route 与生成 editable PPT**
+- 先看 `references/modules/technical_support.md`，明确每个 slot 对应的实现模块、backend 和验证要求。
+- 再看 `references/workflow/build_routes.md`，确认当前环境能走哪条具体 backend 路线。
+- 优先保留文本、形状、表格、图表和必要 connector 的可编辑性。整页位图和不可维护导出物只能是明确受限场景下的例外。
 - 一旦确认某个元素来自母版或 layout，就不要在页面层重复画一份。
 
-6. **强制跑 build 后质量 gate**
+7. **强制跑 build 后质量 gate**
 - 所有 deck 在 `build` 之后都应先跑 `package_preflight`，检查包结构一致性、移动端兼容风险和外发安全信号。
 - 所有 deck 在 `package_preflight` 之后都应再跑 `structure_precheck`，检查文本框 fit、文字遮挡和结构化对象排版边界。
-- `package_preflight` 与 `structure_precheck` 都属于 deck 级 gate，不是某一页的局部验证。
 - `not_checked` 必须显式写入报告，不能当成“通过”。
 
-7. **再做模块验证与预览**
+8. **做模块验证、预览和 preview 后质量 gate**
 - 所有 deck 都必须导出逐页预览图。
-- diagram 页按需要执行 connector 校验。
-- 强模板页要额外检查母版元素是否稳定继承、页面层是否出现重复 logo / 页脚 / 装饰。
-
-8. **强制跑 preview 后质量 gate**
+- diagram connector 页必须执行 connector 校验；原生 chart 页必须确认 chart 仍可编辑；Python figure 页必须检查比例、清晰度和字体 / glyph 风险；image-generation 页必须保留 prompt / 参数 / 输出记录并检查图片没有自带页眉页脚、页码、标题栏或事实错误。
 - 预览图导出后，应按需要运行 `render_review`，处理结构层看不到的边界触墨和扁平化图像内部风险。
-- `render_review` 不是对 `structure_precheck` 的重复，而是成图层补位。
 - `render_review` 之后必须看逐页 preview 或 contact sheet 做人工 visual review，复核顺序固定为 `fatal -> warning -> preference`。
 
 9. **完成初稿后给人类一个修订 checkpoint**
 - 当 editable `pptx`、预览图、基础 validation 和 visual review 结论都已经齐全时，应把它明确为“可审阅的初稿”，而不是默认继续无限打磨。
-- 这时应主动告诉人类：如果需要进入更细的页面级修订，例如逐页措辞微调、视觉节奏重排、icon 补强、chart 路线切换、研究图重绘或模板细节对齐，可以继续做，但这一步通常会显著增加 token 消耗。
+- 这时应主动告诉人类：如果需要进入更细的页面级修订，例如逐页措辞微调、视觉节奏重排、icon 补强、chart 路线切换、研究图重绘、生图替换或模板细节对齐，可以继续做，但这一步通常会显著增加 token 消耗。
 - 如果人类暂时不需要详细修订，就直接交付当前初稿 bundle；如果人类要继续修订，再围绕具体页面和问题进入下一轮。
 
 ## 资源路由
 
 **核心文档**
-- 需要统一定义 deck、slide spec、validation bundle 和文档分层时，读取 `references/principles.md`。
-- 需要建立 workspace、起草 `brief.md` / `deck_narrative.md`、派生 `slide_specs`、执行主流程和确认验证证据时，读取 `references/deck_workflow.md`。
-- 需要决定页面该用什么 archetype、图表、diagram、语言模式时，读取 `references/design_support.md`。
-- 需要决定某类资产该用什么 SDK、脚本、验证方式时，读取 `references/technical_support.md`。
+- 需要统一定义 workspace、deck contract、slide contract、asset slot、validation bundle 和文档分层时，读取 `references/core/principles.md` 与 `references/core/schema_contract.md`。
+- 需要建立 workspace、起草 `brief.md` / `deck_narrative.md`、派生 `slide_specs`、执行主流程和确认验证证据时，读取 `references/workflow/deck_workflow.md`。
+- 需要决定页面该用什么 archetype、图表、diagram、语言模式时，读取 `references/design/design_support.md`。
+- 需要决定某类 asset slot 该用什么模块、SDK、backend、脚本、验证方式时，读取 `references/modules/technical_support.md`。
+- 需要决定 source / delivery / communication / visual / density / editability profile 时，读取 `references/core/style_profiles.md`。
 
 **专项文档**
-- 需要统一标题区、网格、留白、视觉复核底线时，读取 `references/slide_design_system.md`。
-- 需要理解 deck 级质量 gate、移动端兼容预检查、结构排版预检查与 validation bundle 时，读取 `references/quality_gates.md`。
-- 需要在模板改写、空白页直生、PowerPoint / LibreOffice 预览导出、diagram connector 路线之间做选择时，读取 `references/build_routes.md`。
-- 需要做系统架构图、dataflow、dependency map、Mermaid 草稿层和 connector 策略时，读取 `references/diagram_support.md`。
-- 需要做原生 PowerPoint chart，并判断何时优先保持 editable chart 时，读取 `references/office_chart_support.md`。
-- 需要做高 DPI Python figure、研究图、热力图和排序图时，读取 `references/python_figure_support.md`。
-- 只有在页面需要额外节奏增强、导航锚点或主题 icon 资产时，才读取 `references/icon_system.md`。
+- 需要统一标题区、网格、留白、视觉复核底线时，读取 `references/design/slide_design_system.md`。
+- 需要理解 deck 级质量 gate、移动端兼容预检查、结构排版预检查与 validation bundle 时，读取 `references/workflow/quality_gates.md`。
+- 需要在模板改写、空白页直生、PowerPoint / LibreOffice 预览导出、diagram connector 路线之间做选择时，读取 `references/workflow/build_routes.md`。
+- 需要做系统架构图、dataflow、dependency map、Mermaid 草稿层和 connector 策略时，读取 `references/modules/diagram_support.md`。
+- 需要做原生 PowerPoint chart，并判断何时优先保持 editable chart 时，读取 `references/modules/office_chart_support.md`。
+- 需要做高 DPI Python figure、研究图、热力图和排序图时，读取 `references/modules/python_figure_support.md`。
+- 只有在页面需要额外节奏增强、导航锚点或主题 icon 资产时，才读取 `references/modules/icon_system.md`。
+- 需要 GPT 生图、网页端生图 prompt、截图再设计或强风格图片 slot 时，读取 `references/modules/image_generation_support.md`。
 
 ## 质量标准
 
-- 默认交付物至少包含：`brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、验证结果、逐页预览图。
+- 默认交付物至少包含：`brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、必要 asset slot 记录、可编辑 `pptx`、验证结果、逐页预览图。
 - 没有预览图的 deck 不算完成。
 - 需要 connector 的页面，没有结构校验结果不算完成。
 - 页面风格允许多样，但弱信息、标题层级、网格稳定性和高对比文本是底线。
@@ -149,6 +149,11 @@ python scripts/check_pptx_render_review.py \
 # 8) 检查 workspace 关键输入是否齐全
 python scripts/lint_deck_assets.py \
   --workspace-dir <path/to/deck_workspace>
+
+# 8b) 检查派生 specs 与 asset slot 合同
+python scripts/lint_deck_assets.py \
+  --workspace-dir <path/to/deck_workspace> \
+  --check-contract
 
 # 9) 从总叙事文档派生 slide specs
 python scripts/derive_slide_specs_from_narrative.py \
