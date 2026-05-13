@@ -14,6 +14,34 @@ The deck itself is a 12-slide, claim-led management narrative about why superior
 - Icon-system usage for section rhythm, claim anchors, and lesson cards
 - Preview export, validation bundle, and final handoff
 
+## Preview Gallery
+
+![Standard Wars executive deck contact sheet](../../../assets/standard-wars-executive-deck_contact-sheet.png)
+
+| S01 | S02 |
+| --- | --- |
+| ![S01 title](build/rendered/ppt_preview/slide_001.png) | ![S02 agenda](build/rendered/ppt_preview/slide_002.png) |
+
+| S03 | S04 |
+| --- | --- |
+| ![S03 framework](build/rendered/ppt_preview/slide_003.png) | ![S04 evidence setup](build/rendered/ppt_preview/slide_004.png) |
+
+| S05 | S06 |
+| --- | --- |
+| ![S05 market comparison](build/rendered/ppt_preview/slide_005.png) | ![S06 platform choices](build/rendered/ppt_preview/slide_006.png) |
+
+| S07 | S08 |
+| --- | --- |
+| ![S07 strategic moves](build/rendered/ppt_preview/slide_007.png) | ![S08 high-density evidence](build/rendered/ppt_preview/slide_008.png) |
+
+| S09 | S10 |
+| --- | --- |
+| ![S09 decision matrix](build/rendered/ppt_preview/slide_009.png) | ![S10 playbook](build/rendered/ppt_preview/slide_010.png) |
+
+| S11 | S12 |
+| --- | --- |
+| ![S11 recap](build/rendered/ppt_preview/slide_011.png) | ![S12 closing](build/rendered/ppt_preview/slide_012.png) |
+
 ## Workspace Structure
 
 ```text

@@ -19,6 +19,34 @@
 - FY2022 10-K: https://www.sec.gov/Archives/edgar/data/320193/000032019322000108/aapl-20220924.htm
 - FY2021 10-K: https://www.sec.gov/Archives/edgar/data/320193/000032019321000105/aapl-20210925.htm
 
+## 页面预览
+
+![Apple FY2025 财报点评 contact sheet](build/rendered/contact_sheet.png)
+
+| S01 | S02 |
+| --- | --- |
+| ![S01 封面](build/rendered/ppt_preview/slide_001.png) | ![S02 核心结论](build/rendered/ppt_preview/slide_002.png) |
+
+| S03 | S04 |
+| --- | --- |
+| ![S03 收入与净利润](build/rendered/ppt_preview/slide_003.png) | ![S04 产品收入结构](build/rendered/ppt_preview/slide_004.png) |
+
+| S05 | S06 |
+| --- | --- |
+| ![S05 区域收入结构](build/rendered/ppt_preview/slide_005.png) | ![S06 毛利率](build/rendered/ppt_preview/slide_006.png) |
+
+| S07 | S08 |
+| --- | --- |
+| ![S07 费用率](build/rendered/ppt_preview/slide_007.png) | ![S08 现金流](build/rendered/ppt_preview/slide_008.png) |
+
+| S09 | S10 |
+| --- | --- |
+| ![S09 资产负债](build/rendered/ppt_preview/slide_009.png) | ![S10 财务表格](build/rendered/ppt_preview/slide_010.png) |
+
+| S11 |
+| --- |
+| ![S11 来源与声明](build/rendered/ppt_preview/slide_011.png) |
+
 ## 构建流程
 以下命令默认在 `demos/apple-financial-report-review/` 目录下执行。
 

@@ -2,11 +2,11 @@
 
 [English README](README.md)
 
-**TL;DR。** `presentation-skills` 是一组面向真实交付的 production-grade skills，覆盖精修 PowerPoint deck、正式 Word 文档和可发布 demo 视频。
+**TL;DR。** `presentation-skills` 是一组面向真实交付的 production-grade skills，覆盖可编辑 PowerPoint deck、正式 Word 文档和可发布 demo 视频。`ppt-polished-deck-collab` 是 flagship skill，能产出可编辑、可预览、可验证的 PowerPoint deck，覆盖研报、策略汇报、技术说明、演讲分享、模板化商业材料等多种场景。
 
 | Skill | 适合场景 | Demo 亮点 |
 | --- | --- | --- |
-| `ppt-polished-deck-collab` | 可编辑 executive deck、策略叙事、技术说明、研究汇报、中文正式研报 | 11 页 Apple FY2025 财报点评 deck，包含 Office 原生图表、原生表格、preview export 和 validation evidence |
+| `ppt-polished-deck-collab` | 可编辑研报、executive deck、策略叙事、技术说明、演讲分享、模板化商业材料 | 两套 Apple 财报分析 deck 使用相近主题，却呈现正式研报版与艺术化 editorial ink 原生 PPTX 版两种完全不同表达 |
 | `word-polished-doc-collab` | 正式报告、董事会附件、研究附录、制度文档、咨询风格 Word 交付 | 中文轻量正式报告 + 英文精细咨询报告，包含 preview 和 QA bundle |
 | `web-demo-video-synthesis` | 产品 walkthrough、网页 demo、带旁白解释视频、可发布短视频 | 网页、配音、字幕、录屏和最终 MP4 的端到端流水线 |
 | `xhs-markdown-card-collab` | 从 Markdown 生成可发布的小红书图文卡片、研究/招聘帖子、结构化笔记型内容 | 导出的虚构 demo 成品，包含 PNG 卡片、预览 HTML、metadata JSON，以及在锁定字号合同下的主题变化示例 |
@@ -15,12 +15,39 @@
 
 这些 skills 不是一轮 prompt 产物。它们经过了大量真实任务中的反复迭代、失败分析、产物复核和工作流重写，并且为此消耗了大量真实付费 token，才把流程、验证链和最终输出收敛到当前这个水平。
 
-## Demo Gallery
+## PowerPoint Decks
 
-| PowerPoint 研报型 demo | PowerPoint 策略叙事型 demo |
+`ppt-polished-deck-collab` 覆盖的是多种 deck 类型，不是一套固定模板：
+
+| 场景 | 可以产出什么 | Demo / 图片 / 证据 |
+| --- | --- | --- |
+| 正式财报 / 研报型 deck | Office 原生图表、原生表格、来源注、免责声明、稳定研报版心 | [Apple FY2025 财报点评](demos/apple-financial-report-review/README.md) |
+| 艺术化分析 / keynote 分享 | 大号衬线标题、强视觉节奏、native shape chart、无 HTML 截图的风格迁移 | [Apple editorial ink native test](demos/apple-editorial-ink-native/README.md) |
+| 策略叙事 / executive deck | 管理层问题、对比矩阵、决策逻辑、结构图和叙事节奏 | [Standard Wars executive deck](old/demos/standard-wars-executive-deck/README.md) |
+| 技术说明 / 架构解释 | dataflow、系统图、可绑定 connector、结构校验报告 | [PPT skill 专页](docs/ppt-polished-deck-collab.md) |
+| 模板驱动商业材料 | 模板审计、母版 / layout 取证、必要时 branded rebuild | [PPT skill 专页](docs/ppt-polished-deck-collab.md) |
+
+PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-collab.md)
+
+## PPT Gallery
+
+| 同一 Apple 主题，艺术化分享表达 | 同一 Apple 主题，正式研报表达 |
 | --- | --- |
-| [![Apple FY2025 财报点评 contact sheet](assets/apple-financial-report-review_contact-sheet.png)](demos/apple-financial-report-review/README.md) | [![标准战争 executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md) |
-| 当前主展示 `ppt-polished-deck-collab` demo：正式财报点评 deck，包含原生图表、原生表格和验证证据链。 | 归档但仍然保留展示价值的 `ppt-polished-deck-collab` demo：策略叙事 deck，包含结构图、对比矩阵和管理层问题清单。 |
+| [![Apple editorial ink native test contact sheet](assets/apple-editorial-ink-native_contact-sheet.png)](demos/apple-editorial-ink-native/README.md) | [![Apple FY2025 财报点评 contact sheet](assets/apple-financial-report-review_contact-sheet.png)](demos/apple-financial-report-review/README.md) |
+| guizang “电子杂志 × 电子墨水”风格的 native PPTX 迁移测试：大字、深浅节奏、ghost number、shape chart，不使用 HTML 截图。 | 正式中文财报点评：Office 原生图表、原生表格、研报版心、来源注、免责声明和完整验证证据链。 |
+
+**艺术化单页示例**
+
+[![Apple editorial ink iPhone 与 Services 页面](demos/apple-editorial-ink-native/build/rendered/ppt_preview/slide_004.png)](demos/apple-editorial-ink-native/README.md)
+
+这个单页更适合在 README 直接放大展示：iPhone 作为收入中枢，Services 作为稳定第二曲线，产品结构、趋势证据和深色 editorial 页面节奏都集中在一页里。
+
+| 策略叙事 deck | 财务证据页 |
+| --- | --- |
+| [![标准战争 executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md) | [![Apple FY2025 收入与净利润页](assets/apple-financial-report-review_revenue-page.png)](demos/apple-financial-report-review/README.md) |
+| 归档但仍然保留展示价值的策略叙事 demo，包含结构图、对比矩阵和管理层问题清单。 | 单页财务证据示例，展示图表、图题、单位、来源和核心判断如何组合。 |
+
+## 其他交付物 Demo
 
 [![Word 精细咨询报告 demo 跨栏页](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
 
@@ -34,15 +61,16 @@
 
 ## 最近更新
 
-- `2026-05-10` 在 README 中保留归档的 Standard Wars executive deck 作为第二个 `ppt-polished-deck-collab` 展示样例，并新增 contact sheet 资产链接到归档工作区。
-- `2026-05-10` 将 `ppt-polished-deck-collab` 主展示 demo 替换为 Apple FY2025 财报点评 deck，覆盖 SEC 数据底稿、可编辑 Office 图表、原生表格、预览导出和 validation reports。
-- `2026-05-10` 为 `ppt-polished-deck-collab` 增加中文正式材料的默认排版规则：中文宋体、英文 Times New Roman、正文小四、首行缩进、段前段后 `0.5` 行、正文 `1.5` 倍行距，以及财务表格对齐规则。
-- `2026-04-22` `ppt-polished-deck-collab` 现在支持自动质量 gate，可以检查移动端打开风险、文本出格、对象遮挡和预览层排版失误，从而显著减少交付前的人类返工。
-- `2026-04-22` `ppt-polished-deck-collab` 进一步收紧了 template-first 动线，现在模板审计、editable deck 构建、验证、预览导出和最终复核会按固定顺序执行。
-- `2026-04-29` 新增 `word-polished-doc-collab`，把 Markdown、DOCX 与 Python 文档资产的往返协作抽象成独立 skill，并明确了中文宋体 / 楷体 / 黑体与英文 Times / Arial 的字体 profile、标题梯度、表题图题表注位置与质量 gate。
-- `2026-04-30` 在 `demos/` 下正式注册两个 `word-polished-doc-collab` 门面样例：一个内容丰富的中文轻量正式报告 demo，一个带完整 preview 与 QA 证据链的英文精细咨询报告 demo。
-- `2026-05-04` 新增 `xhs-markdown-card-collab`，把 Markdown 小红书图文卡片任务抽象成显式封面元数据、浏览器真实分页、已验证字号合同和反趋同风格指导的完整 workflow。
-- `2026-05-05` 把 XHS 虚构 demo 从“只有源码示例”升级为 `demos/` 下的真实导出 bundle，每组都包含逐页 PNG、预览 HTML、metadata JSON 和明确的主题配置。
+- `2026-05-13` 🎨 新增 Apple editorial-ink native PPTX demo 和 PPT skill 专页。
+- `2026-05-10` 📊 将 Apple FY2025 财报点评设为正式 PPT 主 demo。
+- `2026-05-10` 保留 Standard Wars 作为归档策略 deck 示例。
+- `2026-05-10` 增加 PPT 中文正式材料排版与财务表格默认规则。
+- `2026-05-05` 将 XHS 虚构 demo 升级为已渲染 PNG bundle。
+- `2026-05-04` 新增 `xhs-markdown-card-collab`，支持 Markdown 转图文卡片。
+- `2026-04-30` 新增两个 Word demo 工作区，包含 preview 和 QA 证据。
+- `2026-04-29` 新增 `word-polished-doc-collab`，支持正式 DOCX workflow。
+- `2026-04-22` 🛡️ 新增 PPT package、structure、render 三段质量 gate。
+- `2026-04-22` 收紧 PPT template-first workflow，从模板审计走到 handoff。
 
 ## 这个仓库提供什么
 
@@ -102,10 +130,13 @@
 - 最后做 visual review 和 final handoff
 
 展示样例：
+- 艺术化 native PPTX 风格迁移 demo：`demos/apple-editorial-ink-native/`
 - 当前研报型 demo：`demos/apple-financial-report-review/`
 - 归档策略叙事型 demo：`old/demos/standard-wars-executive-deck/`
 
 关键输出：
+- `demos/apple-editorial-ink-native/final/apple_editorial_ink_native_test.pptx`
+- `demos/apple-editorial-ink-native/build/rendered/contact_sheet.png`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pptx`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pdf`
 - `demos/apple-financial-report-review/build/rendered/contact_sheet.png`
@@ -217,6 +248,7 @@
 
 ## Demos
 
+- 正式 polished deck demo：`demos/apple-editorial-ink-native/`
 - 正式 polished deck demo：`demos/apple-financial-report-review/`
 - 正式 Word 轻量 demo：`demos/word-lightweight-industrial-operations-brief/`
 - 正式 Word 精细 demo：`demos/word-refined-industrial-service-transformation/`

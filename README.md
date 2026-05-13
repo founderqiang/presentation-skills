@@ -2,11 +2,11 @@
 
 [中文版说明](README.zh.md)
 
-**TL;DR.** `presentation-skills` is a collection of production-grade skills for making the artifacts people actually hand over: polished PowerPoint decks, formal Word documents, and publishable demo videos.
+**TL;DR.** `presentation-skills` is a collection of production-grade skills for making the artifacts people actually hand over: editable PowerPoint decks, formal Word documents, and publishable demo videos. The flagship skill is `ppt-polished-deck-collab`, which builds editable, validated PowerPoint decks across research reports, executive narratives, technical explainers, keynote-style talks, and template-driven business decks.
 
 | Skill | Best For | Demo Signal |
 | --- | --- | --- |
-| `ppt-polished-deck-collab` | Editable executive decks, strategy narratives, technical explainers, research talks, formal Chinese research reports | 11-page Apple FY2025 financial report review deck with native charts, native tables, preview export, and validation evidence |
+| `ppt-polished-deck-collab` | Editable research reports, executive decks, strategy narratives, technical explainers, keynote-style talks, template-driven business decks | Two Apple financial-analysis decks with the same source theme but very different presentation languages: formal research-report style and editorial-ink native PPTX style |
 | `word-polished-doc-collab` | Formal reports, board attachments, research appendices, policy docs, consulting-style Word deliverables | Lightweight Chinese report plus refined English consulting report with preview and QA bundle |
 | `web-demo-video-synthesis` | Product walkthroughs, narrated web demos, short-form explainers, publishable demo videos | End-to-end webpage, voiceover, subtitles, screen recording, and final MP4 pipeline |
 | `xhs-markdown-card-collab` | Publishable Xiaohongshu image-card posts from Markdown, research/job posts, structured note-style social content | Demo bundles with PNG cards, preview HTML, metadata JSON, and theme variation under a locked typography contract |
@@ -15,12 +15,39 @@
 
 These skills were not produced in one pass. They were iterated through many real runs, repeated failure analysis, output review, and workflow rewrites. A large amount of paid model tokens was spent to make the workflows, validation gates, and deliverables actually hold up in practice.
 
-## Demo Gallery
+## PowerPoint Decks
 
-| PowerPoint research report | PowerPoint strategy deck |
+`ppt-polished-deck-collab` is designed to cover many deck shapes, not one fixed template:
+
+| Scenario | What it can produce | Demo / Gallery / Evidence |
+| --- | --- | --- |
+| Formal financial report / research deck | Native Office charts, native tables, source notes, disclaimers, stable report layout | [Apple FY2025 financial report review](demos/apple-financial-report-review/README.md) |
+| Editorial / keynote-style analysis | Large serif titles, visual rhythm, native shape charts, strong art direction without HTML screenshots | [Apple editorial ink native test](demos/apple-editorial-ink-native/README.md) |
+| Strategy / executive narrative | Management questions, comparison matrices, decision logic, diagrams, narrative pacing | [Standard Wars executive deck](old/demos/standard-wars-executive-deck/README.md) |
+| Technical explainer / architecture deck | Dataflow, system diagrams, connector-backed editable structures, validation reports | [PPT skill page](docs/ppt-polished-deck-collab.md) |
+| Template-driven business deck | Template audit, master/layout evidence, branded rebuild when needed | [PPT skill page](docs/ppt-polished-deck-collab.md) |
+
+Full PPT skill page: [docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-collab.md)
+
+## PPT Gallery
+
+| Same Apple topic, editorial presentation | Same Apple topic, formal research report |
 | --- | --- |
-| [![Apple FY2025 financial report review contact sheet](assets/apple-financial-report-review_contact-sheet.png)](demos/apple-financial-report-review/README.md) | [![Standard Wars executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md) |
-| Current flagship `ppt-polished-deck-collab` demo: a formal financial-report review deck with native charts, native tables, and validation evidence. | Archived but still useful `ppt-polished-deck-collab` demo: a strategy narrative deck with diagrams, comparison matrices, and management questions. |
+| [![Apple editorial ink native test contact sheet](assets/apple-editorial-ink-native_contact-sheet.png)](demos/apple-editorial-ink-native/README.md) | [![Apple FY2025 financial report review contact sheet](assets/apple-financial-report-review_contact-sheet.png)](demos/apple-financial-report-review/README.md) |
+| A native PPTX translation of guizang-style editorial ink: large type, dark/light rhythm, ghost numerals, shape charts, and no HTML screenshots. | A formal Chinese financial-report deck with native Office charts, native tables, stable report layout, source notes, and validation evidence. |
+
+**Editorial page spotlight**
+
+[![Apple editorial ink iPhone and Services page](demos/apple-editorial-ink-native/build/rendered/ppt_preview/slide_004.png)](demos/apple-editorial-ink-native/README.md)
+
+A single native PPTX page showing the editorial treatment: iPhone as the revenue center, Services as the stable second curve, stacked composition, embedded trend evidence, and a dark magazine-style page rhythm.
+
+| Strategy narrative deck | Financial chart spotlight |
+| --- | --- |
+| [![Standard Wars executive deck contact sheet](assets/standard-wars-executive-deck_contact-sheet.png)](old/demos/standard-wars-executive-deck/README.md) | [![Apple FY2025 revenue and net-income page](assets/apple-financial-report-review_revenue-page.png)](demos/apple-financial-report-review/README.md) |
+| Archived but still useful strategy narrative demo with diagrams, comparison matrices, and management questions. | A single evidence page showing how financial data, chart title, unit, source note, and key message are assembled. |
+
+## Other Artifact Demos
 
 [![Word refined consulting-report demo spread](assets/word-refined-industrial-service-transformation_spread.png)](demos/word-refined-industrial-service-transformation/README.md)
 
@@ -34,15 +61,16 @@ This prompt style is intentionally specific about workspace placement, source da
 
 ## Recent Updates
 
-- `2026-05-10` Kept the archived Standard Wars executive deck visible in the README as a second `ppt-polished-deck-collab` example, with a new contact-sheet asset linked to the archived workspace.
-- `2026-05-10` Replaced the flagship `ppt-polished-deck-collab` demo with an Apple FY2025 financial report review deck, including SEC-derived data, editable Office charts, native tables, preview exports, and validation reports.
-- `2026-05-10` Added a Chinese formal-report typography default for `ppt-polished-deck-collab`: SimSun for Chinese, Times New Roman for English, `12pt` body text, first-line indent, `0.5` line paragraph spacing, `1.5` line body spacing, and financial-table alignment rules.
-- `2026-04-22` `ppt-polished-deck-collab` now supports automatic quality gates for mobile-open risk, text overflow, object occlusion, and preview-layer layout failures, which materially reduces manual cleanup before delivery.
-- `2026-04-22` `ppt-polished-deck-collab` also tightened its template-first workflow, so reference template audit, editable deck build, validation, preview export, and final review happen in a fixed order.
-- `2026-04-29` Added `word-polished-doc-collab`, which turns Markdown, DOCX, and Python-generated document assets into a dedicated Word workflow with explicit Chinese-English font profiles, heading scale, caption placement, and quality gates.
-- `2026-04-30` Registered two polished `word-polished-doc-collab` demos under `demos/`: a rich lightweight Chinese formal-report sample and a refined English consulting-report sample with full preview and QA evidence.
-- `2026-05-04` Added `xhs-markdown-card-collab`, which turns Markdown into publishable Xiaohongshu image cards through explicit cover front matter, browser-based pagination, locked typography contracts, and style-direction guidance that avoids repetitive “AI card” convergence.
-- `2026-05-05` Upgraded the XHS fictional demo set from source-only examples into actual exported demo bundles under `demos/`, each with rendered PNG cards, preview HTML, metadata JSON, and a documented theme assignment.
+- `2026-05-13` 🎨 Added the Apple editorial-ink native PPTX demo and the dedicated PPT skill showcase page.
+- `2026-05-10` 📊 Made Apple FY2025 financial report review the flagship formal PPT demo.
+- `2026-05-10` Added Standard Wars as an archived strategy-deck example.
+- `2026-05-10` Added Chinese formal-report typography and financial-table defaults for PPT.
+- `2026-05-05` Upgraded XHS fictional demos into rendered PNG bundles.
+- `2026-05-04` Added `xhs-markdown-card-collab` for Markdown-to-image-card posts.
+- `2026-04-30` Added two Word demo workspaces with preview and QA evidence.
+- `2026-04-29` Added `word-polished-doc-collab` for formal DOCX workflows.
+- `2026-04-22` 🛡️ Added PPT quality gates for package, structure, and render review.
+- `2026-04-22` Tightened the PPT template-first workflow from audit to handoff.
 
 ## What This Repo Provides
 
@@ -102,10 +130,13 @@ Typical workflow:
 - Finish with visual review and final handoff
 
 Featured deck examples:
+- Editorial native PPTX style demo: `demos/apple-editorial-ink-native/`
 - Current research-report demo: `demos/apple-financial-report-review/`
 - Archived strategy-deck demo: `old/demos/standard-wars-executive-deck/`
 
 Key outputs:
+- `demos/apple-editorial-ink-native/final/apple_editorial_ink_native_test.pptx`
+- `demos/apple-editorial-ink-native/build/rendered/contact_sheet.png`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pptx`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pdf`
 - `demos/apple-financial-report-review/build/rendered/contact_sheet.png`
@@ -216,6 +247,7 @@ Key docs:
 
 ## Demos
 
+- Registered polished deck demo: `demos/apple-editorial-ink-native/`
 - Registered polished deck demo: `demos/apple-financial-report-review/`
 - Registered Word lightweight demo: `demos/word-lightweight-industrial-operations-brief/`
 - Registered Word refined demo: `demos/word-refined-industrial-service-transformation/`

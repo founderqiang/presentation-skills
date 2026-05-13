@@ -15,7 +15,9 @@
 # Local run workspace
 temp/
 demo_draft/
-docs/
+docs/*
+!docs/
+!docs/ppt-polished-deck-collab.md
 AGENTS.md
 
 old/demo_draft/
