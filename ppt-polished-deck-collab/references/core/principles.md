@@ -52,6 +52,8 @@
 
 **Style / domain profile 先于 narrative。** 没有参考 `pptx` 时，如果用户给的是“仿正式研报”“产品发布会风格”“学术答辩风格”这类文体参考，也应先把 `typography_profile`、`domain_profile`、可借鉴边界、禁止使用的品牌元素和免责声明写进 `brief.md`，再进入页面叙事。
 
+**Profile 是组合坐标，不是风格孤岛。** `delivery_context` 先回答这份 deck 是给人自己读、配合现场讲，还是讲完后还会转发；`communication_profile` 回答它是商业汇报、技术说明、研究材料还是 keynote 叙事；`visual_profile` 回答视觉语言；`density_profile` 回答信息负载；`domain_profile` 在 `theme_tokens` 里补充研报、财报点评等行业文体纪律。不要为“个人风格演讲”“设计感研报”另造并行概念，先用这些既有坐标组合表达。
+
 **High-quality 是标准，不是题材。** 这个 skill 服务的是高质量 PPT 交付标准，不限制题材。商业、技术、研究、教育、产品、运营等主题都应适配同一套质量体系。
 
 **技术支持与设计支持显式分层。** `design_support` 负责决定页面如何被读懂、该用什么图表与语言，`technical_support` 负责决定这些设计如何以可编辑、可验证的方式落地。
@@ -69,6 +71,8 @@
 **表格排版属于 typography policy。** 中文任务的原生表格默认使用五号约 `10.5pt`、单倍行距、段前段后 `0`、无特殊缩进、单元格上下居中；表头居中，index / 类目列居左，文本列居左，财务数值列靠右。图表下方的数据表、附录表和正文里的明细表都应复用同一套 table policy。
 
 **研报型 deck 是 domain profile。** 财报点评、行业研究、卖方研报和正式研究材料可以启用 `domain_profile: financial_report_review` 或同类 profile。它在 `typography_profile: zh_formal` 与 table policy 之上增加页眉页脚、图号、单位、来源、免责声明、低饱和配色和稳定版心等视觉纪律。
+
+**设计感可以叠加在研报型 deck 上。** `domain_profile: financial_report_review` 不要求页面只能采用传统券商版式。它要求来源、单位、免责声明、版心、表格和读图结构可追责；在这些纪律成立的前提下，`visual_profile: editorial_ink` 或 `swiss_modernist` 可以提供更强的标题、节奏、图形语言和页面记忆点。
 
 **Validation-by-default。** 预览导出不是可选锦上添花，而是默认要求。diagram 页的结构校验、chart 页的比例与可编辑性检查、模板页的视觉回归都属于基本交付义务。
 

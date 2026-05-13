@@ -56,15 +56,19 @@
 
 ## profile-aware 页面决策
 
+**先继承 profile 坐标。** 页面决策不得只看 `visual_profile`。同样是 `editorial_ink`，`speaker-led_stage_deck + keynote_story + low_density_stage` 应把页面做成背景、记忆点和视觉锚点；`hybrid_review_deck + research_review + balanced_brief` 则需要保留证据、来源、单位和必要解释。
+
 **商业汇报默认走清晰稳定。** `business_report + corporate_clear` 可以使用多形状、多图表、多表格和复杂注释，但每页仍需要明确主判断、稳定标题区和可编辑对象。
 
 **强设计感 deck 默认走节奏和主视觉。** `keynote_story + editorial_ink / swiss_modernist / product_launch` 可以降低正文密度，使用强图片槽、巨大数字、硬网格和留白，但不能牺牲基本可读性和最终 preview 验证。
+
+**设计感研究 deck 要融合 domain 纪律。** 当 `communication_profile=research_review` 且 `visual_profile=editorial_ink/swiss_modernist` 时，不要把它改造成纯舞台海报。图表页、数据页和来源页仍要继承 `domain_profile` 的图号、单位、来源注、免责声明、表格语义和可追责边界。
 
 **无人讲解材料默认补足上下文。** `self-contained_reading_deck` 的图表需要单位、来源、注释、边界条件和必要解释。页面可以更密，但必须方便扫描和复读。
 
 **有人讲的材料默认降低页面负担。** `speaker-led_stage_deck` 的页面应减少正文和表格，把复杂解释移到讲稿、备注或备份页。页面本身负责节奏、记忆点和视觉锚点。
 
-**页面合同应写清 layout 与节奏。** 复杂任务建议显式填写 `layout_recipe` 和 `rhythm_role`，例如 `chart-spotlight-with-takeaways`、`business-summary-grid`、`image-hero-strip`、`technical-layered-architecture`，以及 `opener`、`breath`、`dense`、`evidence`、`transition`、`closing`。
+**页面合同应写清 layout 与节奏。** 复杂任务建议显式填写 `layout_recipe` 和 `rhythm_role`，例如 `chart-spotlight-with-takeaways`、`business-summary-grid`、`image-hero-strip`、`technical-layered-architecture`、`editorial-product-mix-strip`、`editorial-big-number`、`swiss-kpi-tower`，以及 `opener`、`breath`、`dense`、`evidence`、`transition`、`closing`。
 
 ## 图表选择查表
 
@@ -119,6 +123,8 @@
 ## 与现有设计细则的衔接
 
 **页面视觉底线继续看 `references/design/slide_design_system.md`。** 它负责标题区、网格、留白、颜色预算、fatal / warning / preference 的复核底线。
+
+**强设计感 native PPTX 的页面语法也看 `references/design/slide_design_system.md`。** 它负责把 `editorial_ink`、`swiss_modernist` 这类 visual profile 翻译成 PowerPoint 原生对象可执行的 `layout_recipe`、主题节奏和 visual review 规则。
 
 **diagram 的专项图形语法继续看 `references/modules/diagram_support.md`。** 它负责层级图、dataflow、dependency map、edge budget 和 connector / visual 两条路线。
 

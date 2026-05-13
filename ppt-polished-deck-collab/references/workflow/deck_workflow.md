@@ -182,6 +182,7 @@ python scripts/audit_pptx_template.py \
 - 风格参考：
 - typography_profile：
 - domain_profile：
+- visual_theme_preset：
 - 允许使用的素材：
 - 禁止使用的品牌元素：
 - 免责声明 / 风险边界：
@@ -207,6 +208,7 @@ deck:
   theme_tokens:
     typography_profile: "zh_formal"
     domain_profile: null
+    visual_theme_preset: null
     hero_title_font_pt: 24
     section_title_font_pt: 20
     page_title_font_pt: 24

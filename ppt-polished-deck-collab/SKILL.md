@@ -11,6 +11,24 @@ description: Use when collaborating with humans to produce polished, editable, h
 这个 skill 的工作方式是轻量的 deck 编译系统：先把用户需求、模板约束、页面叙事和资产需求收敛成可执行合同，再让图表、Python figure、diagram、icon、图片和生图模块按 slot 生产资产，最后组装原生 `pptx` 并验证。
 这个 skill 本身是高质量 PPT 的知识库。agent 必须主动使用里面的规范、经验、脚本和质量 gate；不能聊完需求后凭记忆直接动手，做到一半也不能忘记 deck contract、页面合同、资产 slot、typography / table policy、模板取证和验证链路。
 
+## 核心概念
+
+这些概念是本 skill 的主坐标。外部参考、风格样张和 demo 经验只能进入这些坐标，不能替代它们。
+
+**`deck_contract` 是全局执行合同。** 它记录目标读者、使用场景、目标动作、模板约束、传播方式、材料类型、视觉方向、信息密度、可编辑性、typography / table policy 和验证要求。它通常写在 `brief.md` 或 `deck_narrative.md` frontmatter 里。
+
+**profile 是组合坐标，不是风格孤岛。** `delivery_context` 先判断这份 PPT 是让人自己读、配合现场讲，还是讲完还要转发；`communication_profile` 判断它是商业汇报、技术说明、研究材料还是 keynote 叙事；`visual_profile` 判断视觉语言；`density_profile` 判断信息负载；`editability_profile` 判断可维护性。不要为“个人风格演讲”“设计感研报”另造概念，先用这些已有 profile 组合表达。
+
+**`theme_tokens` 承载 deck 级视觉与排版策略。** `typography_profile` 管字体、字号、段落和表格基础排版；`domain_profile` 管券商研报、财报点评等行业文体纪律；`visual_theme_preset` 可以记录少数经过验证的主题预设。研报纪律和设计感可以叠加，例如 `domain_profile: financial_report_review` 与 `visual_profile: editorial_ink` 可以同时存在。
+
+**`slide_contract` 把页面任务变成页面语法。** 每页至少要有 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode` 和 `key_message`。复杂页再补 `layout_recipe`、`rhythm_role`、`asset_slots`、`visual_constraints` 和 `profile_validation_rules`。
+
+**`layout_recipe` 和 `rhythm_role` 负责设计落地。** `archetype` 说明页面要解决什么问题，`layout_recipe` 说明这页采用什么原生 PPTX 页面配方，`rhythm_role` 说明它在整套 deck 里承担 opener、evidence、breath、transition、dense 或 closing 等节奏角色。强设计感页面也必须通过这两个字段进入主流程。
+
+**`asset_slot` 是所有资产模块的统一接口。** Office chart、Python figure、原生表格、diagram、icon、普通图片和 GPT 生图都先登记为 slot，再由对应模块生产和验证。不要让任何模块绕过 slide contract 直接改 PPT。
+
+**两类常见定位要用同一套概念表达。** 个人风格强烈、有人在旁边讲的演讲通常是 `speaker-led_stage_deck + keynote_story + editorial_ink/product_launch + low_density_stage`，页面主要承载背景、记忆点和视觉锚点。券商研报 / 财报点评通常启用 `research_review + domain_profile: financial_report_review`，要求来源、单位、图号、免责声明、稳定版心和表格语义；如果传播场景偏分享，也可以叠加 `visual_profile: editorial_ink`，但不能取消研报纪律。
+
 ## 什么时候用
 
 - 用户要做高质量 PPT、演示稿、汇报 deck、路演稿、研究汇报、技术方案 deck、教学或培训材料。
@@ -45,7 +63,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 - 先写 `brief.md` 和 `deck_narrative.md`，再派生 `slide_specs.yaml`。叙事必须服从 deck contract，不能绕开模板、传播场景和可编辑性要求重新想象页面。
 - 每页至少定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`、`key_message`。
 - 需要更完整控制时，再补 `layout_recipe`、`rhythm_role`、`asset_slots`、`visual_constraints`、`profile_validation_rules`。
-- 页面原型、图表 / diagram / 语言选择先看 `references/design/design_support.md`；页面级视觉底线与网格规则再看 `references/design/slide_design_system.md`；风格 profile 看 `references/core/style_profiles.md`。
+- source / delivery / communication / visual / density / editability profile 先看 `references/core/style_profiles.md`；页面原型、图表 / diagram / 语言选择再看 `references/design/design_support.md`；页面级视觉底线、强设计感 native PPTX 语法与网格规则再看 `references/design/slide_design_system.md`。
 
 5. **统一做 asset plan，不让模块各自抢入口**
 - 所有图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都通过 `asset_slot` 进入页面。
@@ -78,10 +96,10 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 **核心文档**
 - 需要统一定义 workspace、deck contract、slide contract、asset slot、validation bundle 和文档分层时，读取 `references/core/principles.md` 与 `references/core/schema_contract.md`。
+- 需要决定 source / delivery / communication / visual / density / editability profile 时，读取 `references/core/style_profiles.md`。
 - 需要建立 workspace、起草 `brief.md` / `deck_narrative.md`、派生 `slide_specs`、执行主流程和确认验证证据时，读取 `references/workflow/deck_workflow.md`。
 - 需要决定页面该用什么 archetype、图表、diagram、语言模式时，读取 `references/design/design_support.md`。
 - 需要决定某类 asset slot 该用什么模块、SDK、backend、脚本、验证方式时，读取 `references/modules/technical_support.md`。
-- 需要决定 source / delivery / communication / visual / density / editability profile 时，读取 `references/core/style_profiles.md`。
 
 **专项文档**
 - 需要统一标题区、网格、留白、视觉复核底线时，读取 `references/design/slide_design_system.md`。

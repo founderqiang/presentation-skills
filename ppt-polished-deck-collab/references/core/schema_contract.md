@@ -32,6 +32,7 @@ deck:
   theme_tokens:
     typography_profile: "zh_formal"
     domain_profile: null
+    visual_theme_preset: null
     latin_font_name: "Times New Roman"
     east_asia_font_name: "宋体"
     body_font_pt: 12
@@ -59,11 +60,15 @@ deck:
 
 **`communication_profile`。** 推荐值：`business_report`、`technical_explainer`、`research_review`、`keynote_story`。
 
-**`visual_profile`。** 推荐值：`corporate_clear`、`editorial_ink`、`swiss_modernist`、`product_launch`。
+**`visual_profile`。** 推荐值：`corporate_clear`、`editorial_ink`、`swiss_modernist`、`product_launch`。它只定义视觉语言，不替代 `delivery_context`、`communication_profile` 或 `domain_profile`。
 
 **`density_profile`。** 推荐值：`dense_reference`、`balanced_brief`、`low_density_stage`。
 
 **`editability_profile`。** 推荐值：`fully_editable`、`chart_editable`、`mixed_assets`、`snapshot_allowed`。
+
+**`theme_tokens.domain_profile`。** 推荐值按任务扩展，例如 `financial_report_review`。它用于表达研报、财报点评等行业文体纪律，可以和 `visual_profile: editorial_ink` 或 `swiss_modernist` 同时存在。
+
+**`theme_tokens.visual_theme_preset`。** 可选字段，用于记录少数经过验证的视觉主题预设，例如 `editorial_ink_indigo_porcelain`、`editorial_ink_kraft`、`swiss_ikb`、`swiss_safety_orange`。它不开放任意配色自由，主要服务复现与 review。
 
 ## `slide_contract`
 
@@ -106,7 +111,9 @@ asset_slots:
 
 **`layout_recipe`。** 页面版式语法，例如 `hero-statement-accent`、`duo-compare`、`kpi-tower`、`image-hero-strip`、`matrix-with-stat`、`business-summary-grid`、`technical-layered-architecture`。
 
-**`rhythm_role`。** 页面节奏角色，例如 `opener`、`breath`、`dense`、`evidence`、`transition`、`closing`。
+**`layout_recipe` 可以承载强设计感 native PPTX 语法。** 示例包括 `editorial-cover`、`editorial-big-number`、`editorial-product-mix-strip`、`editorial-data-pipeline`、`swiss-split-statement`、`swiss-kpi-tower`、`swiss-duo-compare`、`swiss-image-hero`。这些 recipe 仍然服从页面 `archetype`，不能绕开 `reader_question` 和 `key_message`。
+
+**`rhythm_role`。** 页面节奏角色，例如 `opener`、`breath`、`dense`、`evidence`、`transition`、`closing`。强设计感 deck 应显式使用它控制 hero / non-hero、深浅页面、密度和章节呼吸。
 
 ## `asset_slot`
 

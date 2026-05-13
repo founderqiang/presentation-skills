@@ -120,6 +120,22 @@
 
 **角语言必须统一。** 同一套 deck 里的主要卡片、节点和信息框，应保持一致的角语言，不要混合直角与圆角而没有语义解释。
 
+## 强设计感 Native PPTX
+
+**强设计感仍然服从 deck contract。** `editorial_ink`、`swiss_modernist` 和 `product_launch` 只定义视觉语言，不改变 `brief.md -> deck_narrative.md -> slide_specs.yaml -> asset_slots -> native PPTX build -> validation` 主链路。
+
+**个人风格演讲强调背景和记忆点。** 当 `delivery_context=speaker-led_stage_deck` 且 `communication_profile=keynote_story` 时，页面可以降低正文密度，让大标题、巨型数字、图片、引用、色块和节奏承担主要任务。复杂解释应进入讲稿、备注、备份页或口头表达，不要塞进主屏。
+
+**设计感研究材料保留证据结构。** 当 `communication_profile=research_review` 或启用 `domain_profile: financial_report_review` 时，强视觉页面仍应保留来源、单位、数据口径、免责声明和必要读图结构。视觉语言可以改变页面气质，但不能取消可追责性。
+
+**`editorial_ink` 的 native 语法。** 推荐使用大号衬线标题、非衬线正文、等宽元数据、深浅页面节奏、ghost number、细线、低饱和 accent、纸色 / 深色背景、原生 shape chart 和杂志式留白。避免把 HTML 页面截图贴进 PPT，优先用 PowerPoint 原生文本框、形状、线条、表格和可编辑图表表达。
+
+**`swiss_modernist` 的 native 语法。** 推荐使用左上标题轴、12/16 列网格、单一 accent、直角纯色块、1px hairline、低字重无衬线大字、统一图片槽位和登记版式思维。避免多色高亮、渐变、阴影、圆角、居中标题和临时发明的无网格结构。
+
+**主题节奏进入 `rhythm_role`。** 强设计感 deck 应在 narrative 阶段安排 `opener`、`evidence`、`breath`、`transition`、`dense`、`closing` 等角色，避免连续多页同色、同构或同密度。`breath` 页不是空页，而是降低信息负载、重建注意力的页面。
+
+**可复用 recipe 应先少而准。** 第一批 native recipe 优先覆盖 `editorial-cover`、`editorial-board-memo`、`editorial-big-number`、`editorial-product-mix-strip`、`editorial-margin-mechanism`、`editorial-data-pipeline`、`swiss-split-statement`、`swiss-kpi-tower`、`swiss-duo-compare`、`swiss-image-hero`。不要为了追求样式数量把语义重复的页面注册成多个 recipe。
+
 ## 图表与图片
 
 **图表先服务结论。** 图表类型应响应页面 message，而不是响应作者手边最熟的函数。
@@ -152,6 +168,8 @@
 
 **版心稳定比装饰更重要。** 表格、图表和摘要框应挂到同一版心，右侧点评框、底部数据表和页脚应跨页复用同一边界。视觉增强应服务阅读路径，不应让页面变成白底默认图表加零散卡片。
 
+**研报型 deck 可以使用强视觉语言。** 如果任务是财报点评或研究解读，但传播场景偏分享、私享会或公开演讲，可以在 `domain_profile: financial_report_review` 之上使用 `visual_profile: editorial_ink`。这时页面可以更像杂志或 keynote，但图题、单位、来源注、风险边界和表格对齐仍应兑现。
+
 ## 复核底线
 
 **以下问题视为 `fatal`。** 弱信息占标题区、文本与背景对比严重不足、图表明显拉伸、装饰层压正文、一页没有单一视觉中心。
@@ -159,3 +177,5 @@
 **以下问题视为 `warning`。** 网格不齐、卡片间距不稳、标题只有主题没有结论、图例离数据太远、同类页面风格漂移。
 
 **以下问题视为 `preference`。** 标题还可更像 answer title、色彩预算还能更收、同 archetype 的视觉变体还能更统一。
+
+**强设计感页面还要检查 profile 兑现。** `editorial_ink` 页面应检查衬线 / 非衬线 / 等宽分工、深浅节奏、ghost / hairline / 留白是否服务内容；`swiss_modernist` 页面应检查单一 accent、左上标题轴、直角、hairline、网格和图片槽位是否稳定。没有兑现这些 profile 的页面，即使自动 gate 通过，也只能算结构可用，不能算设计目标完成。

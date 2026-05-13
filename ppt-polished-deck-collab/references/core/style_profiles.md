@@ -12,6 +12,12 @@
 
 **内部再映射到 profile。** 用户不需要听到 `source_context`、`delivery_context`、`visual_profile` 这些字段名。
 
+## 组合顺序
+
+**先定传播场景，再定材料类型，再定视觉语言。** `delivery_context` 决定读者是否需要无人讲解也能读懂，`communication_profile` 决定页面服务研究、商业、技术还是 keynote 叙事，`visual_profile` 决定页面用什么视觉语法，`density_profile` 决定信息负载，`editability_profile` 决定对象可维护性。`theme_tokens.domain_profile` 再补充券商研报、财报点评等行业纪律。
+
+**不要把 visual profile 当成整套任务定义。** `editorial_ink` 和 `swiss_modernist` 只回答视觉语言。个人风格强烈的演讲通常是 `speaker-led_stage_deck + keynote_story + low_density_stage`，因此页面只承载背景、记忆点和视觉锚点；设计感财报或研究分享可以是 `hybrid_review_deck + research_review + editorial_ink + balanced_brief`，并同时启用 `domain_profile: financial_report_review` 保留来源、单位、免责声明和读图结构。
+
 ## Source Context
 
 **`template_locked`。** 用户提供了必须沿用的正式模板。必须先做 template audit，再围绕模板页族、母版元素和真实字号系统规划页面。
@@ -48,9 +54,9 @@
 
 **`corporate_clear`。** 商业汇报默认风格。允许多形状、多图表、多注释和矩阵，视觉目标是清晰、稳定、克制。避免把页面做成海报。
 
-**`editorial_ink`。** 电子杂志 / 电子墨水方向。适合观点表达、人文叙事、行业观察和带图片的讲述型材料。重点是图文叙事、hero / non-hero 节奏、照片作为证据和情绪锚点、克制色彩、引用页和大字报页。
+**`editorial_ink`。** 电子杂志 / 电子墨水方向。适合观点表达、人文叙事、行业观察和带图片的讲述型材料，也可以服务研究 / 财报主题的强视觉分享版。重点是图文叙事、hero / non-hero 节奏、照片或数据图形作为证据和情绪锚点、克制色彩、引用页、大字报页、ghost number、细线和原生 shape chart。它不等于低信息密度；信息密度仍由 `delivery_context` 与 `density_profile` 决定。
 
-**`swiss_modernist`。** Swiss Style 方向。适合科技产品、方法论、数据大字报、工程和设计领域分享。重点是 12/16 列网格、单一 accent、直角、发丝线、低字重、版式登记、图片槽位和标题不居中。
+**`swiss_modernist`。** Swiss Style 方向。适合科技产品、方法论、数据大字报、工程和设计领域分享，也适合需要强秩序感的数据型演示。重点是 12/16 列网格、单一 accent、直角、发丝线、低字重、版式登记、图片槽位和左上标题轴。它不替代 diagram / chart / table 模块，只给这些对象提供更严格的版式语法。
 
 **`product_launch`。** 产品发布、路演和 demo day。它通常混合强 hero 页、产品图、路线图、证据页和商业汇报式数据页。
 
@@ -80,7 +86,8 @@
 | 会议现场汇报，之后会转发 | `hybrid_review_deck + business_report + corporate_clear + balanced_brief + chart_editable` |
 | 技术方案说明 | `hybrid_review_deck + technical_explainer + corporate_clear + balanced_brief + fully_editable` |
 | 研究 / 财报点评 | `self-contained_reading_deck + research_review + corporate_clear + dense_reference + mixed_assets` |
-| 发布会 / 分享 | `speaker-led_stage_deck + keynote_story + editorial_ink/product_launch + low_density_stage + mixed_assets` |
+| 个人风格演讲 / 分享 | `speaker-led_stage_deck + keynote_story + editorial_ink/product_launch + low_density_stage + mixed_assets` |
+| 设计感研究 / 财报分享 | `hybrid_review_deck + research_review + editorial_ink + balanced_brief + fully_editable/mixed_assets`，并在 `theme_tokens` 中启用相关 `domain_profile` |
 | 瑞士风方法论演示 | `speaker-led_stage_deck + keynote_story + swiss_modernist + low_density_stage + mixed_assets` |
 
 ## 设计底线
