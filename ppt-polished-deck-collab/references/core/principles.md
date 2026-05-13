@@ -60,6 +60,8 @@
 
 **Editable-by-default。** 默认优先交付可编辑对象，包括文本、形状、图表和必要的 connector。截图、整页位图和不可维护导出物只能是明确受限场景下的例外。
 
+**Native background by default。** 页面底色、纸纹、渐变、网格、色块和纯装饰底板应优先使用 PowerPoint 原生背景、矩形、线条、pattern 或母版元素实现。不要把整页 PNG / JPG 铺满画布来冒充背景；只有真实照片、授权图、产品场景图或已在 `slide_contract / asset_slot` 中声明的 `image-hero` / `image-generation` 主视觉，才允许 full-bleed picture。
+
 **Typography 是 deck 级策略。** 在没有品牌模板或既有母版约束时，中英混排 deck 的默认字体策略应在 deck 级 theme tokens 中显式定义，并同时覆盖普通文本、原生表格、Office chart、Python figure 与最终 `pptx` 的字体槽位。默认至少应定义 `hero_title`、`section_title`、`page_title`、`subtitle`、`minor_title`、`body`、`label`、`caption`、`table` 与 paragraph policy。中文任务的全局默认是中文宋体、英文 Times New Roman、正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、`1.5` 倍正文行距；标题按页面层级适当放大。
 
 **标题和正文的行距职责不同。** 标题类文本的职责是建立阅读节奏、信息层级和视觉锚点，它不是连续阅读段落，因此默认应使用 `1.0` 倍行距，并保留 `0.5` 行的段前与段后空间来控制节奏。正文类文本承担连续阅读与信息吸收，默认应使用 `1.5` 倍行距，不应因为容器紧张就回退到更挤的行距。

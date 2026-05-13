@@ -54,7 +54,7 @@
 | `table-native` | 原生数据表、明细页、附录表 | `python-pptx` table | 中 | `available` | `preview_only` + `visual_review` |
 | `image-hero` | 背景图、产品图、截图、照片 | 图片文件 + `python-pptx` | 低 | `available` | `preview_only` |
 | `icon-accent` | 标题旁图标、卡片锚点、导航增强 | `icon_registry.py` + `PyMuPDF` | 低 | `available` | `preview_only` |
-| `image-generation` | GPT 生图、强风格 hero 图、场景图、截图再设计 prompt | GPT image API 或 manual web | 低 | `planned` | `image_generated` |
+| `image-generation` | GPT 生图、强风格 hero 图、场景图、截图再设计 prompt | `generate_image_asset.py` 或 manual web | 低 | `available` | `image_generated` |
 
 ## 当前已落地的主链路
 
@@ -69,13 +69,14 @@
 - `scripts/check_pptx_connectors.py`
 - `scripts/lint_deck_assets.py`
 - `scripts/icon_registry.py`
+- `scripts/generate_image_asset.py`
 - `scripts/ppt_quality_helpers.py`
 - `scripts/ppt_asset_helpers.py`
 - `scripts/python_figure_helpers.py`
 
 **当前最成熟的专项能力仍然是 diagram connector。** 复杂图的真绑定 connector、`pptx XML` 校验、PowerPoint 预览导出，是目前最强的工程壁垒，应继续作为新 skill 的深能力保留。
 
-**当前 GPT 生图先以接口规范接入。** skill 已经定义 `image-generation` 的 slot、prompt 文档、manual web backend 和 API backend 要求，但还没有稳定生成脚本。真实执行时应如实记录 `planned`、`pending_user_generation` 或 `blocked` 状态。
+**当前 GPT 生图已经有最小 API backend。** `scripts/generate_image_asset.py` 负责单个 `image-generation` asset slot 的 API 生图、图片落盘和 metadata 记录；`manual-web` 仍用于没有 API 权限或需要用户网页端生成的场景。真实执行时应如实记录 `generated`、`pending_user_generation` 或 `blocked` 状态。
 
 ## 工具栈与职责
 
@@ -88,7 +89,7 @@
 | `PyMuPDF` | PDF 渲染、SVG 渲染、icon 主 backend | 否 | `available` |
 | Mermaid | diagram 草稿和讨论层 | 否 | `partial` |
 | `matplotlib` / `seaborn` / `pandas` | Python figure 生成 | 否 | `available` |
-| GPT Image API / ChatGPT web | 强风格图片、场景图和 prompt-driven image slot | 否 | `planned` |
+| GPT Image API / ChatGPT web | 强风格图片、场景图和 prompt-driven image slot | 否 | `available` |
 
 ## 如何选择技术路线
 
@@ -99,6 +100,8 @@
 **图表先判断数字是否会继续改。** 会后高概率继续改数、改系列、改图例的页，应优先走 `office-chart-native`。一次性、视觉密度极高、超出 Office 图表表达能力的页，走 `python-figure-image`。
 
 **icon 永远是补充资产。** icon 只负责节奏增强、导航锚点和轻语义提示，不应替代主结构、主图表和主证据。
+
+**背景不是图片模块。** 如果页面只是需要底色、纸纹、渐变、浅网格、装饰色块或整页视觉底板，应优先使用 `slide.background.fill`、母版背景、原生形状、线条和透明度组合。`image-hero` 和 `image-generation` 只用于有独立资产角色的照片、产品场景、截图、主视觉或概念视觉，不用于把整页版式烤成背景图。
 
 **生图永远不承载精确证据。** `image-generation` 适合氛围图、场景图、产品情境图、强风格 hero 图和截图再设计，不适合生成带精确数字、财务事实、复杂文字或真实 logo 的证据图。
 
@@ -116,8 +119,8 @@
 | 研究热力图、密集散点、复杂排序图 | `python-figure-image` | 表达能力强 | 强行用 Office chart 拼凑 |
 | 明细数据、财务表、附录表 | `table-native` | 行列语义清晰且可继续编辑 | 用 shape grid 冒充数据表 |
 | 摘要页、结论页、章节页 | `text-layout-native` + 可选 `icon-accent` | 以语言和层次为主 | 先找图再拼页 |
-| 截图、产品界面、品牌大图 | `image-hero` | 图片本身就是证据 | 用大量形状手工重画 |
-| 强风格 hero、场景化视觉、概念主图 | `image-generation` | 视觉情绪与记忆点优先 | 把精确数字或长文字交给生图 |
+| 截图、产品界面、品牌大图 | `image-hero` | 图片本身就是证据 | 用整页图片冒充背景底板 |
+| 强风格 hero、场景化视觉、概念主图 | `image-generation` | 视觉情绪与记忆点优先 | 把精确数字、长文字或整页版式交给生图 |
 
 **deck 级质量 gate 分两段。** `package_preflight` 与 `structure_precheck` 负责 `build` 后的文件级与结构级检查；`render_review` 负责 `preview` 后的成图级检查。
 

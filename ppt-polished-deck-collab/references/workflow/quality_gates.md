@@ -87,6 +87,7 @@ python scripts/check_pptx_package_preflight.py \
 - `textbox_fit_failure`
 - `text_occluded_by_shape`
 - `structured_chart_label_collision_not_checked`
+- `full_slide_picture_background_risk`
 
 **它现在还应显式汇报量化指标。** 首期至少应给出：
 - `overflow_ratio`
@@ -95,6 +96,8 @@ python scripts/check_pptx_package_preflight.py \
 - `overflow_area_pt2`
 
 **首期先做结构预检，不直接做 PNG 终检。** 结构预检更适合当前 skill，因为它能在 `slide_id / shape_id` 层直接指出问题位置，也更容易驱动 agent 定向修复。
+
+**整页图片默认拦截。** `full_slide_picture_background_risk` 用来防止把整页 PNG / JPG 当成背景底板。默认严重级别是 `error`；如果页面确实是声明过的 full-bleed `image-hero` 或 `image-generation` 主视觉，才可以在明确记录原因后用 `--full-slide-picture-severity warning` 降级。
 
 **首期边界必须写清楚。** 对已经图片化的复杂图、外部导入图和 chart 内部细粒度标签，首期允许显式输出 `not_checked`，而不是假装通过。
 

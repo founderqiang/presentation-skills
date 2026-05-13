@@ -194,6 +194,10 @@ def lint_asset_slot(
             warnings.append(f"{slot_label}: manual-web 生图通常应进入 pending_user_generation，除非 prompt 还未写出")
         if backend == "manual-web" and status == "pending_user_generation" and not input_files:
             warnings.append(f"{slot_label}: pending_user_generation 应登记 prompt 文档 input_files")
+        if backend == "gpt-image-api" and status == "pending_user_generation":
+            warnings.append(f"{slot_label}: gpt-image-api 不应停在 pending_user_generation，应使用 planned/ready/generated/blocked 等状态")
+        if backend == "gpt-image-api" and status in {"generated", "inserted", "validated"} and "validation_evidence" not in slot:
+            warnings.append(f"{slot_label}: gpt-image-api 已生成图片时应登记 metadata JSON 到 validation_evidence")
         if status == "pending_user_generation" and output_files:
             warnings.append(f"{slot_label}: pending_user_generation 已有 output_files，建议更新为 generated 或 inserted")
 

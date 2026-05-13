@@ -29,6 +29,18 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 **两类常见定位要用同一套概念表达。** 个人风格强烈、有人在旁边讲的演讲通常是 `speaker-led_stage_deck + keynote_story + editorial_ink/product_launch + low_density_stage`，页面主要承载背景、记忆点和视觉锚点。券商研报 / 财报点评通常启用 `research_review + domain_profile: financial_report_review`，要求来源、单位、图号、免责声明、稳定版心和表格语义；如果传播场景偏分享，也可以叠加 `visual_profile: editorial_ink`，但不能取消研报纪律。
 
+## Planning 纪律
+
+如果 agent 使用显式 plan、checklist 或任务追踪，计划必须写成本 skill 的工作范式，而不是泛泛写“制作 PPT / 调整设计 / 检查结果”。
+
+**复杂 deck 的计划骨架应对齐主链路。** 推荐计划项按 `deck_contract -> narrative / slide_contracts -> asset_slots -> build route / native PPTX -> validation / preview -> human checkpoint` 展开。轻量任务可以压缩成两三项，但仍要看得出正在先锁合同、再处理资产、最后验证。
+
+**计划项要使用本 skill 的主对象。** 例如“确认 `deck_contract` 与模板边界”“派生 `slide_contracts`”“登记 `image-generation` / chart / diagram `asset_slots`”“生成 editable `pptx` 并导出 preview”“跑 quality gates 并做 visual review”。如果计划是给用户看的，可以用自然语言解释这些对象，但不要退回到无结构的泛称。
+
+**生图任务也要进入计划。** 需要 GPT 生图时，计划应写清 `image-generation asset_slot -> prompt / API backend -> output_files / metadata -> image_generated review`，不能让生图绕过 slot 合同直接成为页面素材。
+
+**计划状态要随工作更新。** 每完成一个主阶段就更新状态；如果因为缺数据、缺权限、缺 API 或缺预览工具而阻塞，应把对应 slot 或 gate 标记为 `blocked` / `not_checked`，不要用占位文件伪装完成。
+
 ## 什么时候用
 
 - 用户要做高质量 PPT、演示稿、汇报 deck、路演稿、研究汇报、技术方案 deck、教学或培训材料。
@@ -68,7 +80,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 5. **统一做 asset plan，不让模块各自抢入口**
 - 所有图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都通过 `asset_slot` 进入页面。
 - 准确数据且会后要改数，优先 `office-chart-native` 或 `table-native`；复杂研究图、热力图、排序图，优先 `python-figure-image`；后续要拖动维护的流程图 / 架构图 / dataflow，走 `diagram-connector`；只服务解释的结构图，走 `diagram-visual`；节奏增强用 `icon-accent`；氛围图、场景图、产品情境图和强风格 hero 图走 `image-generation`。
-- GPT 生图有两条 backend：API backend 直接生成图片；manual web backend 由 agent 写出 prompt 文档，标记为 `pending_user_generation`，等用户把图片放回 workspace 后再登记为同一个 slot 的 output。
+- GPT 生图有两条 backend：`gpt-image-api` backend 直接生成图片和元数据；`manual-web` backend 由 agent 写出 prompt 文档，标记为 `pending_user_generation`，等用户把图片放回 workspace 后再登记为同一个 slot 的 output。具体命令和参数看 `references/modules/image_generation_support.md`。
 
 6. **再选 build route 与生成 editable PPT**
 - 先看 `references/modules/technical_support.md`，明确每个 slot 对应的实现模块、backend 和验证要求。

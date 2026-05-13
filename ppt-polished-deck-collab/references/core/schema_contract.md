@@ -138,26 +138,29 @@ page_role: "main_visual"
 asset_type: "image"
 content_source: "generated"
 module: "image-generation"
-backend: "manual-web"
+backend: "gpt-image-api"
 aspect_ratio: "16:9"
 crop_policy: "cover_center_safe_area"
 editable_expectation: "snapshot_allowed"
 input_files:
   - "assets/images/prompts/s05_hero_image.md"
-output_files: []
+output_files:
+  - "assets/images/generated/s05_hero_image_v01.png"
 constraints:
   language: "zh"
   no_page_chrome: true
   no_fake_logo: true
 validation_mode: "image_generated"
-status: "pending_user_generation"
+status: "generated"
+validation_evidence:
+  - "validation/image_generation/s05_hero_image.metadata.json"
 ```
 
 **`asset_type`。** 推荐值：`text`、`chart`、`figure`、`table`、`diagram`、`icon`、`image`、`prompt`、`mixed`。
 
 **`module`。** 推荐值：`text-layout-native`、`office-chart-native`、`python-figure-image`、`table-native`、`diagram-connector`、`diagram-visual`、`icon-accent`、`image-generation`。
 
-**`backend`。** 示例值：`python-pptx`、`matplotlib`、`seaborn`、`icon-registry`、`gpt-image-api`、`manual-web`。
+**`backend`。** 示例值：`python-pptx`、`matplotlib`、`seaborn`、`icon-registry`、`gpt-image-api`、`manual-web`。`gpt-image-api` 表示由 `scripts/generate_image_asset.py` 生成图片和 metadata；`manual-web` 表示 prompt 已写好但等待用户网页端生成。
 
 **`status`。** 推荐值：`planned`、`ready`、`generated`、`pending_user_generation`、`inserted`、`validated`、`blocked`。
 

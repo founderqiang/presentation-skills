@@ -18,19 +18,20 @@ page_role: "main_visual"
 asset_type: "image"
 content_source: "generated"
 module: "image-generation"
-backend: "manual-web"
+backend: "gpt-image-api"
 aspect_ratio: "16:9"
 crop_policy: "cover_center_safe_area"
 editable_expectation: "snapshot_allowed"
 input_files:
   - "assets/images/prompts/s05_hero_image.md"
-output_files: []
+output_files:
+  - "assets/images/generated/s05_hero_image_v01.png"
 constraints:
   no_page_chrome: true
   no_fake_logo: true
   no_precise_numbers: true
 validation_mode: "image_generated"
-status: "pending_user_generation"
+status: "generated"
 ```
 
 **推荐目录。**
@@ -49,7 +50,27 @@ validation/
 
 ## backend
 
-**`gpt-image-api` 用于 agent 可直接调用 API 的场景。** 执行前必须查当前官方 API 文档，确认模型名、尺寸、输出格式、透明背景、编辑接口和安全限制。不要把过期模型名或参数写死进长期规范。
+**`gpt-image-api` 用于 agent 可直接调用 API 的场景。** 当前标准脚本是 `scripts/generate_image_asset.py`，它读取 prompt，调用 OpenAI 兼容 Images API，写出图片和同名元数据 JSON。脚本默认模型是 `gpt-image-2`，默认返回格式是 `b64_json`，并支持 `OPENAI_API_KEY` / `OPENAI_BASE_URL` 与 `OPENAINEXT_API_KEY` / `OPENAINEXT_API_BASE`。
+
+**API backend 只生成 slot artifact。** 它不直接改 PPT，不决定页面叙事，不替代 preview 和 visual review。生成后应把图片路径写回 `asset_slot.output_files`，把元数据 JSON 放到 `validation/image_generation/`，再由 build 脚本按 slot 插入 PPT。
+
+**推荐命令如下。**
+
+```bash
+python scripts/generate_image_asset.py \
+  --prompt-file assets/images/prompts/s05_hero_image.md \
+  --out assets/images/generated/s05_hero_image_v01.png \
+  --metadata-out validation/image_generation/s05_hero_image.metadata.json \
+  --slot-id s05_hero_image \
+  --page-role main_visual \
+  --aspect-ratio 16:9 \
+  --crop-policy cover_center_safe_area \
+  --model gpt-image-2 \
+  --size 1536x864 \
+  --quality low
+```
+
+**API 配置不应进入文档或 metadata。** 密钥只从环境变量、命令行或 `.env` 读取，脚本只记录 `base_url_set` 和配置来源，不记录 value。使用中转站时优先通过 `.env` 提供 `OPENAINEXT_API_BASE` 与 `OPENAINEXT_API_KEY`。
 
 **`manual-web` 用于用户在 ChatGPT 网页端生图的场景。** agent 写出 prompt 文档，把 slot 状态标记为 `pending_user_generation`，等用户把图片放回 `assets/images/generated/` 后，再登记 `output_files` 并继续组装 PPT。
 
@@ -108,6 +129,8 @@ validation/
 - backend 与参数记录
 - 输出文件路径
 - 事实、文字、安全区、裁切和页面 chrome 复核结论
+
+**API backend 的最低文件证据。** `gpt-image-api` backend 至少要留下图片文件和 metadata JSON。metadata 记录 prompt、model、size、quality、output format、response source、slot id、输出路径和耗时，不记录密钥和图片正文。
 
 **`pending_user_generation` 不是失败。** manual web backend 下，等待用户生成图片是正常中间状态，但不能把它伪装成 `generated` 或 `validated`。
 

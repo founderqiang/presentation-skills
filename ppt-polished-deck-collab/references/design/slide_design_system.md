@@ -120,6 +120,10 @@
 
 **角语言必须统一。** 同一套 deck 里的主要卡片、节点和信息框，应保持一致的角语言，不要混合直角与圆角而没有语义解释。
 
+**背景优先用原生对象。** 页面背景的职责是承载阅读环境，不是成为不可编辑的整页截图。纯色、纸色、深浅页面节奏、浅纹理感、网格线、ghost number、色块和装饰线应优先用 `slide.background.fill`、母版背景、原生矩形、线条、透明度和 pattern 组合实现。
+
+**整页图片必须有资产角色。** Full-bleed picture 只适合真实照片、授权图、产品场景图、主视觉 hero 或生成式概念视觉，并且应在 `slide_contract` 或 `asset_slot` 中体现为 `image-hero` / `image-generation`。如果一张图只是把底色、纹理、图表、装饰和版式烤成整页背景，它应被视为可编辑性失败。
+
 ## 强设计感 Native PPTX
 
 **强设计感仍然服从 deck contract。** `editorial_ink`、`swiss_modernist` 和 `product_launch` 只定义视觉语言，不改变 `brief.md -> deck_narrative.md -> slide_specs.yaml -> asset_slots -> native PPTX build -> validation` 主链路。

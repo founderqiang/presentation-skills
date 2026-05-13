@@ -24,6 +24,7 @@ from pptx import Presentation
 
 from ppt_quality_helpers import (
     QualityIssue,
+    RectPt,
     collect_shape_inventory,
     collect_text_items,
     dump_json,
@@ -33,6 +34,8 @@ from ppt_quality_helpers import (
     shape_can_occlude,
     write_issue_bundle,
 )
+
+FULL_SLIDE_PICTURE_COVERAGE_THRESHOLD = 0.95
 
 
 def parse_args() -> argparse.Namespace:
@@ -48,6 +51,12 @@ def parse_args() -> argparse.Namespace:
         choices=["error", "warning", "never"],
         default="error",
         help="达到哪个严重级别时返回非零 exit code",
+    )
+    parser.add_argument(
+        "--full-slide-picture-severity",
+        choices=["error", "warning", "not_checked"],
+        default="error",
+        help="整页图片对象的严重级别；默认 error，用于拦截把整页图片当背景的反模式",
     )
     return parser.parse_args()
 
@@ -288,6 +297,60 @@ def structured_object_overlap_issues(shape_inventory) -> list[QualityIssue]:
     return issues
 
 
+def slide_coverage_ratio(rect: RectPt, slide_rect: RectPt) -> float:
+    """计算对象矩形覆盖 slide 可见区域的比例。"""
+    slide_area = max(1.0, slide_rect.width * slide_rect.height)
+    return round(rect_intersection_area(rect, slide_rect) / slide_area, 4)
+
+
+def full_slide_picture_background_issues(
+    shape_inventory,
+    *,
+    slide_width_pt: float,
+    slide_height_pt: float,
+    severity: str,
+) -> list[QualityIssue]:
+    """检查是否存在用整页图片冒充 PPT 原生背景的风险。"""
+    issues: list[QualityIssue] = []
+    slide_rect = RectPt(left=0.0, top=0.0, width=slide_width_pt, height=slide_height_pt)
+
+    for record in shape_inventory:
+        if not record.is_picture:
+            continue
+
+        coverage = slide_coverage_ratio(record.rect_pt, slide_rect)
+        if coverage < FULL_SLIDE_PICTURE_COVERAGE_THRESHOLD:
+            continue
+
+        issues.append(
+            QualityIssue(
+                severity=severity,
+                issue_type="full_slide_picture_background_risk",
+                message="图片对象覆盖了几乎整个页面，存在把整页图片当作背景底板的反模式风险。",
+                slide_number=record.slide_number,
+                shape_id=record.shape_id,
+                source_kind="picture",
+                details={
+                    "shape_name": record.shape_name,
+                    "shape_type": record.shape_type,
+                    "z_order": record.z_order,
+                    "rect_pt": asdict(record.rect_pt),
+                    "slide_rect_pt": asdict(slide_rect),
+                    "coverage_ratio": coverage,
+                    "threshold": FULL_SLIDE_PICTURE_COVERAGE_THRESHOLD,
+                },
+                suggested_fix=(
+                    "如果它只是底色、纸纹、渐变、网格或装饰底板，应改用 slide.background.fill "
+                    "或 PPT 原生矩形、线条、色块和 pattern 组合。只有真实照片、授权图、产品场景图 "
+                    "或已在 slide_contract / asset_slot 中声明的 image-hero / image-generation 主视觉，"
+                    "才应保留 full-bleed picture，并在 visual review 中说明。"
+                ),
+            )
+        )
+
+    return issues
+
+
 def main() -> int:
     """执行 structure precheck。"""
     args = parse_args()
@@ -302,6 +365,8 @@ def main() -> int:
     )
 
     prs = Presentation(pptx_path)
+    slide_width_pt = prs.slide_width.pt
+    slide_height_pt = prs.slide_height.pt
     shape_inventory = collect_shape_inventory(prs)
     text_items = collect_text_items(prs)
     issues: list[QualityIssue] = []
@@ -312,6 +377,16 @@ def main() -> int:
         issues.extend(occlusion_issues(text_item, shape_inventory))
 
     issues.extend(structured_object_overlap_issues(shape_inventory))
+    issues.extend(
+        full_slide_picture_background_issues(
+            shape_inventory,
+            slide_width_pt=slide_width_pt,
+            slide_height_pt=slide_height_pt,
+            severity=args.full_slide_picture_severity,
+        )
+    )
+
+    slide_rect = RectPt(left=0.0, top=0.0, width=slide_width_pt, height=slide_height_pt)
 
     for shape_record in shape_inventory:
         if shape_record.has_chart:
@@ -331,7 +406,12 @@ def main() -> int:
                     suggested_fix="当前先保留逐页预览复核；后续可补 chart title / axis / legend / data label 的结构化检查。",
                 )
             )
-        if shape_record.is_picture and shape_record.rect_pt.width >= 80 and shape_record.rect_pt.height >= 60:
+        if (
+            shape_record.is_picture
+            and shape_record.rect_pt.width >= 80
+            and shape_record.rect_pt.height >= 60
+            and slide_coverage_ratio(shape_record.rect_pt, slide_rect) < FULL_SLIDE_PICTURE_COVERAGE_THRESHOLD
+        ):
             issues.append(
                 QualityIssue(
                     severity="not_checked",

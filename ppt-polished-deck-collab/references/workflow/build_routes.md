@@ -26,6 +26,8 @@
 
 **Mermaid 不是硬依赖。** 只有 diagram 页需要快速草图时，它才是有价值的可选工具。
 
+**GPT Image API 是可选资产 backend。** 它只服务 `image-generation` asset slot，依赖 `openai` SDK 和 `OPENAI_API_KEY` / `OPENAINEXT_API_KEY`。如果没有 API 权限，仍可走 `manual-web`，但状态必须停在 `pending_user_generation` 或 `blocked`，不能伪造已生成图片。
+
 ## 路线矩阵
 
 | 路线 | 适合场景 | 关键依赖 | 验证重点 |
@@ -37,6 +39,7 @@
 | Diagram visual | 只需表达结构，不靠拖动维护 | `python-pptx` | 显式 `connectors=0` 或纯预览验证 |
 | Office chart native | 趋势、比较、构成图会后要继续改数 | `python-pptx chart` API | 图表可编辑、预览稳定 |
 | Python figure image | 热力图、排序图、研究图表达能力优先 | `matplotlib` / `seaborn` / `pandas` | 300 DPI、比例稳定、预览清晰 |
+| Image generation API | 强风格 hero、场景图、截图再设计 | `openai` SDK + API key | prompt、参数、输出文件、图片内部事实复核 |
 | PowerPoint 预览导出 | 本机高保真 review | PowerPoint + PDF 渲染工具 | 页数一致、PNG 落盘 |
 | LibreOffice 预览导出 | Linux / CI / 无 Office 环境 | LibreOffice + PDF 渲染工具 | 页数一致、重点页人工复核 |
 
@@ -72,6 +75,16 @@
 
 **不要把 editable 当成唯一目标。** 当原生 chart 会明显损伤表达质量时，Python figure 是更合理的路线。
 
+## 如何选 image-generation 路线
+
+**先判断图片是不是事实证据。** 如果图片需要承载真实财务数字、实验结论、真实 UI 文本或可追责图表，应改用 Office chart、Python figure、原生表格或真实截图。`image-generation` 只处理氛围、主视觉、截图再设计和概念视觉。
+
+**有 API 权限时优先 `gpt-image-api`。** 使用 `scripts/generate_image_asset.py` 生成单个 slot 的图片和 metadata；配置从 `OPENAI_API_KEY` / `OPENAI_BASE_URL` 或 `OPENAINEXT_API_KEY` / `OPENAINEXT_API_BASE` 读取。
+
+**没有 API 权限时走 `manual-web`。** agent 只写 prompt 文档和 slot 记录，等待用户把图片放回 workspace。此时状态应为 `pending_user_generation`，不能把未生成图片标记成 `generated`。
+
+**生成后仍需 preview 复核。** API 返回成功只说明图片文件存在，不说明它适合 PPT 页面。插入 PPT 后仍要检查安全区、裁切、对比度、图内文字、页面 chrome 和 deck profile 一致性。
+
 ## 如何选预览 backend
 
 **本机有 PowerPoint 时优先 PowerPoint。** 这是更接近最终显示效果的高保真路线。
@@ -89,6 +102,8 @@
 ```bash
 python scripts/check_environment.py
 ```
+
+环境检查会报告 `image_generation_api` 是否具备最低条件。这个检查只看 `openai` SDK 与环境变量或 `.env` 中是否存在必要 key，不做联网探测，也不输出密钥。
 
 **如果明确要求某个 preview backend，可强制检查。**
 

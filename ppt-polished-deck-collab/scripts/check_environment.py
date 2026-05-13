@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -22,6 +23,32 @@ from pathlib import Path
 
 POWERPOINT_APP = Path("/Applications/Microsoft PowerPoint.app")
 OFFICE_TEMP_DIR = Path.home() / "Library/Group Containers/UBF8T346G9.Office/TemporaryItems"
+
+
+def _load_env_file_keys(path: Path) -> set[str]:
+    """读取 `.env` 中出现过的 key 名，不读取或输出 value。"""
+    if not path.exists():
+        return set()
+
+    keys: set[str] = set()
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key = line.split("=", 1)[0].strip()
+        if key:
+            keys.add(key)
+    return keys
+
+
+def _find_default_env_file(start: Path) -> Path | None:
+    """从当前目录向上查找最近的 `.env` 文件。"""
+    current = start.resolve()
+    for path in (current, *current.parents):
+        candidate = path / ".env"
+        if candidate.exists():
+            return candidate
+    return None
 
 
 def _import_version(module_name: str, version_attr: str = "__version__") -> tuple[bool, str]:
@@ -80,6 +107,7 @@ def main() -> int:
     matplotlib_ok, matplotlib_version = _import_version("matplotlib")
     seaborn_ok, seaborn_version = _import_version("seaborn")
     numpy_ok, numpy_version = _import_version("numpy")
+    openai_ok, openai_version = _import_version("openai")
 
     pdftoppm_path = shutil.which("pdftoppm")
     pdftotext_path = shutil.which("pdftotext")
@@ -105,6 +133,16 @@ def main() -> int:
     python_figure_ok = pandas_ok and matplotlib_ok and seaborn_ok and numpy_ok
     office_chart_ok = pptx_ok
     mermaid_draft_ok = node_ok and npm_ok and mmdc_ok
+    env_file = _find_default_env_file(Path.cwd())
+    env_file_keys = _load_env_file_keys(env_file) if env_file else set()
+    api_key_in_shell = bool(os.getenv("OPENAI_API_KEY") or os.getenv("OPENAINEXT_API_KEY"))
+    api_key_in_env_file = bool({"OPENAI_API_KEY", "OPENAINEXT_API_KEY"} & env_file_keys)
+    base_url_set = bool(
+        os.getenv("OPENAI_BASE_URL")
+        or os.getenv("OPENAINEXT_API_BASE")
+        or {"OPENAI_BASE_URL", "OPENAINEXT_API_BASE"} & env_file_keys
+    )
+    image_generation_api_ok = openai_ok and (api_key_in_shell or api_key_in_env_file)
 
     available_routes: list[str] = []
     if pptx_ok:
@@ -122,6 +160,8 @@ def main() -> int:
         available_routes.append("diagram_visual")
     if mermaid_draft_ok:
         available_routes.append("diagram_mermaid_draft")
+    if image_generation_api_ok:
+        available_routes.append("image_generation_api")
 
     result = {
         "system": {
@@ -135,6 +175,7 @@ def main() -> int:
             "matplotlib": {"ok": matplotlib_ok, "detail": matplotlib_version},
             "seaborn": {"ok": seaborn_ok, "detail": seaborn_version},
             "numpy": {"ok": numpy_ok, "detail": numpy_version},
+            "openai": {"ok": openai_ok, "detail": openai_version},
         },
         "tools": {
             "pdftoppm": {"ok": pdftoppm_ok, "detail": pdftoppm_version},
@@ -146,6 +187,15 @@ def main() -> int:
             "powerpoint_app": {"ok": POWERPOINT_APP.exists(), "detail": str(POWERPOINT_APP)},
             "office_temp_dir": {"ok": OFFICE_TEMP_DIR.exists(), "detail": str(OFFICE_TEMP_DIR)},
         },
+        "api_backends": {
+            "image_generation_api": {
+                "ok": image_generation_api_ok,
+                "openai_sdk": openai_ok,
+                "api_key_source": "shell" if api_key_in_shell else (".env" if api_key_in_env_file else "not found"),
+                "base_url_set": base_url_set,
+                "env_file": str(env_file) if env_file else None,
+            }
+        },
         "routes": available_routes,
     }
 
@@ -156,6 +206,7 @@ def main() -> int:
     print(f"[INFO] matplotlib: ok={matplotlib_ok} detail={matplotlib_version}")
     print(f"[INFO] seaborn: ok={seaborn_ok} detail={seaborn_version}")
     print(f"[INFO] numpy: ok={numpy_ok} detail={numpy_version}")
+    print(f"[INFO] openai: ok={openai_ok} detail={openai_version}")
     print(f"[INFO] pdftoppm: ok={pdftoppm_ok} detail={pdftoppm_version}")
     print(f"[INFO] pdftotext: ok={pdftotext_ok} detail={pdftotext_version}")
     print(f"[INFO] libreoffice: ok={libreoffice_ok} detail={libreoffice_version}")
@@ -163,6 +214,11 @@ def main() -> int:
     print(f"[INFO] npm: ok={npm_ok} detail={npm_version}")
     print(f"[INFO] mmdc: ok={mmdc_ok} detail={mmdc_version}")
     print(f"[INFO] powerpoint_preview: ok={powerpoint_ok} app={POWERPOINT_APP.exists()} temp={OFFICE_TEMP_DIR.exists()}")
+    print(
+        "[INFO] image_generation_api: "
+        f"ok={image_generation_api_ok} key_source={result['api_backends']['image_generation_api']['api_key_source']} "
+        f"base_url_set={base_url_set}"
+    )
     print(f"[INFO] available_routes: {', '.join(available_routes) if available_routes else '(none)'}")
 
     failed = False
