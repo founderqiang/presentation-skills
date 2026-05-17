@@ -10,6 +10,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 默认服务的是 **deck 级任务**，不是单页复杂图，也不是只会套模板。
 这个 skill 的工作方式是轻量的 deck 编译系统：先把用户需求、模板约束、页面叙事和资产需求收敛成可执行合同，再让图表、Python figure、diagram、icon、图片和生图模块按 slot 生产资产，最后组装原生 `pptx` 并验证。
 这个 skill 本身是高质量 PPT 的知识库。agent 必须主动使用里面的规范、经验、脚本和质量 gate；不能聊完需求后凭记忆直接动手，做到一半也不能忘记 deck contract、页面合同、资产 slot、typography / table policy、模板取证和验证链路。
+对于整套正式 deck、外发 deck、自解释 deck，或者用户使用“最高质量”“自由发挥”“研报风格”“公开课”等表述时，`自由发挥` 只代表内容判断和设计取舍授权，不代表可以跳过 workspace、`brief.md`、`deck_narrative.md`、slide contracts、asset plan 和 checkpoint。
 
 ## 核心概念
 
@@ -32,6 +33,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 ## Planning 纪律
 
 如果 agent 使用显式 plan、checklist 或任务追踪，计划必须写成本 skill 的工作范式，而不是泛泛写“制作 PPT / 调整设计 / 检查结果”。
+
+**复杂 deck 必须有阶段门。** 正式 deck 的 plan 不能直接从需求跳到 `pptx_assembly`。必须先完成 workspace 初始化、`brief.md`、`deck_narrative.md`、页面顶层设计和 planning checkpoint，再进入资产生产与完整 build。
 
 **复杂 deck 的计划骨架应对齐主链路。** 推荐计划项按 `deck_contract -> narrative / slide_contracts -> asset_slots -> build route / native PPTX -> validation / preview -> human checkpoint` 展开。轻量任务可以压缩成两三项，但仍要看得出正在先锁合同、再处理资产、最后验证。
 
@@ -66,40 +69,49 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 3. **建立 workspace 与 deck contract**
 - 如果用户没有现成 workspace，先按 `references/workflow/deck_workflow.md` 建立 `brief.md`、`deck_narrative.md`、`assets/`、`data/`、`build/`、`validation/`、`final/` 结构。
+- 新建整套 deck 时，优先使用 `scripts/init_deck_workspace.py` 初始化标准目录和两份主文档模板；没有使用脚本时，也必须手动落出同等结构。
 - `deck_contract` 应记录目标读者、使用场景、目标动作、模板约束、是否自解释、业务类型、视觉方向、信息密度、可编辑性要求、默认 typography / table policy 和验证要求。
 - 默认 typography policy 需要显式区分标题类文本与正文类文本：标题类默认 `1.0` 倍行距并保留 `0.5` 行段前 / 段后，正文类默认 `1.5` 倍行距。
 - 中文任务在没有模板或品牌约束时，默认采用中文宋体、英文 Times New Roman；正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、`1.5` 倍行距；表格五号约 `10.5pt`、单倍行距、段前段后 `0`、无特殊缩进、上下居中、表头居中、index / 类目列与文本列居左、财务数值列靠右。
 - 有模板时，模板真实字号系统优先于通用默认；中文默认只是无模板、无品牌约束时的回退基线。
+- `theme_tokens` 是 build 前必须锁定的合同字段，不能在构建脚本里临时发明一套字号。正文、卡片正文、解释句、图注和表格必须挂到对应 token；低于正文主档位的例外需要在 review note 中说明。
 
 4. **收敛 narrative，再派生 slide contracts**
 - 先写 `brief.md` 和 `deck_narrative.md`，再派生 `slide_specs.yaml`。叙事必须服从 deck contract，不能绕开模板、传播场景和可编辑性要求重新想象页面。
+- `deck_narrative.md` 先做顶层设计：章节结构、每页承担的任务、读者问题、关键结论、页面可见文案方向、证据 / 资产设想和 layout 方向。不要先组装 PPT，再在半成品上补叙事。
 - 每页至少定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`、`key_message`。
+- 每页必须区分 **页面可见文案** 与 **协作 / 讲者说明**。页面可见文案只写外发读者应直接看到的判断、事实、证据、定义和结论；`Narrative Role`、`Content Notes`、讲稿提示、敏感性处理策略、设计意图、给 agent 或合作者看的解释，不得直接进入 PPT 正文、卡片、图注或章节页。
+- 自解释 deck 不等于把内部讲解话术搬到页面上。应把“这页要说明什么”“公开课应如何处理”“建议讲者怎么讲”“这套解释能帮助听众理解”这类元叙述改写为读者可直接使用的历史判断、业务判断或机制说明，或放入备注 / narrative 文档。
 - 需要更完整控制时，再补 `layout_recipe`、`rhythm_role`、`asset_slots`、`visual_constraints`、`profile_validation_rules`。
 - source / delivery / communication / visual / density / editability profile 先看 `references/core/style_profiles.md`；页面原型、图表 / diagram / 语言选择再看 `references/design/design_support.md`；页面级视觉底线、强设计感 native PPTX 语法与网格规则再看 `references/design/slide_design_system.md`。
 
-5. **统一做 asset plan，不让模块各自抢入口**
+5. **做 planning checkpoint，再进入具体生产**
+- 对正式 deck、外发 deck、自解释 deck 和“最高质量 / 自由发挥”任务，完整 build 前必须给人类一个 planning checkpoint，至少包括章节结构、逐页 `page_task` / `key_message`、页面可见文案方向、资产需求和 layout 方向。
+- 人类明确确认、或已经在任务中授权 agent 继续执行时，才进入资产生产和 PPT 组装。确认过程可以简短，但不能省略 workspace 与 narrative 的落盘证据。
+
+6. **统一做 asset plan，不让模块各自抢入口**
 - 所有图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都通过 `asset_slot` 进入页面。
 - 准确数据且会后要改数，优先 `office-chart-native` 或 `table-native`；复杂研究图、热力图、排序图，优先 `python-figure-image`；后续要拖动维护的流程图 / 架构图 / dataflow，走 `diagram-connector`；只服务解释的结构图，走 `diagram-visual`；节奏增强用 `icon-accent`；氛围图、场景图、产品情境图和强风格 hero 图走 `image-generation`。
 - GPT 生图有两条 backend：`gpt-image-api` backend 直接生成图片和元数据；`manual-web` backend 由 agent 写出 prompt 文档，标记为 `pending_user_generation`，等用户把图片放回 workspace 后再登记为同一个 slot 的 output。具体命令和参数看 `references/modules/image_generation_support.md`。
 
-6. **再选 build route 与生成 editable PPT**
+7. **再选 build route 与生成 editable PPT**
 - 先看 `references/modules/technical_support.md`，明确每个 slot 对应的实现模块、backend 和验证要求。
 - 再看 `references/workflow/build_routes.md`，确认当前环境能走哪条具体 backend 路线。
 - 优先保留文本、形状、表格、图表和必要 connector 的可编辑性。整页位图和不可维护导出物只能是明确受限场景下的例外。
 - 一旦确认某个元素来自母版或 layout，就不要在页面层重复画一份。
 
-7. **强制跑 build 后质量 gate**
+8. **强制跑 build 后质量 gate**
 - 所有 deck 在 `build` 之后都应先跑 `package_preflight`，检查包结构一致性、移动端兼容风险和外发安全信号。
 - 所有 deck 在 `package_preflight` 之后都应再跑 `structure_precheck`，检查文本框 fit、文字遮挡和结构化对象排版边界。
 - `not_checked` 必须显式写入报告，不能当成“通过”。
 
-8. **做模块验证、预览和 preview 后质量 gate**
+9. **做模块验证、预览和 preview 后质量 gate**
 - 所有 deck 都必须导出逐页预览图。
 - diagram connector 页必须执行 connector 校验；原生 chart 页必须确认 chart 仍可编辑；Python figure 页必须检查比例、清晰度和字体 / glyph 风险；image-generation 页必须保留 prompt / 参数 / 输出记录并检查图片没有自带页眉页脚、页码、标题栏或事实错误。
 - 预览图导出后，应按需要运行 `render_review`，处理结构层看不到的边界触墨和扁平化图像内部风险。
 - `render_review` 之后必须看逐页 preview 或 contact sheet 做人工 visual review，复核顺序固定为 `fatal -> warning -> preference`。
 
-9. **完成初稿后给人类一个修订 checkpoint**
+10. **完成初稿后给人类一个修订 checkpoint**
 - 当 editable `pptx`、预览图、基础 validation 和 visual review 结论都已经齐全时，应把它明确为“可审阅的初稿”，而不是默认继续无限打磨。
 - 这时应主动告诉人类：如果需要进入更细的页面级修订，例如逐页措辞微调、视觉节奏重排、icon 补强、chart 路线切换、研究图重绘、生图替换或模板细节对齐，可以继续做，但这一步通常会显著增加 token 消耗。
 - 如果人类暂时不需要详细修订，就直接交付当前初稿 bundle；如果人类要继续修订，再围绕具体页面和问题进入下一轮。
@@ -137,60 +149,65 @@ description: Use when collaborating with humans to produce polished, editable, h
 # 1) 检查环境与可用路线
 python scripts/check_environment.py
 
-# 2) 对参考模板做取证审计
+# 2) 初始化 deck workspace
+python scripts/init_deck_workspace.py \
+  --workspace-dir <path/to/deck_workspace> \
+  --title "<deck title>"
+
+# 3) 对参考模板做取证审计
 python scripts/audit_pptx_template.py \
   --pptx <path/to/reference_template.pptx> \
   --json-out <path/to/validation/template_audit/template_audit.json> \
   --md-out <path/to/validation/template_audit/template_audit.md>
 
-# 3) 跑 deck 级 package preflight
+# 4) 跑 deck 级 package preflight
 python scripts/check_pptx_package_preflight.py \
   --pptx <path/to/deck.pptx> \
   --workspace-dir <path/to/deck_workspace> \
   --fail-on error
 
-# 4) 跑 deck 级 structure precheck
+# 5) 跑 deck 级 structure precheck
 python scripts/check_pptx_structure_precheck.py \
   --pptx <path/to/deck.pptx> \
   --workspace-dir <path/to/deck_workspace> \
   --inventory-out <path/to/deck_workspace/validation/structure_precheck/shape_inventory.json> \
   --fail-on error
 
-# 5) 校验 diagram 页 connector
+# 6) 校验 diagram 页 connector
 python scripts/check_pptx_connectors.py \
   --pptx <path/to/deck.pptx> \
   --slide 3 \
   --json-out <path/to/connector_report.json> \
   --min-connectors 1
 
-# 6) 导出逐页预览图
+# 7) 导出逐页预览图
 python scripts/export_pptx_previews.py \
   --pptx <path/to/deck.pptx> \
   --out-dir <path/to/ppt_preview> \
   --backend auto
 
-# 7) 跑 preview 后 render review
+# 8) 跑 preview 后 render review
 python scripts/check_pptx_render_review.py \
   --pptx <path/to/deck.pptx> \
   --preview-dir <path/to/ppt_preview> \
   --workspace-dir <path/to/deck_workspace> \
   --fail-on error
 
-# 8) 检查 workspace 关键输入是否齐全
+# 9) 检查 workspace 关键输入是否齐全
 python scripts/lint_deck_assets.py \
   --workspace-dir <path/to/deck_workspace>
 
-# 8b) 检查派生 specs 与 asset slot 合同
+# 9b) 检查派生 specs、theme_tokens 与 asset slot 合同
 python scripts/lint_deck_assets.py \
   --workspace-dir <path/to/deck_workspace> \
   --check-contract
 
-# 9) 从总叙事文档派生 slide specs
+# 10) 从总叙事文档派生 slide specs
 python scripts/derive_slide_specs_from_narrative.py \
   --narrative <path/to/deck_narrative.md> \
   --out-yaml <path/to/build/generated/slide_specs.yaml>
 
-# 10) 检查 diagram / chart / python figure 等模块可用性
+# 11) 检查 diagram / chart / python figure 等模块可用性
 python scripts/check_environment.py \
   --json-out <path/to/env_check.json>
 ```

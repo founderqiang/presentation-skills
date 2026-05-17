@@ -10,7 +10,7 @@
 
 ## 在主链路中的位置
 
-**推荐主链路。** `brief -> style/domain profile lock -> template audit(if pptx) -> narrative -> derive slide_specs -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review/contact_sheet -> first_draft_checkpoint -> final`
+**推荐主链路。** `brief -> style/domain profile lock -> template audit(if pptx) -> narrative -> derive slide_specs -> planning_checkpoint -> assets -> build -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review/contact_sheet -> first_draft_checkpoint -> final`
 
 **执行顺序必须固定。**
 - 先跑 `package_preflight`，确认 deck 文件本身没有内部不一致和移动端高风险信号。
@@ -147,6 +147,10 @@ python scripts/check_pptx_render_review.py \
 **模块级 validation 不能替代 deck 级 gate。** connector 通过不代表文件能在移动端打开；逐页 preview 正常也不代表 `docProps` 和 `sectionLst` 一致；结构预检通过也不代表图片内部标签没有互相打架。
 
 **typography 与 table profile 需要进入 visual review。** 中文正式材料的宋体 / Times 字体槽、正文段落、表格上下居中、表头居中和财务数值右对齐可以作为后续结构检查增强，但当前 gate 仍以 fail-fast 为主。研报质感、版心纪律、图号单位和免责声明位置应在 preview contact sheet 与人工 visual review 中确认，不能仅凭 `render_review` 通过就进入 final。
+
+**typography token 要被抽查兑现。** visual review 应抽查封面、章节页、正文页、图表页和表格页，确认 hero / section / page title / subtitle / body / label / caption / table 文本符合 `theme_tokens`。低于 `body_font_pt` 的正文、低于 `table_font_pt` 的表格、碎片化字号和临时字体切换都应记录为 warning 或 preference fix，不能被当成自然排版差异。
+
+**页面可见文案也要进入 visual review。** 自动 gate 主要检查结构和成图风险，不能判断一句话是否属于外发页面。人工复核应抽查标题、正文、卡片、图注和章节页，确认没有把 `Narrative Role`、讲者提示、协作说明、敏感性处理策略或“这页 / 本部分 / 公开课应 / 建议讲者 / 帮助听众理解”等元叙述直接放到 PPT 可见层。
 
 ## 当前脚本
 

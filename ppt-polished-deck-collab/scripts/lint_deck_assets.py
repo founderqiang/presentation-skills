@@ -8,7 +8,7 @@
 如果检测到旧的 `brief/ plan/ content/` 结构，会给出迁移 warning，但不会静默把旧结构当成新默认。
 
 开启 `--check-contract` 后，脚本会轻量检查 `build/generated/slide_specs.yaml`：
-deck mapping、slide 必填字段、枚举值、asset slot 字段、module/backend/status/validation 的一致性。
+deck mapping、theme_tokens、slide 必填字段、枚举值、asset slot 字段、module/backend/status/validation 的一致性。
 它不是重型 schema validator，目标是提前暴露会让 build 或验证链路漂移的明显问题。
 """
 
@@ -112,6 +112,67 @@ PROFILE_FIELDS = {
     "density_profile": {"dense_reference", "balanced_brief", "low_density_stage"},
     "editability_profile": {"fully_editable", "chart_editable", "mixed_assets", "snapshot_allowed"},
 }
+REQUIRED_THEME_TOKEN_FIELDS = (
+    "typography_profile",
+    "page_width_in",
+    "page_height_in",
+    "hero_title_font_pt",
+    "section_title_font_pt",
+    "page_title_font_pt",
+    "subtitle_font_pt",
+    "minor_title_font_pt",
+    "body_font_pt",
+    "label_font_pt",
+    "caption_font_pt",
+    "title_line_spacing_multiple",
+    "body_line_spacing_multiple",
+    "title_paragraph_space_lines",
+    "body_first_line_indent_chars",
+    "body_paragraph_space_lines",
+    "latin_font_name",
+    "east_asia_font_name",
+    "table_font_pt",
+    "table_line_spacing_multiple",
+    "table_paragraph_space_lines",
+    "table_first_line_indent_chars",
+    "table_vertical_anchor",
+    "table_header_alignment",
+    "table_index_alignment",
+    "table_text_alignment",
+    "table_numeric_alignment",
+    "left_margin_in",
+    "right_margin_in",
+)
+NUMERIC_THEME_TOKEN_RANGES = {
+    "page_width_in": (10.0, 16.0),
+    "page_height_in": (5.0, 10.0),
+    "hero_title_font_pt": (28.0, 60.0),
+    "section_title_font_pt": (24.0, 44.0),
+    "page_title_font_pt": (20.0, 32.0),
+    "subtitle_font_pt": (14.0, 22.0),
+    "minor_title_font_pt": (12.0, 20.0),
+    "body_font_pt": (12.0, 18.0),
+    "label_font_pt": (10.5, 14.0),
+    "caption_font_pt": (9.0, 12.0),
+    "title_line_spacing_multiple": (0.9, 1.25),
+    "body_line_spacing_multiple": (1.15, 1.8),
+    "title_paragraph_space_lines": (0.0, 1.0),
+    "body_first_line_indent_chars": (0.0, 2.0),
+    "body_paragraph_space_lines": (0.0, 1.0),
+    "table_font_pt": (10.5, 14.0),
+    "table_line_spacing_multiple": (1.0, 1.4),
+    "table_paragraph_space_lines": (0.0, 0.5),
+    "table_first_line_indent_chars": (0.0, 0.0),
+    "left_margin_in": (0.0, 2.0),
+    "right_margin_in": (6.0, 16.0),
+}
+ALIGNMENT_TOKEN_VALUES = {
+    "table_vertical_anchor": {"middle"},
+    "table_header_alignment": {"center"},
+    "table_index_alignment": {"left"},
+    "table_text_alignment": {"left"},
+    "table_numeric_alignment": {"right"},
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -135,6 +196,53 @@ def _append_enum_error(errors: list[str], label: str, value: object, allowed_val
     if not isinstance(value, str) or value not in allowed_values:
         allowed = ", ".join(sorted(allowed_values))
         errors.append(f"{label}: 非法值 {value!r}，允许值: {allowed}")
+
+
+def lint_theme_tokens(theme_tokens: object, errors: list[str], warnings: list[str]) -> None:
+    """检查 deck 级 typography 与 table token 是否足够完整。"""
+    if not isinstance(theme_tokens, dict):
+        errors.append("deck.theme_tokens 必须是 mapping")
+        return
+
+    missing = [field for field in REQUIRED_THEME_TOKEN_FIELDS if field not in theme_tokens]
+    if missing:
+        errors.append("deck.theme_tokens 缺少字段: " + ", ".join(missing))
+
+    for field, (minimum, maximum) in NUMERIC_THEME_TOKEN_RANGES.items():
+        value = theme_tokens.get(field)
+        if value is None:
+            continue
+        if not isinstance(value, (int, float)):
+            errors.append(f"deck.theme_tokens.{field}: 必须是数字")
+            continue
+        numeric_value = float(value)
+        if numeric_value < minimum:
+            errors.append(f"deck.theme_tokens.{field}: {numeric_value:g} 低于最低值 {minimum:g}")
+        elif numeric_value > maximum:
+            warnings.append(f"deck.theme_tokens.{field}: {numeric_value:g} 高于常规上限 {maximum:g}，请确认是有意放大")
+
+    for field in ("latin_font_name", "east_asia_font_name", "typography_profile"):
+        value = theme_tokens.get(field)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            errors.append(f"deck.theme_tokens.{field}: 必须是非空字符串")
+
+    for field, allowed in ALIGNMENT_TOKEN_VALUES.items():
+        value = theme_tokens.get(field)
+        if value is not None and value not in allowed:
+            allowed_text = ", ".join(sorted(allowed))
+            errors.append(f"deck.theme_tokens.{field}: 非法值 {value!r}，允许值: {allowed_text}")
+
+    domain_profile = theme_tokens.get("domain_profile")
+    if domain_profile is not None and not isinstance(domain_profile, str):
+        errors.append("deck.theme_tokens.domain_profile: 必须是字符串或 null")
+
+    left_margin = theme_tokens.get("left_margin_in")
+    right_margin = theme_tokens.get("right_margin_in")
+    page_width = theme_tokens.get("page_width_in")
+    if isinstance(left_margin, (int, float)) and isinstance(right_margin, (int, float)) and right_margin <= left_margin:
+        errors.append("deck.theme_tokens.right_margin_in: 必须大于 left_margin_in")
+    if isinstance(right_margin, (int, float)) and isinstance(page_width, (int, float)) and right_margin > page_width:
+        errors.append("deck.theme_tokens.right_margin_in: 不能大于 page_width_in")
 
 
 def lint_asset_slot(
@@ -232,8 +340,10 @@ def lint_slide_specs(workspace_dir: Path, errors: list[str], warnings: list[str]
         for field, allowed in PROFILE_FIELDS.items():
             _append_enum_error(errors, f"deck.{field}", deck.get(field), allowed)
         theme_tokens = deck.get("theme_tokens")
-        if theme_tokens is not None and not isinstance(theme_tokens, dict):
-            errors.append("deck.theme_tokens 必须是 mapping")
+        if theme_tokens is None:
+            errors.append("deck 缺少 theme_tokens；正式 deck 必须先锁定字体、字号和表格 token")
+        else:
+            lint_theme_tokens(theme_tokens, errors, warnings)
 
     slides = loaded.get("slides")
     if not isinstance(slides, list):

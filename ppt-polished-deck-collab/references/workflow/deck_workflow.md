@@ -19,34 +19,40 @@
 
 ## 主链路
 
-**默认主链路固定为：** `intake -> source/template lock -> deck_contract -> narrative -> slide_contracts -> asset_plan -> asset_production -> pptx_assembly -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> first_draft_checkpoint -> detailed_revision(optional) -> final`。
+**默认主链路固定为：** `intake -> source/template lock -> workspace_init -> deck_contract -> narrative -> slide_contracts -> planning_checkpoint -> asset_plan -> asset_production -> pptx_assembly -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> first_draft_checkpoint -> detailed_revision(optional) -> final`。
 
 ```mermaid
 flowchart LR
   A[Intake] --> B[Source / Template Lock]
-  B --> C[deck_contract in brief.md]
-  C --> D[deck_narrative.md]
-  D --> E[Derived slide_contracts]
-  E --> F[Asset Plan]
-  F --> G[Asset Production]
-  G --> H[Editable PPT Assembly]
-  H --> I[Package Preflight]
-  I --> J[Structure Precheck]
-  J --> K[Module Validation]
-  K --> L[Preview Export]
-  L --> M[Render Review]
-  M --> N[Visual Review / Contact Sheet]
-  N --> O[First Draft Checkpoint]
-  O --> P[Final Delivery]
-  O --> Q[Detailed Revision Optional]
-  Q --> H
+  B --> C[Workspace Init]
+  C --> D[deck_contract in brief.md]
+  D --> E[deck_narrative.md]
+  E --> F[Derived slide_contracts]
+  F --> G[Planning Checkpoint]
+  G --> H[Asset Plan]
+  H --> I[Asset Production]
+  I --> J[Editable PPT Assembly]
+  J --> K[Package Preflight]
+  K --> L[Structure Precheck]
+  L --> M[Module Validation]
+  M --> N[Preview Export]
+  N --> O[Render Review]
+  O --> P[Visual Review / Contact Sheet]
+  P --> Q[First Draft Checkpoint]
+  Q --> R[Final Delivery]
+  Q --> S[Detailed Revision Optional]
+  S --> J
 ```
 
 **intake 用人话完成。** agent 应问清“这份 PPT 是发出去让别人自己看懂，还是配合你现场讲”“有没有必须沿用的模板或旧 PPT”“更像商业汇报、技术说明、研究材料，还是设计感演示”“后续是否还会改数据、图表或结构”。内部字段可以记录在合同里，不应把字段名直接抛给用户。
 
 **先锁 source / template，再写 deck contract。** 用户给的 `pptx`、旧稿、品牌素材或风格样张，需要先判断是结构约束、风格参考、内容来源还是品牌边界。这个判断决定后面是否必须做 template audit，以及通用默认 typography 是否只能作为回退基线。
 
+**先建 workspace，再写内容。** 整套 deck 任务应先落出标准 workspace。推荐使用 `scripts/init_deck_workspace.py` 创建目录、`brief.md` 和 `deck_narrative.md` 模板；如果手动创建，结构必须与本文 workspace 约定等价。
+
 **先锁两份主文档，再 build。** 没有 `brief.md` 和 `deck_narrative.md` 时，不应直接开始生成 PPT。否则全局约束、页面意图与文案想法都会漂。
+
+**“自由发挥”仍然经过阶段门。** 当用户把内容和设计取舍交给 agent 时，agent 仍然必须先把章节结构、页面任务、页面可见文案方向、资产需求和 layout 方向写进 `deck_narrative.md`。自由发挥代表判断授权，完整 build 仍需 workspace、narrative、slide contracts 和 checkpoint。
 
 **有参考 `pptx` 时，模板取证是前置动作。** 先判断页族、母版、layout 和字号系统，再写 narrative。否则很容易把“模板继承”做成“风格模仿”。
 
@@ -55,6 +61,8 @@ flowchart LR
 **`slide_specs.yaml` 默认应派生，不应双写。** 机器执行仍然需要结构化字段，但默认应从 `deck_narrative.md` 生成，而不是要求人类长期维护第三份并行文档。
 
 **在 narrative 阶段就要把增强资产选项告诉人类。** agent 应明确说明当前可用的 icon、原生 Office chart、Python figure、diagram、原生表格、普通图片和 GPT 生图路线，让人类按需指定更偏编辑性、更偏研究表达、还是更偏视觉节奏的方向。
+
+**planning checkpoint 是 build 前阶段门。** 正式 deck、外发 deck、自解释 deck，以及用户要求“最高质量 / 研报风格 / 公开课 / 自由发挥”的任务，在完整 build 之前必须展示或记录 planning checkpoint。checkpoint 至少覆盖：全局基调、章节结构、逐页页面角色、逐页 `key_message`、可见文案方向、资产 / 配图需求、layout recipe 和 rhythm role。用户确认或明确授权继续后，才进入资产生产和 PPT 组装。
 
 **asset_plan 统一由 slot 承载。** 图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都先登记为 `asset_slots`，再进入对应模块。PPT 组装阶段只消费 slide contracts 和已登记 slot，不在组装时临时发明页面逻辑。
 
@@ -94,6 +102,14 @@ deck_workspace/
   final/
 ```
 
+**推荐初始化命令。**
+
+```bash
+python scripts/init_deck_workspace.py \
+  --workspace-dir <path/to/deck_workspace> \
+  --title "<deck title>"
+```
+
 **`brief.md` 放全局任务输入。** 目标读者、使用场景、模板约束、品牌要求、交付标准和验证要求都应在这里固定。它回答的是“为什么做这套 deck”和“哪些约束不能碰”。
 
 **模板取证结果默认回写到 `brief.md`。** 不默认新增一份长期维护的 `template_audit.md`。页族判断、母版元素、字号系统和路线选择应作为 deck 级事实沉淀回主文档。
@@ -102,7 +118,7 @@ deck_workspace/
 
 **`build/generated/slide_specs.yaml` 放派生结构化输入。** 它是机器友好的 build 入口，但默认不应手写维护，而应从 `deck_narrative.md` 自动派生。每页可以保持轻量，也可以包含完整 `asset_slots`。
 
-**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 至少建议显式定义 `typography_profile`、`domain_profile`、`hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`title_line_spacing_multiple`、`body_line_spacing_multiple`、`title_paragraph_space_lines`、`body_first_line_indent_chars`、`body_paragraph_space_lines`、`latin_font_name`、`east_asia_font_name`、表格 token 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，中文任务默认采用中文宋体、英文 Times New Roman、正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、正文 `1.5` 倍行距、标题 `1.0` 倍行距的策略。
+**`theme_tokens` 应承载 deck 级 typography 与版心策略。** 正式 deck 必须显式定义 `typography_profile`、`domain_profile`、`hero_title_font_pt`、`section_title_font_pt`、`page_title_font_pt`、`subtitle_font_pt`、`minor_title_font_pt`、`body_font_pt`、`label_font_pt`、`caption_font_pt`、`title_line_spacing_multiple`、`body_line_spacing_multiple`、`title_paragraph_space_lines`、`body_first_line_indent_chars`、`body_paragraph_space_lines`、`latin_font_name`、`east_asia_font_name`、表格 token 和稳定边距。有参考模板时，这些 token 应优先来自模板取证；没有品牌约束时，中文任务默认采用中文宋体、英文 Times New Roman、正文小四约 `12pt`、首行缩进 2 个中文字符、段前段后各 `0.5` 行、正文 `1.5` 倍行距、标题 `1.0` 倍行距的策略。构建脚本应读取或显式映射这些 token，不应临时写散落字号。
 
 **`typography_profile` 和 `domain_profile` 各司其职。** `typography_profile` 管字体、字号、段落和表格基础排版，例如 `zh_formal`；`domain_profile` 管题材文体与页面范式，例如 `financial_report_review` 需要图号、单位、来源注、免责声明、低饱和配色和稳定页眉页脚。不要把研报视觉纪律写进所有中文 deck 的 typography 默认。
 
@@ -209,8 +225,10 @@ deck:
     typography_profile: "zh_formal"
     domain_profile: null
     visual_theme_preset: null
-    hero_title_font_pt: 24
-    section_title_font_pt: 20
+    page_width_in: 13.333
+    page_height_in: 7.5
+    hero_title_font_pt: 40
+    section_title_font_pt: 30
     page_title_font_pt: 24
     subtitle_font_pt: 16
     minor_title_font_pt: 14
@@ -234,7 +252,7 @@ deck:
     table_text_alignment: "left"
     table_numeric_alignment: "right"
     left_margin_in: 0.78
-    right_margin_in: 15.22
+    right_margin_in: 12.55
 ---
 
 # <Deck Title>
@@ -260,12 +278,22 @@ required_assets: []
 asset_slots: []
 ```
 
+**Page Role.** 这页在整套 deck 中承担什么结构职责，例如 opener、背景坐标、核心机制、证据页、章节过渡、复盘或讨论页。它回答“为什么需要这一页”，但不直接进入页面可见文字。
+
+**On-slide Copy.** 只写最终 PPT 页面上可以直接出现的标题、结论句、正文 bullet、图注和来源提示。它必须面向外发读者，不写“这页要说明”“建议讲者”“公开课应”“这套解释帮助听众”这类协作说明或讲稿话术。
+
 **Narrative Role.** 这页为什么存在、要帮助读者完成什么判断。
 
 **Content Notes.** 这页准备放什么内容、什么判断句、什么证据。
 
+**Evidence / Asset Plan.** 说明这页需要真实图片、历史图、剧照、原生图表、Python figure、机制图、表格、icon 还是纯文字。具体资产继续进入 `asset_slots`，不要在 PPT 组装阶段临时找图。
+
+**Speaker / Collaboration Notes.** 给讲者、合作者或 agent 的解释、敏感性处理策略、取舍理由、备选讲法和口头过渡语放在这里；除非被改写成外发读者可直接阅读的判断句，否则不得进入 PPT 页面可见文字。
+
 **Layout Notes.** 这页倾向使用什么版式、什么 icon 或图表策略。
 ```
+
+**页面可见文案与内部说明必须分层。** `key_message` 可以进入页面，但必须是读者可直接接受的结论。`Narrative Role`、`Content Notes` 和 `Speaker / Collaboration Notes` 默认不进页面；构建脚本若要引用这些内容，必须先做外发文案改写，删除“本页 / 这页 / 讲述 / 读者 / 听众 / 公开课 / 建议 / 处理敏感问题”等元叙述标记。
 
 **带 asset slot 的 slide 示例。**
 
@@ -305,6 +333,20 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 **build 脚本应优先读取派生文件。** 如果派生文件不存在，build 脚本应先生成它，再继续执行。
 
+## Planning Checkpoint
+
+**checkpoint 仍使用现有文档层。** 它默认从 `deck_narrative.md` 汇总出来，可以写在对话、review note 或 `deck_narrative.md` 的 `Planning Checkpoint` 小节中，不需要另起长期维护的 plan 文件。
+
+**checkpoint 至少回答六个问题。**
+- 整套 deck 的基调和传播场景是什么。
+- 章节顺序如何支撑主判断。
+- 每页承担什么页面角色和读者问题。
+- 每页的页面可见结论句是什么。
+- 每页需要什么资产、证据、配图或图表。
+- 每页采用什么 layout recipe、密度和 rhythm role。
+
+**checkpoint 通过后才进入完整 build。** 用户已经明确授权 agent 继续执行时，可以不等待逐页口头确认，但必须在 workspace 中留下上述规划信息。
+
 ## 字段与验证约定
 
 **字段枚举统一看 schema。** `page_task`、`reading_mode`、`asset_mode`、`validation_mode`、`deck_contract` 和 `asset_slot` 的完整字段定义统一维护在 `references/core/schema_contract.md`。workflow 文档只要求这些字段必须先于 build 稳定下来。
@@ -313,6 +355,6 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 ## 交付底线
 
-**完整交付至少包含七项。** `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、与页面验证模式相匹配的验证结果、final 前 visual review 结论。
+**完整交付至少包含八项。** `brief.md`、`deck_narrative.md`、planning checkpoint 记录、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、与页面验证模式相匹配的验证结果、final 前 visual review 结论。
 
 **每次修改都要有新证据。** 修复后必须能指出新的 `pptx`、新的 preview，或新的结构校验结果。

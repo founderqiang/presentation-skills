@@ -33,6 +33,13 @@ deck:
     typography_profile: "zh_formal"
     domain_profile: null
     visual_theme_preset: null
+    page_width_in: 13.333
+    page_height_in: 7.5
+    hero_title_font_pt: 40
+    section_title_font_pt: 30
+    page_title_font_pt: 24
+    subtitle_font_pt: 16
+    minor_title_font_pt: 14
     latin_font_name: "Times New Roman"
     east_asia_font_name: "宋体"
     body_font_pt: 12
@@ -69,6 +76,8 @@ deck:
 **`theme_tokens.domain_profile`。** 推荐值按任务扩展，例如 `financial_report_review`。它用于表达研报、财报点评等行业文体纪律，可以和 `visual_profile: editorial_ink` 或 `swiss_modernist` 同时存在。
 
 **`theme_tokens.visual_theme_preset`。** 可选字段，用于记录少数经过验证的视觉主题预设，例如 `editorial_ink_indigo_porcelain`、`editorial_ink_kraft`、`swiss_ikb`、`swiss_safety_orange`。它不开放任意配色自由，主要服务复现与 review。
+
+**`theme_tokens` 是正式 deck 的排版合同。** build 前应已经锁定标题、正文、标签、图注和表格 token。构建脚本应读取或显式映射这些 token；低于 `body_font_pt` 或 `table_font_pt` 的正文 / 表格文字属于 review 风险，不能用来常规解决空间不足。
 
 ## `slide_contract`
 

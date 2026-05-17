@@ -51,8 +51,10 @@ DEFAULT_TITLE_LINE_SPACING_MULTIPLE = 1.0
 DEFAULT_TITLE_PARAGRAPH_SPACE_LINES = 0.5
 DEFAULT_LINE_SPACING_MULTIPLE = DEFAULT_BODY_LINE_SPACING_MULTIPLE
 DEFAULT_TYPOGRAPHY_TOKENS = {
-    "hero_title_font_pt": 24.0,
-    "section_title_font_pt": 20.0,
+    "page_width_in": 13.333,
+    "page_height_in": 7.5,
+    "hero_title_font_pt": 40.0,
+    "section_title_font_pt": 30.0,
     "page_title_font_pt": 24.0,
     "subtitle_font_pt": 16.0,
     "minor_title_font_pt": 14.0,
@@ -62,12 +64,21 @@ DEFAULT_TYPOGRAPHY_TOKENS = {
     "title_line_spacing_multiple": DEFAULT_TITLE_LINE_SPACING_MULTIPLE,
     "body_line_spacing_multiple": DEFAULT_BODY_LINE_SPACING_MULTIPLE,
     "title_paragraph_space_lines": DEFAULT_TITLE_PARAGRAPH_SPACE_LINES,
+    "body_first_line_indent_chars": 2.0,
+    "body_paragraph_space_lines": 0.5,
     "latin_font_name": DEFAULT_SERIF_LATIN_FONT_NAME,
     "east_asia_font_name": DEFAULT_SERIF_EAST_ASIA_FONT_NAME,
     "table_font_pt": 10.5,
     "table_line_spacing_multiple": 1.0,
     "table_paragraph_space_lines": 0.0,
     "table_first_line_indent_chars": 0.0,
+    "table_vertical_anchor": "middle",
+    "table_header_alignment": "center",
+    "table_index_alignment": "left",
+    "table_text_alignment": "left",
+    "table_numeric_alignment": "right",
+    "left_margin_in": 0.78,
+    "right_margin_in": 12.55,
 }
 
 
