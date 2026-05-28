@@ -69,8 +69,8 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 - `2026-05-04` 新增 `xhs-markdown-card-collab`，支持 Markdown 转图文卡片。
 - `2026-04-30` 新增两个 Word demo 工作区，包含 preview 和 QA 证据。
 - `2026-04-29` 新增 `word-polished-doc-collab`，支持正式 DOCX workflow。
-- `2026-04-22` 🛡️ 新增 PPT package、structure、render 三段质量 gate。
-- `2026-04-22` 收紧 PPT template-first workflow，从模板审计走到 handoff。
+- `2026-04-22` 🛡️ 新增 PPT 文件、页面结构和预览效果三层检查。
+- `2026-04-22` 收紧 PPT 模板路线，从模板审计走到最终交付。
 
 ## 这个仓库提供什么
 
@@ -102,32 +102,20 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 
 ### `ppt-polished-deck-collab`
 
-这是仓库里当前主打的 deck 制作 skill。它不是一个“单页小工具”，而是一套 deck 级工作流。它负责规划叙事、生成 editable `pptx`、导出逐页预览、做结构验证，并为 review 和 handoff 产出证据 bundle。
+`ppt-polished-deck-collab` 的原理是先把用户要讲的内容拆成页面顺序、每页结论和需要的证据，再用程序生成真正可编辑的 `.pptx`。它适合从研究材料、商业汇报、技术说明或模板稿件出发，做出可以继续手工编辑的 PowerPoint，而不是把页面做成一张张截图。
 
-核心能力：
-- 基于 `brief.md`、`deck_narrative.md` 和派生 `slide_specs.yaml` 的 deck-first narrative 规划
-- 基于 `python-pptx` 的 editable PowerPoint 生成
-- 支持用户提供模板、继承 slide master / layout、以及修改现有 `pptx`
-- 支持原生 Office chart、Python figure、原生表格、connector-backed diagram 和 icon accent
-- 支持模板审计，以及 `package_preflight`、`structure_precheck`、`render_review` 三段式质量 gate
-- 支持 validation bundle、预览导出和 evidence-driven final delivery
-
-典型技术栈：
-- 用 `python-pptx` 生成可编辑 PowerPoint 对象
-- 用 PowerPoint 或 LibreOffice 导出高保真预览
-- 用 `pptx XML` 做 connector 校验
-- 用结构层和成图层质量 gate 做自动验证
-- 用 `matplotlib` / `seaborn` / `pandas` 生成 Python figure
+常用技术：
+- 用 `python-pptx` 生成文本、形状、表格和可编辑 PowerPoint 页面
+- 根据内容选择 PowerPoint 原生图表、`matplotlib` / `seaborn` / `pandas` 图表或图片素材
+- 用 PowerPoint 或 LibreOffice 导出逐页预览
+- 在需要流程图、架构图时检查连接线、层级关系和后续可编辑性
 
 典型工作流：
-- 如果有模板，先做模板审计
-- 锁定 brief 和 narrative
-- 构建 editable deck
-- 执行 package 与 structure 两层质量 gate
-- 执行模块级 validation
-- 导出逐页预览
-- 执行 render review
-- 最后做 visual review 和 final handoff
+- 先确认读者、用途、页数、模板和风格边界
+- 再整理页面大纲、每页主结论和图表素材
+- 生成可编辑 PPT，并按需要继承模板或改写已有 PPT
+- 导出逐页预览，检查文字溢出、图表模糊、元素错位和页面风格不一致
+- 最后交付 PPT、PDF 或预览图，以及必要的检查记录
 
 展示样例：
 - 艺术化 native PPTX 风格迁移 demo：`demos/apple-editorial-ink-native/`
@@ -140,9 +128,6 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pptx`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pdf`
 - `demos/apple-financial-report-review/build/rendered/contact_sheet.png`
-- `demos/apple-financial-report-review/validation/package_preflight/history/`
-- `demos/apple-financial-report-review/validation/structure_precheck/history/`
-- `demos/apple-financial-report-review/validation/render_review/history/`
 
 [![Apple FY2025 收入与净利润页](assets/apple-financial-report-review_revenue-page.png)](demos/apple-financial-report-review/README.md)
 
@@ -150,25 +135,20 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 
 ### `word-polished-doc-collab`
 
-这是仓库里的 Word 文档协作 skill。它把松散的 Markdown 或 DOCX 草稿过程收敛成一套正式文档工作区：语义化 source、明确字体 profile、稳定题注规则、可复核 preview evidence，以及能解释交付质量的 QA 报告。
+`word-polished-doc-collab` 的原理是先把 Markdown 或旧 Word 稿整理成稳定的标题、正文、表格和图片结构，再按统一字体、字号、行距和题注规则生成正式 `.docx`。它关注的是让 Word 文件能经得住审阅和后续维护，而不是只把内容临时导出成一个文件。
 
-核心能力：
-- 按 `lightweight` 与 `refined` 两条模式路由 Word 文档工作流
-- 提供 `init_doc_workspace.py`、`check_word_environment.py`、`lint_doc_markdown.py`、`build_docx.py`、`export_docx_preview.py`、`run_docx_qa.py` 六个参考 CLI
-- 围绕 `doc_workspace`、`canonical_markdown`、`style_profile` 和 `validation_bundle` 组织长期协作
-- 支持 `docx -> markdown -> docx` 与 `markdown -> docx` 两类主路线
-- 显式定义 `中文宋体 + 英文 Times New Roman` 的默认版式，以及 `楷体 + Times New Roman`、`黑体 + Arial` 和通用英文咨询 preset
-- 固化正文 `小四 12pt`、正文与标题 `1.5` 倍行距、段前段后 `0.5` 行、表格 `五号 / 小五`、表题加粗与题注位置
-- 为静态图片、Python figure 和未来的 Office 原生 chart / illustration 预留清晰的接入路线
-- 定义 source integrity、style contract、font slot integrity、section layout、asset manifest integrity 和 visual review 多层质量 gate
+常用技术：
+- 用 `python-docx` 生成和修改 Word 文档
+- 必要时直接处理 OOXML，精确控制中文、英文和复杂脚本字体槽位
+- 用 Word 或 LibreOffice 导出 PDF 与页面预览
+- 用 `matplotlib` / `pandas` 等工具生成需要插入文档的图表
 
 典型工作流：
-- 先根据正式程度、图表复杂度和验证要求选择 `lightweight` 或 `refined`
-- 初始化干净 workspace
-- 锁定语义 Markdown 和 active `style_profile`
-- 在 build 前执行源语义 lint
-- 生成 `.docx`，导出 preview evidence，并在需要时执行 QA
-- 最后补 visual review 记录与交付证据
+- 先确认文档用途、来源稿件和目标版式
+- 再把正文、标题、列表、表格、图片和题注整理成清楚结构
+- 生成 `.docx`，并按中文正式文档或英文咨询报告等场景设置字体和段落
+- 导出预览，检查字体、标题层级、行距、表图位置、页眉页脚和整体版式
+- 对正式报告保留预览和检查记录，方便继续修改和复核
 
 主展示 demo：
 - `demos/word-lightweight-industrial-operations-brief/`
@@ -180,37 +160,23 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 - `demos/word-refined-industrial-service-transformation/build/docx/industrial_service_transformation.docx`
 - `demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md`
 
-关键文档：
-- `word-polished-doc-collab/SKILL.md`
-- `word-polished-doc-collab/references/principles.md`
-- `word-polished-doc-collab/references/doc_workflow.md`
-- `word-polished-doc-collab/references/typography_profiles.md`
-- `word-polished-doc-collab/references/local_pipeline_case_study.md`
-
 ### `web-demo-video-synthesis`
 
-这是仓库里当前主打的视频制作 skill。它会把源叙事转成一个可复现的 workspace，涵盖 TTS、时间轴、字幕、录制、混音和最终渲染。最终产物不是一次性导出，而是一套可以复核、可以编辑、可以重跑、可以发布的视频工作空间。
+`web-demo-video-synthesis` 的原理是先把讲解词拆成短段，生成分段配音，再用一张时间表控制网页录屏、字幕和音视频合成。它保留配音、字幕、录屏和最终 MP4 的中间产物，所以改文案、改字幕或重录画面时可以局部重跑。
 
-核心能力：
-- 把 cues、文章或帖子转成 timeline-driven demo video
-- 生成或接入分段音频、字幕和最终渲染结果
-- 保留可复现 workspace，支持局部重跑和多轮迭代
-- 面向 TikTok、小红书、Bilibili 等平台输出可发布视频
-
-典型技术栈：
-- 时间轴驱动的 workspace 编排
-- TTS 与字幕生成
-- 录屏与视频合成
-- 带中间产物的可复现 MP4 渲染
+常用技术：
+- 用 TTS API 或 macOS `say` 生成分段音频
+- 用 Playwright 控制浏览器录屏
+- 用 `ffmpeg` 合成视频、音频和字幕
+- 用字幕文件和分辨率参数控制横屏、竖屏和平台安全区
 
 典型工作流：
-- 准备 workspace 和 cues
-- 生成分段音频
-- 构建 timeline
-- 录制或合成视觉轨道
+- 准备讲解词和网页 demo
+- 生成分段配音并确认每段时长
+- 按时间表录制网页画面
 - 生成字幕
-- 混合音视频
-- 导出 final MP4
+- 混合音频、画面和字幕，导出 MP4
+- 检查音画同步、字幕位置、画面清晰度和关键内容是否被裁切
 
 主展示 demo：
 - `demos/web-demo-video-synthesis-financial-agent/`
@@ -220,21 +186,19 @@ PPT skill 专页：[docs/ppt-polished-deck-collab.md](docs/ppt-polished-deck-col
 
 ### `xhs-markdown-card-collab`
 
-这是仓库里的小红书 Markdown 图文卡片 skill。它把内容轻量整理、封面配置、排版合同、分页规则和逐页视觉检查放在同一条 workflow 里，而不是把它拆成零散的 CSS 调参任务。
+`xhs-markdown-card-collab` 的原理是先把 Markdown 内容整理成适合手机滑读的标题、列表和重点句，再用浏览器真实排版生成一张张竖版图片。它适合把研究笔记、招聘信息、产品说明和结构化观点做成可发布的小红书图文，而不是普通网页截图。
 
-核心能力：
-- 用 YAML front matter 显式定义封面标题、机构名、角色行、badge 和 highlights
-- 优先通过补标题层级、标准列表和少量加粗来整理 Markdown，而不是重写原文
-- 用浏览器真实排版处理中文正文、列表和英文串分页
-- 把已经验证过的字号、留白、边框和面板参数固化成 typography lock
-- 提供反趋同的风格变化方向，鼓励从主题 token、信息组织和装饰节奏做变化，而不是频繁推翻字号体系
-- 提供封面密度、孤立标题、边框过宽、空页和移动端可读性的 QA 规则
+常用技术：
+- 用 Markdown 和 YAML front matter 表达正文、封面标题、机构名、标签和高亮信息
+- 用 HTML / CSS 做真实浏览器排版
+- 用 Playwright 或类似浏览器自动化工具导出 PNG
+- 用主题色、版心、装饰元素和信息组织做风格变化
 
-关键文档：
-- `xhs-markdown-card-collab/SKILL.md`
-- `xhs-markdown-card-collab/references/workflow.md`
-- `xhs-markdown-card-collab/references/typography_lock.md`
-- `xhs-markdown-card-collab/references/style_directions.md`
+典型工作流：
+- 先整理正文结构，保留原文语义，只补必要标题、列表和重点标记
+- 再明确封面信息和页面尺寸，默认面向手机纵向阅读
+- 生成逐页 PNG 和预览页面
+- 检查封面信息量、分页、空白、长文字换行、标题孤立和手机端可读性
 
 ## 仓库结构
 

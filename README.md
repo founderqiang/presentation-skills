@@ -69,8 +69,8 @@ This prompt style is intentionally specific about workspace placement, source da
 - `2026-05-04` Added `xhs-markdown-card-collab` for Markdown-to-image-card posts.
 - `2026-04-30` Added two Word demo workspaces with preview and QA evidence.
 - `2026-04-29` Added `word-polished-doc-collab` for formal DOCX workflows.
-- `2026-04-22` 🛡️ Added PPT quality gates for package, structure, and render review.
-- `2026-04-22` Tightened the PPT template-first workflow from audit to handoff.
+- `2026-04-22` 🛡️ Added PPT checks for file integrity, slide structure, and rendered previews.
+- `2026-04-22` Tightened the PPT template route from template review to final delivery.
 
 ## What This Repo Provides
 
@@ -102,32 +102,20 @@ It is designed for job posts, lab recruiting posts, research-note threads, struc
 
 ### `ppt-polished-deck-collab`
 
-This is the flagship deck-making skill in the repository. It is a deck-level workflow rather than a page toy. It plans the narrative, generates editable `pptx`, exports previews, validates structure, and produces evidence bundles for review and handoff.
+`ppt-polished-deck-collab` starts by turning the user's story into a slide order, one clear message per page, and the evidence each page needs. It then generates a real editable `.pptx`, so the result can still be revised in PowerPoint instead of becoming a stack of screenshots.
 
-Core capabilities:
-- Deck-first narrative planning with `brief.md`, `deck_narrative.md`, and derived `slide_specs.yaml`
-- Editable PowerPoint generation with `python-pptx`
-- Support for user-provided templates, slide masters, layouts, and existing `pptx` modification
-- Native Office charts, Python figures, native tables, connector-backed diagrams, and icon accents
-- Template audit plus three-stage quality gates: `package_preflight`, `structure_precheck`, and `render_review`
-- Validation bundles, preview exports, and evidence-driven final delivery
-
-Typical technical stack:
-- `python-pptx` for editable PowerPoint objects
-- PowerPoint or LibreOffice preview export
-- Connector validation via `pptx XML`
-- Structure-level and render-level quality gates
-- Optional Python figure generation via `matplotlib` / `seaborn` / `pandas`
+Common tools:
+- `python-pptx` for editable PowerPoint text, shapes, tables, and pages
+- Native PowerPoint charts, `matplotlib` / `seaborn` / `pandas` figures, or image assets depending on the content
+- PowerPoint or LibreOffice for slide-by-slide preview export
+- Connector and layout checks when the deck includes flowcharts, architecture diagrams, or other editable structures
 
 Typical workflow:
-- Audit template if one is provided
-- Lock brief and narrative
-- Build editable deck
-- Run package and structure gates
-- Run module validation
-- Export previews
-- Run render review
-- Finish with visual review and final handoff
+- Confirm the audience, use case, slide count, template, and style boundary
+- Organize the slide outline, key message for each page, and required chart or visual assets
+- Generate the editable PowerPoint, using a template or modifying an existing deck when needed
+- Export slide previews and check text overflow, blurry charts, misplaced elements, and inconsistent page style
+- Deliver the PowerPoint, PDF or previews, plus the review notes needed for handoff
 
 Featured deck examples:
 - Editorial native PPTX style demo: `demos/apple-editorial-ink-native/`
@@ -140,9 +128,6 @@ Key outputs:
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pptx`
 - `demos/apple-financial-report-review/final/apple_fy2025_financial_report_review.pdf`
 - `demos/apple-financial-report-review/build/rendered/contact_sheet.png`
-- `demos/apple-financial-report-review/validation/package_preflight/history/`
-- `demos/apple-financial-report-review/validation/structure_precheck/history/`
-- `demos/apple-financial-report-review/validation/render_review/history/`
 
 [![Apple FY2025 revenue and net-income page](assets/apple-financial-report-review_revenue-page.png)](demos/apple-financial-report-review/README.md)
 
@@ -150,24 +135,20 @@ Key outputs:
 
 ### `word-polished-doc-collab`
 
-This is the repository’s Word-document collaboration skill. It turns a loose Markdown or DOCX drafting process into a disciplined document workspace: semantic source, explicit typography, stable captions, preview evidence, and QA reports that make the final `.docx` easier to trust.
+`word-polished-doc-collab` starts by turning Markdown or an older Word draft into a stable structure of headings, body text, tables, images, and captions. It then generates a formal `.docx` with consistent fonts, line spacing, paragraph spacing, and caption placement, so the result can survive review and later editing.
 
-Core capabilities:
-- Mode-aware routing for `lightweight` and `refined` document workflows
-- Reference CLI bundle with `init_doc_workspace.py`, `check_word_environment.py`, `lint_doc_markdown.py`, `build_docx.py`, `export_docx_preview.py`, and `run_docx_qa.py`
-- Support for both `docx -> markdown -> docx` and `markdown -> docx`
-- Explicit default typography for `Chinese SimSun + English Times New Roman`, plus optional `KaiTi + Times New Roman`, `HeiTi + Arial`, and generic English consulting presets
-- Fixed rules for body text `12pt`, heading and body line spacing `1.5`, paragraph spacing `0.5` lines, table text `10.5pt / 9pt`, table-title bolding, and caption placement
-- Asset routing for static images, Python figures, and future Office-native objects
-- Quality gates for source integrity, style contract, font-slot integrity, section layout, asset manifest integrity, and visual review
+Common tools:
+- `python-docx` for generating and editing Word documents
+- Direct OOXML handling when exact Chinese, Latin, and complex-script font slots matter
+- Word or LibreOffice for PDF and page-preview export
+- `matplotlib` / `pandas` when the document needs generated charts or tables
 
 Typical workflow:
-- Choose `lightweight` or `refined` based on formality, chart density, and validation needs
-- Initialize a clean workspace
-- Lock semantic Markdown and the active `style_profile`
-- Lint the source before build
-- Build the `.docx`, export the preview bundle, and run QA when required
-- Finish with a visual review note and handoff-ready evidence
+- Confirm the document purpose, source draft, and target formatting
+- Clean up the structure of headings, body text, lists, tables, images, and captions
+- Generate the `.docx`, using Chinese formal-report or English consulting-report typography when appropriate
+- Export previews and check fonts, heading hierarchy, line spacing, tables, figures, headers, footers, and overall page layout
+- Keep previews and review notes for formal reports so the document remains easy to revise and verify
 
 Featured demos:
 - `demos/word-lightweight-industrial-operations-brief/`
@@ -179,37 +160,23 @@ Key outputs:
 - `demos/word-refined-industrial-service-transformation/build/docx/industrial_service_transformation.docx`
 - `demos/word-refined-industrial-service-transformation/temp/qa/qa_report.md`
 
-Key docs:
-- `word-polished-doc-collab/SKILL.md`
-- `word-polished-doc-collab/references/principles.md`
-- `word-polished-doc-collab/references/doc_workflow.md`
-- `word-polished-doc-collab/references/typography_profiles.md`
-- `word-polished-doc-collab/references/local_pipeline_case_study.md`
-
 ### `web-demo-video-synthesis`
 
-This is the flagship video-making skill in the repository. It turns a source narrative into a reproducible workspace for TTS, timing, subtitles, recording, mixing, and final rendering. The result is not a one-off export. The result is a workspace that can be reviewed, edited, rerun, and published.
+`web-demo-video-synthesis` starts by splitting the narration into short segments, generating segment audio, and then using a timing table to drive web recording, subtitles, and final video composition. It keeps the audio, captions, recording, and final MP4 as separate outputs, so copy changes, subtitle changes, or re-recording can be done without rebuilding everything from scratch.
 
-Core capabilities:
-- Turn cues, articles, or posts into timeline-driven demo videos
-- Generate or integrate segment audio, subtitles, and final rendering
-- Preserve a reproducible workspace for iteration and partial reruns
-- Target platform-ready outputs for TikTok, Xiaohongshu, Bilibili, and similar channels
-
-Typical technical stack:
-- Timeline-driven workspace orchestration
-- TTS and subtitle generation
-- Screen recording and video compositing
-- Final MP4 rendering with reproducible intermediate assets
+Common tools:
+- TTS APIs or macOS `say` for segment audio
+- Playwright for browser-controlled screen recording
+- `ffmpeg` for combining video, audio, and subtitles
+- Subtitle files and resolution settings for horizontal videos, vertical videos, and platform safe areas
 
 Typical workflow:
-- Prepare workspace and cues
-- Generate segment audio
-- Build timeline
-- Record or synthesize visual track
+- Prepare the narration and web demo
+- Generate segment audio and confirm segment durations
+- Record the web page according to the timing table
 - Generate subtitles
-- Mix audio and video
-- Export final MP4
+- Mix audio, video, and subtitles into an MP4
+- Check audio-video sync, subtitle position, image clarity, and whether key content is cropped
 
 Featured demo:
 - `demos/web-demo-video-synthesis-financial-agent/`
@@ -219,21 +186,19 @@ Public demo video:
 
 ### `xhs-markdown-card-collab`
 
-This is the repository’s Xiaohongshu image-card workflow skill. It treats content cleanup, cover planning, typography control, browser pagination, and image review as one workflow instead of as separate ad hoc styling steps.
+`xhs-markdown-card-collab` starts by cleaning up Markdown into phone-readable headings, lists, and emphasized points, then renders the result as vertical image cards in a real browser. It is designed for research notes, recruiting posts, product explainers, and structured commentary that should read like publishable Xiaohongshu cards instead of ordinary web screenshots.
 
-Core capabilities:
-- Explicit YAML front matter for cover title, role line, badges, and highlights
-- Markdown cleanup that prefers semantic headings, standard lists, and light emphasis over rewriting the source
-- Browser-based pagination for Chinese text, lists, and mixed English strings
-- Locked typography guidance with validated size bands for cover, body, spacing, and frame width
-- Style-direction guidance to vary tone, layout, and theme without collapsing into repetitive AI-looking cards
-- Visual QA rules for cover density, orphan headings, over-wide borders, empty pages, and mobile readability
+Common tools:
+- Markdown and YAML front matter for body content, cover title, organization, tags, and highlights
+- HTML / CSS for real browser layout
+- Playwright or similar browser automation for PNG export
+- Theme colors, page frame, decorations, and content grouping for style variation
 
-Key docs:
-- `xhs-markdown-card-collab/SKILL.md`
-- `xhs-markdown-card-collab/references/workflow.md`
-- `xhs-markdown-card-collab/references/typography_lock.md`
-- `xhs-markdown-card-collab/references/style_directions.md`
+Typical workflow:
+- Clean up the text structure while preserving the original meaning
+- Define cover information and a mobile-first page size
+- Render page-by-page PNG output and an HTML preview
+- Check cover density, pagination, empty space, long text wrapping, orphan headings, and mobile readability
 
 ## Repository Layout
 
