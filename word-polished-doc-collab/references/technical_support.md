@@ -50,4 +50,4 @@
 
 **Caption 和 block role 应语义化。** 推荐在 Markdown parsing 后先得到 `block_role`，再决定 Word 样式，而不是边遍历边临时判断。编号题注样式、相对位置和 active `caption_policy` 应成为正式识别条件。
 
-**文档级验证应脚本化。** 未来应增加字体槽位检查、caption 位置检查、正文首行缩进检查、表格字号与对齐检查、图片存在性检查、原生对象可编辑性检查，而不是只依赖“脚本没报错”。
+**文档级验证应脚本化。** 当前 `run_docx_qa.py` 已覆盖字体槽位、段落契约、表格字号与对齐、caption 顺序、section 和资产声明，并对非半点字号、role/profile 漂移和字号碎片化输出聚合 advisory。图片裁切与复杂原生对象仍需结合 preview 和人工 visual review，不能只依赖“脚本没报错”。

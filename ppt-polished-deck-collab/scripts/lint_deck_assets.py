@@ -173,6 +173,9 @@ ALIGNMENT_TOKEN_VALUES = {
     "table_text_alignment": {"left"},
     "table_numeric_alignment": {"right"},
 }
+FONT_SIZE_TOKEN_FIELDS = tuple(field for field in REQUIRED_THEME_TOKEN_FIELDS if field.endswith("_font_pt"))
+FONT_SIZE_GRID_PT = 0.5
+FONT_SIZE_GRID_TOLERANCE_PT = 0.02
 
 
 def parse_args() -> argparse.Namespace:
@@ -220,6 +223,22 @@ def lint_theme_tokens(theme_tokens: object, errors: list[str], warnings: list[st
             errors.append(f"deck.theme_tokens.{field}: {numeric_value:g} 低于最低值 {minimum:g}")
         elif numeric_value > maximum:
             warnings.append(f"deck.theme_tokens.{field}: {numeric_value:g} 高于常规上限 {maximum:g}，请确认是有意放大")
+
+    irregular_font_tokens: list[str] = []
+    for field in FONT_SIZE_TOKEN_FIELDS:
+        value = theme_tokens.get(field)
+        if not isinstance(value, (int, float)):
+            continue
+        numeric_value = float(value)
+        nearest_value = round(numeric_value / FONT_SIZE_GRID_PT) * FONT_SIZE_GRID_PT
+        if abs(numeric_value - nearest_value) > FONT_SIZE_GRID_TOLERANCE_PT:
+            irregular_font_tokens.append(f"{field}={numeric_value:g}pt→{nearest_value:g}pt")
+    if irregular_font_tokens:
+        warnings.append(
+            "font_size_off_half_point_grid: "
+            + ", ".join(irregular_font_tokens)
+            + "；优先使用 0.5pt 网格，模板例外需记录理由"
+        )
 
     for field in ("latin_font_name", "east_asia_font_name", "typography_profile"):
         value = theme_tokens.get(field)

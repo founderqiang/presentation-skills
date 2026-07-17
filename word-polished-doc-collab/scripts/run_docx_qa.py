@@ -3,7 +3,7 @@
 
 定位与作用
 ----------
-这个脚本把字体槽位、段落契约、表格对齐、caption 顺序、section 栏数和
+这个脚本把字体槽位、字号提醒、段落契约、表格对齐、caption 顺序、section 栏数和
 `asset_manifest` 一致性收敛成一个可追溯的 QA bundle。它不替代人工视觉判断，
 但能把那些本应脚本检查的问题尽量在交付前锁死。
 """
@@ -68,6 +68,7 @@ def main() -> int:
     print(f"[INFO] style_profile={profile_name} workflow_mode={workflow_mode}")
     print(f"[INFO] json_report={json_out}")
     print(f"[INFO] markdown_report={md_out}")
+    print(f"[INFO] font_size_warnings={report['advisory_summary']['warning']}")
 
     if report["passed_all_checks"]:
         print("[OK] DOCX QA 全部通过")

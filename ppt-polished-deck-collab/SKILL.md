@@ -102,7 +102,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 8. **强制跑 build 后质量 gate**
 - 所有 deck 在 `build` 之后都应先跑 `package_preflight`，检查包结构一致性、移动端兼容风险和外发安全信号。
-- 所有 deck 在 `package_preflight` 之后都应再跑 `structure_precheck`，检查文本框 fit、文字遮挡和结构化对象排版边界。
+- 所有 deck 在 `package_preflight` 之后都应再跑 `structure_precheck`，检查文本框 fit、文字遮挡、结构化对象排版边界和字号系统漂移。
+- 字号提醒默认不阻断交付：`10.5pt` 这类半点档位是规范档位；`9.6pt`、`11.3pt` 这类偏离 `0.5pt` 网格的显式字号、低于 active typography token 的文字和过多碎片化字号应进入 warning。模板确有特殊字号时允许保留，但必须在 review note 说明。
 - `not_checked` 必须显式写入报告，不能当成“通过”。
 
 9. **做模块验证、预览和 preview 后质量 gate**
@@ -141,6 +142,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 - 没有预览图的 deck 不算完成。
 - 需要 connector 的页面，没有结构校验结果不算完成。
 - 页面风格允许多样，但弱信息、标题层级、网格稳定性和高对比文本是底线。
+- 同一语义必须复用 typography token；默认使用整数或 `0.5pt` 档位，不让模型临时手填任意小数。字号 QA 提醒按问题类型聚合并限制代表位置，避免逐 run 重复输出浪费 token。
 - 高质量是交付标准，不是题材限制。这个 skill 既可以做商业汇报，也可以做技术、研究、教育、运营等主题。
 
 ## 快速命令

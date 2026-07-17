@@ -24,6 +24,7 @@
 
 **再检查版式契约是否落地。** 至少确认：
 - 正文、标题、表格和题注是否符合 active `style_profile`
+- 字号是否落在 active `style_profile` 的 role 档位与 Word `0.5pt` 网格，是否存在 profile 外临时字号或过多碎片化档位
 - `cn_song_times` 正文是否为 `小四 12pt + 首行缩进 2 字符 + 1.5 倍行距`
 - 如果 active profile 要求正文不缩进，例如某些 preset，是否确实按 profile 覆盖
 - 表格正文是否为 `10.5pt` 或 `9pt`
@@ -31,6 +32,8 @@
 - 表格段前段后是否为 `0`
 - 表头是否居中、左侧索引列是否左对齐、右侧数值列是否右对齐
 - 表题、图题、表注、图注和来源说明的位置与段距是否符合 active `caption_policy`
+
+**字号提醒不默认阻断。** role/profile 的硬契约偏离仍由 `style_contract` 判定失败；非半点配置、profile 外临时档位和字号碎片化进入 `advisories`，默认不改变 `passed_all_checks`。Markdown 只按 code 聚合、给出 occurrence 数和少量代表位置，JSON 保留结构化提醒，避免逐 run 重复输出。
 
 ## Gate 3: Font Slot Integrity
 

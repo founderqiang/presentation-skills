@@ -92,6 +92,8 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 
 6. **强制做 QA**
 - 至少检查字体槽位、中英文字体、标题层级、正文首行缩进、行距、段前段后、表图标题位置、图注/来源说明、表格字号、表题加粗、表格对齐、图片裁切和原生对象可编辑性。
+- 字号 QA 同时检查 role/profile 漂移、profile 外临时档位、字号碎片化和半点网格。Word 字号底层按半点表达，因此整数与 `10.5pt` 合法，`9.6pt`、`11.3pt` 这类配置应提醒并优先收敛到最近的 `0.5pt`；提醒默认不改变 QA pass/fail。
+- 提醒必须按问题类型聚合、统计 occurrence 数并只保留少量代表位置，不能把每个 run 展开成重复长列表。
 - 没有视觉复核或结构核对的 `.docx` 不算完成。
 
 ## 资源路由
@@ -122,6 +124,7 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 
 - `cn_song_times` 默认正文必须满足 `中文宋体 + 英文 Times New Roman + 小四 12pt + 首行缩进 2 字符 + 1.5 倍行距 + 段前段后 0.5 行`。
 - 标题字号必须随层级单调递减，不能出现二级标题比一级标题更大。
+- 字号默认服从 active `style_profile` 并使用 `0.5pt` 网格；非半点小数、局部覆盖和过多临时档位必须进入聚合 warning，模板或 preset 例外应先写入 profile。
 - 表格正文默认使用 `五号 10.5pt`，确有密度压力时才降到 `小五 9pt`，表头默认居中、左侧索引列左对齐、右侧数值列右对齐。
 - `cn_song_times` 默认表题在表上方且加粗，图题在图下方，表注在表下方。其他 preset 或 style profile 可以显式覆盖 `figure_title` 的位置，但必须在 profile 和 QA 中写清楚。
 - 轻量模式默认不附带 review 记录；精细模式默认必须带 `validation_bundle`，并且让 QA 跟随 active `style_profile` 与 `asset_manifest`（若存在）执行。

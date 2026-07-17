@@ -63,6 +63,10 @@ except Exception as exc:  # noqa: BLE001
 W_NAMESPACE = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 W_VAL = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val"
 DEFAULT_PDF_DPI = 180
+FONT_SIZE_GRID_PT = 0.5
+FONT_SIZE_GRID_TOLERANCE_PT = 0.02
+FONT_SIZE_FRAGMENTATION_LIMIT = 10
+FONT_SIZE_ADVISORY_EXAMPLE_LIMIT = 5
 INLINE_BOLD_PATTERN = re.compile(r"(\*\*.*?\*\*)")
 IMAGE_PATTERN = re.compile(r"!\[(?P<alt>.*?)\]\((?P<path>.*?)\)")
 TABLE_TITLE_PATTERN = re.compile(r"^(表|Table)\s*\d+(?:[-.]\d+)?(?:\s+|:|$).+", re.IGNORECASE)
@@ -316,16 +320,16 @@ def build_style_registry() -> dict[str, StyleProfile]:
             "heading_1": ParagraphSpec("TealHeading1", 28.0, True, "left", 1.05, 10.0, 14.0, 0.0, "#16845F", "Arial", "微软雅黑", True),
             "heading_2": ParagraphSpec("TealHeading2", 14.0, True, "left", 1.05, 10.0, 5.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
             "heading_3": ParagraphSpec("TealHeading3", 10.0, True, "left", 1.05, 6.0, 2.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
-            "heading_4": ParagraphSpec("TealHeading4", 9.2, True, "left", 1.05, 5.0, 2.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
+            "heading_4": ParagraphSpec("TealHeading4", 9.0, True, "left", 1.05, 5.0, 2.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
             "lead": ParagraphSpec("TealLead", 10.0, False, "left", 1.12, 0.0, 8.0, 0.0, "#4D5559", "Arial", "微软雅黑"),
-            "body": ParagraphSpec("TealBody", 9.2, False, "left", 1.08, 0.0, 6.0, 0.0, "#5F666A", "Arial", "微软雅黑"),
-            "list": ParagraphSpec("TealList", 9.2, False, "left", 1.08, 0.0, 5.0, 0.0, "#5F666A", "Arial", "微软雅黑"),
+            "body": ParagraphSpec("TealBody", 9.0, False, "left", 1.08, 0.0, 6.0, 0.0, "#5F666A", "Arial", "微软雅黑"),
+            "list": ParagraphSpec("TealList", 9.0, False, "left", 1.08, 0.0, 5.0, 0.0, "#5F666A", "Arial", "微软雅黑"),
             "table_title": ParagraphSpec("TealTableTitle", 10.0, True, "left", 1.0, 8.0, 3.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
             "table_caption": ParagraphSpec("TealTableCaption", 7.0, False, "left", 1.0, 0.0, 6.0, 0.0, "#6F777B", "Arial", "微软雅黑"),
             "figure_title": ParagraphSpec("TealFigureTitle", 11.0, True, "left", 1.0, 8.0, 2.0, 0.0, "#30383D", "Arial", "微软雅黑", True),
             "figure_note": ParagraphSpec("TealFigureNote", 7.0, False, "left", 1.0, 0.0, 2.0, 0.0, "#6F777B", "Arial", "微软雅黑"),
             "source_note": ParagraphSpec("TealSourceNote", 7.0, False, "left", 1.0, 0.0, 6.0, 0.0, "#6F777B", "Arial", "微软雅黑"),
-            "figure_body": ParagraphSpec("TealFigureBody", 9.2, False, "center", 1.0, 0.0, 0.0),
+            "figure_body": ParagraphSpec("TealFigureBody", 9.0, False, "center", 1.0, 0.0, 0.0),
         },
         table_font_size_pt=9.0,
         dense_table_font_size_pt=8.5,
@@ -382,9 +386,9 @@ def build_style_registry() -> dict[str, StyleProfile]:
             "doc_title": ParagraphSpec("BlueDocTitle", 25.0, True, "left", 0.95, 0.0, 12.0, 0.0, "#071828", "Georgia", "宋体", True),
             "subtitle": ParagraphSpec("BlueSubtitle", 9.5, False, "left", 1.1, 0.0, 10.0, 0.0, "#5C6470", "Arial", "微软雅黑", True),
             "heading_1": ParagraphSpec("BlueHeading1", 15.5, True, "left", 1.02, 14.0, 7.0, 0.0, "#071828", "Georgia", "宋体", True),
-            "heading_2": ParagraphSpec("BlueHeading2", 11.8, True, "left", 1.05, 10.0, 5.0, 0.0, "#071828", "Georgia", "宋体", True),
+            "heading_2": ParagraphSpec("BlueHeading2", 11.5, True, "left", 1.05, 10.0, 5.0, 0.0, "#071828", "Georgia", "宋体", True),
             "heading_3": ParagraphSpec("BlueHeading3", 10.0, True, "left", 1.08, 7.0, 3.0, 0.0, "#1E2C3A", "Arial", "微软雅黑", True),
-            "heading_4": ParagraphSpec("BlueHeading4", 9.6, True, "left", 1.08, 6.0, 3.0, 0.0, "#1E2C3A", "Arial", "微软雅黑", True),
+            "heading_4": ParagraphSpec("BlueHeading4", 9.5, True, "left", 1.08, 6.0, 3.0, 0.0, "#1E2C3A", "Arial", "微软雅黑", True),
             "lead": ParagraphSpec("BlueLead", 11.0, True, "left", 1.28, 0.0, 10.0, 0.0, "#2E3A46", "Arial", "微软雅黑"),
             "body": ParagraphSpec("BlueBody", 10.0, False, "left", 1.24, 0.0, 8.0, 0.0, "#333333", "Arial", "微软雅黑"),
             "list": ParagraphSpec("BlueList", 9.5, False, "left", 1.18, 0.0, 6.0, 0.0, "#333333", "Arial", "微软雅黑"),
@@ -395,7 +399,7 @@ def build_style_registry() -> dict[str, StyleProfile]:
             "source_note": ParagraphSpec("BlueSourceNote", 6.5, False, "left", 1.0, 0.0, 8.0, 0.0, "#6A6F75", "Arial", "微软雅黑"),
             "figure_body": ParagraphSpec("BlueFigureBody", 10.0, False, "center", 1.0, 0.0, 0.0),
         },
-        table_font_size_pt=8.8,
+        table_font_size_pt=9.0,
         dense_table_font_size_pt=8.0,
         table_title_position="above",
         figure_title_position="above",
@@ -1302,6 +1306,7 @@ def run_docx_qa(
 
     passed_all_auto = all(result.passed for name, result in results.items() if name != "visual_review_status")
     passed_all = all(result.passed for result in results.values())
+    font_size_advisories = collect_font_size_advisories(document, profile)
     return {
         "markdown_path": str(markdown_path),
         "docx_path": str(docx_path),
@@ -1312,6 +1317,8 @@ def run_docx_qa(
         "workflow_mode": workflow_mode,
         "passed_all_auto_checks": passed_all_auto,
         "passed_all_checks": passed_all,
+        "advisory_summary": {"warning": sum(item["count"] for item in font_size_advisories)},
+        "advisories": font_size_advisories,
         "checks": {name: asdict(result) for name, result in results.items()},
     }
 
@@ -1443,6 +1450,170 @@ def check_table_contract(document: Document, profile: StyleProfile) -> list[str]
                     failures.append(f"表 {table_index} 表头未加粗。")
                     return failures
     return failures
+
+
+def collect_font_size_advisories(document: Document, profile: StyleProfile) -> list[dict]:
+    """聚合字号漂移提醒，不改变 QA 的通过状态。"""
+
+    buckets: dict[str, dict] = {}
+    observed_sizes: set[float] = set()
+    profile_sizes = {
+        spec.size_pt for spec in profile.role_specs.values()
+    } | {profile.table_font_size_pt, profile.dense_table_font_size_pt}
+
+    def add_advisory(code: str, message: str, suggested_fix: str, example: str) -> None:
+        bucket = buckets.setdefault(
+            code,
+            {
+                "severity": "warning",
+                "code": code,
+                "count": 0,
+                "message": message,
+                "suggested_fix": suggested_fix,
+                "examples": [],
+            },
+        )
+        bucket["count"] += 1
+        if len(bucket["examples"]) < FONT_SIZE_ADVISORY_EXAMPLE_LIMIT and example not in bucket["examples"]:
+            bucket["examples"].append(example)
+
+    for role, spec in profile.role_specs.items():
+        nearest_size = nearest_half_point(spec.size_pt)
+        if not is_on_half_point_grid(spec.size_pt):
+            add_advisory(
+                "font_size_policy_off_half_point_grid",
+                "active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
+                "把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
+                f"role={role} configured={spec.size_pt:g}pt nearest={nearest_size:g}pt",
+            )
+
+    for field, font_size in (
+        ("table_font_size_pt", profile.table_font_size_pt),
+        ("dense_table_font_size_pt", profile.dense_table_font_size_pt),
+    ):
+        nearest_size = nearest_half_point(font_size)
+        if not is_on_half_point_grid(font_size):
+            add_advisory(
+                "font_size_policy_off_half_point_grid",
+                "active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
+                "把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
+                f"field={field} configured={font_size:g}pt nearest={nearest_size:g}pt",
+            )
+
+    style_specs = {spec.style_name: spec for spec in profile.role_specs.values()}
+    for paragraph_index, paragraph in enumerate(document.paragraphs, start=1):
+        spec = style_specs.get(paragraph.style.name)
+        for run_index, run in enumerate(paragraph.runs, start=1):
+            if not (run.text or "").strip():
+                continue
+            size_pt = effective_run_font_size_pt(run, paragraph)
+            if size_pt is None:
+                continue
+            observed_sizes.add(size_pt)
+            location = f"paragraph={paragraph_index} run={run_index} style={paragraph.style.name} size={size_pt:g}pt"
+            collect_run_font_size_advisories(
+                size_pt=size_pt,
+                expected_size_pt=spec.size_pt if spec else None,
+                profile_sizes=profile_sizes,
+                location=location,
+                add_advisory=add_advisory,
+            )
+
+    for table_index, table in enumerate(document.tables, start=1):
+        for row_index, row in enumerate(table.rows, start=1):
+            for col_index, cell in enumerate(row.cells, start=1):
+                for paragraph_index, paragraph in enumerate(cell.paragraphs, start=1):
+                    for run_index, run in enumerate(paragraph.runs, start=1):
+                        if not (run.text or "").strip():
+                            continue
+                        size_pt = effective_run_font_size_pt(run, paragraph)
+                        if size_pt is None:
+                            continue
+                        observed_sizes.add(size_pt)
+                        location = (
+                            f"table={table_index} row={row_index} col={col_index} "
+                            f"paragraph={paragraph_index} run={run_index} size={size_pt:g}pt"
+                        )
+                        expected_sizes = {profile.table_font_size_pt, profile.dense_table_font_size_pt}
+                        expected_size = next(
+                            (value for value in expected_sizes if is_close(size_pt, value, FONT_SIZE_GRID_TOLERANCE_PT)),
+                            None,
+                        )
+                        collect_run_font_size_advisories(
+                            size_pt=size_pt,
+                            expected_size_pt=expected_size,
+                            profile_sizes=profile_sizes,
+                            location=location,
+                            add_advisory=add_advisory,
+                        )
+                        if expected_size is None:
+                            allowed_text = "/".join(f"{value:g}" for value in sorted(expected_sizes))
+                            add_advisory(
+                                "font_size_role_drift",
+                                "文本 run 字号偏离其语义角色或表格允许档位。",
+                                "删除局部字号覆盖，让 run 继承 active style profile。",
+                                f"{location} expected={allowed_text}pt",
+                            )
+
+    if len(observed_sizes) > FONT_SIZE_FRAGMENTATION_LIMIT:
+        add_advisory(
+            "font_size_fragmentation",
+            "文档使用了过多字号档位，字号系统可能已经碎片化。",
+            "把相同语义的文字收敛到 active style profile 的 role 字号。",
+            "observed_sizes=" + ",".join(f"{value:g}" for value in sorted(observed_sizes)),
+        )
+    return [buckets[code] for code in sorted(buckets)]
+
+
+def collect_run_font_size_advisories(
+    *,
+    size_pt: float,
+    expected_size_pt: float | None,
+    profile_sizes: set[float],
+    location: str,
+    add_advisory,
+) -> None:
+    """把单个 run 的字号问题加入聚合桶。"""
+
+    if not is_on_half_point_grid(size_pt):
+        add_advisory(
+            "font_size_off_half_point_grid",
+            "检测到偏离 DOCX 0.5pt 网格的字号。",
+            "改用最接近的 0.5pt 档位；若模板要求例外，在 review note 中说明。",
+            f"{location} nearest={nearest_half_point(size_pt):g}pt",
+        )
+    if expected_size_pt is not None and not is_close(size_pt, expected_size_pt, FONT_SIZE_GRID_TOLERANCE_PT):
+        add_advisory(
+            "font_size_role_drift",
+            "文本 run 字号偏离其语义角色或表格允许档位。",
+            "删除局部字号覆盖，让 run 继承 active style profile。",
+            f"{location} expected={expected_size_pt:g}pt",
+        )
+    if not any(is_close(size_pt, allowed_size, FONT_SIZE_GRID_TOLERANCE_PT) for allowed_size in profile_sizes):
+        add_advisory(
+            "font_size_outside_profile_scale",
+            "文本使用了 active style profile 之外的临时字号档位。",
+            "为该文本绑定已有 role；确需新档位时先更新 style profile，再构建文档。",
+            location,
+        )
+
+
+def effective_run_font_size_pt(run, paragraph) -> float | None:
+    """解析 run 的直接字号或段落样式字号。"""
+
+    return _pt_value(run.font.size) or _pt_value(paragraph.style.font.size)
+
+
+def nearest_half_point(font_size_pt: float) -> float:
+    """返回最接近的 DOCX 半点字号。"""
+
+    return round(round(font_size_pt / FONT_SIZE_GRID_PT) * FONT_SIZE_GRID_PT, 2)
+
+
+def is_on_half_point_grid(font_size_pt: float) -> bool:
+    """判断字号是否落在 DOCX 可稳定表达的半点网格。"""
+
+    return abs(font_size_pt - nearest_half_point(font_size_pt)) <= FONT_SIZE_GRID_TOLERANCE_PT
 
 
 def check_font_slots(docx_path: Path) -> CheckResult:
@@ -1725,7 +1896,24 @@ def report_to_markdown(title: str, report: dict) -> str:
     lines.append(f"- DOCX：`{report['docx_path']}`")
     lines.append(f"- Asset manifest：`{report['asset_manifest_path']}`")
     lines.append(f"- Visual review：`{report['visual_review_path']}`")
+    lines.append(f"- 字号提醒数：`{report.get('advisory_summary', {}).get('warning', 0)}`")
     lines.append("")
+    advisories = report.get("advisories") or []
+    if advisories:
+        lines.append("## 字号提醒")
+        lines.append("")
+        for advisory in advisories:
+            lines.append(f"### `{advisory['code']}` × {advisory['count']}")
+            lines.append("")
+            lines.append(advisory["message"])
+            lines.append("")
+            lines.append(f"建议：{advisory['suggested_fix']}")
+            lines.append("")
+            if advisory["examples"]:
+                lines.append("代表位置：")
+                for example in advisory["examples"]:
+                    lines.append(f"- {example}")
+                lines.append("")
     for check_name, check_result in report["checks"].items():
         lines.append(f"## {check_name}")
         lines.append("")

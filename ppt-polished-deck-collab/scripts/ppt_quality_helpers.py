@@ -27,6 +27,7 @@ from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 EMU_PER_PT = 12700.0
 DEFAULT_BODY_FONT_PT = 14.0
+FONT_SIZE_LOCATION_EXAMPLE_LIMIT = 12
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,19 @@ class TextItemRecord:
     inner_rect_pt: RectPt
     font_size_pt: float
     paragraph_count: int
+
+
+@dataclass(frozen=True)
+class FontSizeOccurrence:
+    """单个可见文本 run 的显式字号记录。"""
+
+    slide_number: int
+    owner_shape_id: int
+    owner_shape_name: str
+    source_kind: str
+    text: str
+    font_size_pt: float
+    setting_source: str
 
 
 @dataclass(frozen=True)
@@ -198,6 +212,65 @@ def pick_paragraph_font_size(paragraph, fallback: float = DEFAULT_BODY_FONT_PT) 
     if not sizes:
         return fallback
     return max(size for size in sizes if size > 0)
+
+
+def collect_font_size_occurrences(prs: Presentation) -> list[FontSizeOccurrence]:
+    """收集 slide 可见文本中能够解析到的逐 run 字号。"""
+
+    occurrences: list[FontSizeOccurrence] = []
+
+    def collect_text_frame(slide_number: int, shape, text_frame, source_kind: str) -> None:
+        shape_id = getattr(shape, "shape_id", -1)
+        shape_name = getattr(shape, "name", "")
+        for paragraph in text_frame.paragraphs:
+            paragraph_size = getattr(paragraph.font, "size", None)
+            paragraph_size_pt = emu_to_pt(paragraph_size) if paragraph_size is not None else None
+            for run in paragraph.runs:
+                text = normalize_text(run.text)
+                if not text:
+                    continue
+                run_size = getattr(run.font, "size", None)
+                if run_size is not None:
+                    font_size_pt = emu_to_pt(run_size)
+                    setting_source = "run"
+                elif paragraph_size_pt is not None:
+                    font_size_pt = paragraph_size_pt
+                    setting_source = "paragraph"
+                else:
+                    continue
+                if font_size_pt <= 0:
+                    continue
+                occurrences.append(
+                    FontSizeOccurrence(
+                        slide_number=slide_number,
+                        owner_shape_id=shape_id,
+                        owner_shape_name=shape_name,
+                        source_kind=source_kind,
+                        text=shorten_text(text, 80),
+                        font_size_pt=font_size_pt,
+                        setting_source=setting_source,
+                    )
+                )
+
+    def visit_shapes(slide_number: int, shapes) -> None:
+        for shape in shapes:
+            if getattr(shape, "has_text_frame", False):
+                collect_text_frame(slide_number, shape, shape.text_frame, "shape_text")
+            if getattr(shape, "has_table", False):
+                for row_index, row in enumerate(shape.table.rows):
+                    for col_index, cell in enumerate(row.cells):
+                        collect_text_frame(
+                            slide_number,
+                            shape,
+                            cell.text_frame,
+                            f"table_cell[{row_index},{col_index}]",
+                        )
+            if getattr(shape, "shape_type", None) == MSO_SHAPE_TYPE.GROUP:
+                visit_shapes(slide_number, shape.shapes)
+
+    for slide_number, slide in enumerate(prs.slides, start=1):
+        visit_shapes(slide_number, slide.shapes)
+    return occurrences
 
 
 def text_frame_inner_rect(shape) -> RectPt:
@@ -551,6 +624,19 @@ def render_issue_markdown(title: str, payload: dict) -> str:
         if len(location_issues) > 1:
             parts.append(f"occurrences={len(location_issues)}")
 
+        font_sizes: set[float] = set()
+        nearest_sizes: set[float] = set()
+        for details in details_list:
+            if details.get("font_size_pt") is not None:
+                font_sizes.add(details["font_size_pt"])
+            font_sizes.update(details.get("font_sizes_pt") or [])
+            if details.get("nearest_half_point_pt") is not None:
+                nearest_sizes.add(details["nearest_half_point_pt"])
+        if font_sizes:
+            parts.append("font_sizes_pt=" + ",".join(_fmt_number(value) or "" for value in sorted(font_sizes)))
+        if nearest_sizes:
+            parts.append("nearest_half_point_pt=" + ",".join(_fmt_number(value) or "" for value in sorted(nearest_sizes)))
+
         def _pick_metric(key: str, reducer=max):
             values = [details.get(key) for details in details_list if details.get(key) is not None]
             if not values:
@@ -602,14 +688,23 @@ def render_issue_markdown(title: str, payload: dict) -> str:
             for issue in bucket:
                 by_location.setdefault(_location_key(issue), []).append(issue)
             lines.append("出现位置：")
-            for _, location_issues in sorted(
+            sorted_locations = sorted(
                 by_location.items(),
                 key=lambda item: (
                     item[0][0] if item[0][0] is not None else 0,
                     item[0][1] if item[0][1] is not None else 0,
                 ),
-            ):
+            )
+            location_limit = (
+                FONT_SIZE_LOCATION_EXAMPLE_LIMIT
+                if issue_type.startswith("font_size_") or "_font_" in issue_type
+                else len(sorted_locations)
+            )
+            for _, location_issues in sorted_locations[:location_limit]:
                 lines.append(f"- {_location_brief(location_issues)}")
+            omitted_count = len(sorted_locations) - location_limit
+            if omitted_count > 0:
+                lines.append(f"- 其余 {omitted_count} 个位置见 JSON 报告")
             lines.append("")
     return "\n".join(lines)
 

@@ -146,7 +146,7 @@ roles:
     space_before: 6pt
     space_after: 2pt
   body:
-    font_size: 9.2pt
+    font_size: 9pt
     color: "#5F666A"
     line_spacing: 1.08
     first_line_indent: 0
@@ -158,7 +158,7 @@ roles:
     line_spacing: 1.12
     space_after: 8pt
   bullet:
-    font_size: 9.2pt
+    font_size: 9pt
     bullet_color: "#16845F"
     hanging: 0.14in
   exhibit_label:
@@ -299,7 +299,7 @@ roles:
     space_before: 10pt
     space_after: 4pt
   figure_note:
-    font_size: 6.8pt
+    font_size: 6.5pt
     color: "#555555"
   footer_running:
     font_size: 7pt

@@ -7,10 +7,13 @@
 它关注的是 slide 结构层面是否已经出现明显排版风险，目的是在预览导出前就
 提前拦住可以解释、可以定位、可以驱动修复的问题。
 
-首期覆盖三类结果：
+当前覆盖以下结果：
 1. `textbox_fit_failure`
 2. `text_occluded_by_shape`
-3. `structured_chart_label_collision_not_checked`
+3. `font_size_off_half_point_grid` / `font_size_outside_theme_scale`
+4. `body_text_below_theme_token` / `table_font_below_theme_token`
+5. `font_size_fragmentation`
+6. `structured_chart_label_collision_not_checked`
 """
 
 from __future__ import annotations
@@ -21,10 +24,12 @@ from dataclasses import asdict
 from pathlib import Path
 
 from pptx import Presentation
+import yaml
 
 from ppt_quality_helpers import (
     QualityIssue,
     RectPt,
+    collect_font_size_occurrences,
     collect_shape_inventory,
     collect_text_items,
     dump_json,
@@ -36,11 +41,25 @@ from ppt_quality_helpers import (
 )
 
 FULL_SLIDE_PICTURE_COVERAGE_THRESHOLD = 0.95
+FONT_SIZE_GRID_PT = 0.5
+FONT_SIZE_GRID_TOLERANCE_PT = 0.02
+FONT_SIZE_FRAGMENTATION_LIMIT = 10
+DEFAULT_FONT_SIZE_POLICY = {
+    "hero_title_font_pt": 40.0,
+    "section_title_font_pt": 30.0,
+    "page_title_font_pt": 24.0,
+    "subtitle_font_pt": 16.0,
+    "minor_title_font_pt": 14.0,
+    "body_font_pt": 12.0,
+    "label_font_pt": 10.5,
+    "caption_font_pt": 9.0,
+    "table_font_pt": 10.5,
+}
 
 
 def parse_args() -> argparse.Namespace:
     """解析命令行参数。"""
-    parser = argparse.ArgumentParser(description="检查 PPTX 的文本边界与遮挡风险")
+    parser = argparse.ArgumentParser(description="检查 PPTX 的文本边界、遮挡与字号系统风险")
     parser.add_argument("--pptx", required=True, type=Path, help="输入 PPTX")
     parser.add_argument("--workspace-dir", type=Path, help="可选：按标准 validation 目录写入带时间戳报告")
     parser.add_argument("--json-out", type=Path, help="可选：写出 JSON 报告")
@@ -351,6 +370,134 @@ def full_slide_picture_background_issues(
     return issues
 
 
+def resolve_font_size_policy(workspace_dir: Path | None) -> dict:
+    """优先从 slide specs 读取字号基线，否则使用 skill 默认值。"""
+
+    policy = {**DEFAULT_FONT_SIZE_POLICY, "source": "skill_default"}
+    if workspace_dir is None:
+        return policy
+
+    specs_path = workspace_dir.resolve() / "build" / "generated" / "slide_specs.yaml"
+    if not specs_path.exists():
+        return policy
+    try:
+        specs = yaml.safe_load(specs_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return policy
+
+    theme_tokens = (specs.get("deck") or {}).get("theme_tokens") or {}
+    for field in DEFAULT_FONT_SIZE_POLICY:
+        value = theme_tokens.get(field)
+        if isinstance(value, (int, float)) and float(value) > 0:
+            policy[field] = float(value)
+    policy["source"] = str(specs_path)
+    return policy
+
+
+def nearest_font_grid_value(font_size_pt: float) -> float:
+    """返回最接近的 0.5pt 字号档位。"""
+
+    return round(round(font_size_pt / FONT_SIZE_GRID_PT) * FONT_SIZE_GRID_PT, 2)
+
+
+def font_size_quality_issues(font_occurrences, policy: dict) -> list[QualityIssue]:
+    """把异常小数、低于基线和字号碎片化归类为非阻断提醒。"""
+
+    issues: list[QualityIssue] = []
+    unique_sizes = sorted({occurrence.font_size_pt for occurrence in font_occurrences})
+    allowed_sizes = sorted(
+        {
+            float(value)
+            for field, value in policy.items()
+            if field.endswith("_font_pt") and isinstance(value, (int, float))
+        }
+    )
+
+    for occurrence in font_occurrences:
+        nearest_size = nearest_font_grid_value(occurrence.font_size_pt)
+        common_details = {
+            "font_size_pt": occurrence.font_size_pt,
+            "text": occurrence.text,
+            "shape_name": occurrence.owner_shape_name,
+            "setting_source": occurrence.setting_source,
+        }
+        if abs(occurrence.font_size_pt - nearest_size) > FONT_SIZE_GRID_TOLERANCE_PT:
+            issues.append(
+                QualityIssue(
+                    severity="warning",
+                    issue_type="font_size_off_half_point_grid",
+                    message="检测到偏离 0.5pt 字号网格的显式字号；这通常是局部手填或自动缩放留下的非规范档位。",
+                    slide_number=occurrence.slide_number,
+                    shape_id=occurrence.owner_shape_id,
+                    source_kind=occurrence.source_kind,
+                    details={**common_details, "nearest_half_point_pt": nearest_size},
+                    suggested_fix="优先改回 theme token 或最接近的 0.5pt 档位；若模板确实要求该值，在 review note 中说明例外。",
+                )
+            )
+
+        if not any(
+            abs(occurrence.font_size_pt - allowed_size) <= FONT_SIZE_GRID_TOLERANCE_PT
+            for allowed_size in allowed_sizes
+        ):
+            issues.append(
+                QualityIssue(
+                    severity="warning",
+                    issue_type="font_size_outside_theme_scale",
+                    message="显式字号不属于 active theme_tokens 的语义字号表，可能是局部手填档位。",
+                    slide_number=occurrence.slide_number,
+                    shape_id=occurrence.owner_shape_id,
+                    source_kind=occurrence.source_kind,
+                    details={**common_details, "allowed_font_sizes_pt": allowed_sizes},
+                    suggested_fix="把该文本绑定到已有 typography token；确需新档位时先更新 theme_tokens 并记录语义用途。",
+                )
+            )
+
+        if occurrence.source_kind.startswith("table_cell"):
+            minimum_size = policy["table_font_pt"]
+            issue_type = "table_font_below_theme_token"
+            message = "表格文字低于 active table_font_pt，可能是为塞入内容而临时缩小。"
+        elif occurrence.font_size_pt < policy["caption_font_pt"]:
+            minimum_size = policy["caption_font_pt"]
+            issue_type = "font_size_below_caption_floor"
+            message = "可见文字低于 active caption_font_pt，已经小于当前 deck 的最弱语义档位。"
+        elif len(occurrence.text) >= 36 and occurrence.font_size_pt < policy["body_font_pt"]:
+            minimum_size = policy["body_font_pt"]
+            issue_type = "body_text_below_theme_token"
+            message = "较长文本低于 active body_font_pt，疑似通过压小字号解决版面密度。"
+        else:
+            continue
+
+        if occurrence.font_size_pt < minimum_size - FONT_SIZE_GRID_TOLERANCE_PT:
+            issues.append(
+                QualityIssue(
+                    severity="warning",
+                    issue_type=issue_type,
+                    message=message,
+                    slide_number=occurrence.slide_number,
+                    shape_id=occurrence.owner_shape_id,
+                    source_kind=occurrence.source_kind,
+                    details={**common_details, "minimum_font_size_pt": minimum_size},
+                    suggested_fix="先减少文案、放宽容器或拆页；确需更小字号时，记录该语义角色和例外原因。",
+                )
+            )
+
+    if len(unique_sizes) > FONT_SIZE_FRAGMENTATION_LIMIT:
+        issues.append(
+            QualityIssue(
+                severity="warning",
+                issue_type="font_size_fragmentation",
+                message="整份 deck 的显式字号档位过多，字号系统可能已经碎片化。",
+                details={
+                    "font_sizes_pt": unique_sizes,
+                    "unique_font_size_count": len(unique_sizes),
+                    "recommended_maximum": FONT_SIZE_FRAGMENTATION_LIMIT,
+                },
+                suggested_fix="把相同语义的文字收敛到 hero / section / page title / subtitle / body / label / caption / table token。",
+            )
+        )
+    return issues
+
+
 def main() -> int:
     """执行 structure precheck。"""
     args = parse_args()
@@ -369,6 +516,8 @@ def main() -> int:
     slide_height_pt = prs.slide_height.pt
     shape_inventory = collect_shape_inventory(prs)
     text_items = collect_text_items(prs)
+    font_occurrences = collect_font_size_occurrences(prs)
+    font_size_policy = resolve_font_size_policy(args.workspace_dir)
     issues: list[QualityIssue] = []
 
     for text_item in text_items:
@@ -377,6 +526,7 @@ def main() -> int:
         issues.extend(occlusion_issues(text_item, shape_inventory))
 
     issues.extend(structured_object_overlap_issues(shape_inventory))
+    issues.extend(font_size_quality_issues(font_occurrences, font_size_policy))
     issues.extend(
         full_slide_picture_background_issues(
             shape_inventory,
@@ -440,7 +590,9 @@ def main() -> int:
             "counts": {
                 "shape_count": len(shape_inventory),
                 "text_item_count": len(text_items),
-            }
+                "explicit_font_size_occurrence_count": len(font_occurrences),
+            },
+            "font_size_policy": font_size_policy,
         },
     )
 

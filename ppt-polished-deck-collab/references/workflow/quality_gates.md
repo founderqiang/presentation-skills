@@ -83,9 +83,11 @@ python scripts/check_pptx_package_preflight.py \
 
 ## `structure_precheck`
 
-**它检查的是结构层排版合理性。** 首期重点覆盖以下三类结果。
+**它检查的是结构层排版合理性。** 当前重点覆盖以下结果。
 - `textbox_fit_failure`
 - `text_occluded_by_shape`
+- `font_size_off_half_point_grid` / `font_size_outside_theme_scale` / `body_text_below_theme_token` / `table_font_below_theme_token`
+- `font_size_below_caption_floor` / `font_size_fragmentation`
 - `structured_chart_label_collision_not_checked`
 - `full_slide_picture_background_risk`
 
@@ -149,6 +151,8 @@ python scripts/check_pptx_render_review.py \
 **typography 与 table profile 需要进入 visual review。** 中文正式材料的宋体 / Times 字体槽、正文段落、表格上下居中、表头居中和财务数值右对齐可以作为后续结构检查增强，但当前 gate 仍以 fail-fast 为主。研报质感、版心纪律、图号单位和免责声明位置应在 preview contact sheet 与人工 visual review 中确认，不能仅凭 `render_review` 通过就进入 final。
 
 **typography token 要被抽查兑现。** visual review 应抽查封面、章节页、正文页、图表页和表格页，确认 hero / section / page title / subtitle / body / label / caption / table 文本符合 `theme_tokens`。低于 `body_font_pt` 的正文、低于 `table_font_pt` 的表格、碎片化字号和临时字体切换都应记录为 warning 或 preference fix，不能被当成自然排版差异。
+
+**字号提醒使用压缩报告。** 默认字号网格为 `0.5pt`，因此 `10.5pt` 合法而 `9.6pt`、`11.3pt` 需要提醒。字号问题默认是 `warning`，不因单个小数档位阻断交付；Markdown 报告必须沿用统一的 `severity + issue_type + message + suggested_fix` 聚合，只输出一次问题说明和压缩后的位置清单，JSON 再保留逐 occurrence 证据。
 
 **页面可见文案也要进入 visual review。** 自动 gate 主要检查结构和成图风险，不能判断一句话是否属于外发页面。人工复核应抽查标题、正文、卡片、图注和章节页，确认没有把 `Narrative Role`、讲者提示、协作说明、敏感性处理策略或“这页 / 本部分 / 公开课应 / 建议讲者 / 帮助听众理解”等元叙述直接放到 PPT 可见层。
 
