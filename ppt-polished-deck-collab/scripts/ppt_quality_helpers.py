@@ -25,6 +25,11 @@ from pathlib import Path
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
+from agent_qc_reminders import build_agent_reminder
+from agent_qc_reminders import quality_issues_to_observations
+from agent_qc_reminders import sidecar_path
+from agent_qc_reminders import write_agent_reminder
+
 EMU_PER_PT = 12700.0
 DEFAULT_BODY_FONT_PT = 14.0
 FONT_SIZE_LOCATION_EXAMPLE_LIMIT = 12
@@ -734,4 +739,70 @@ def write_issue_bundle(
     if md_out:
         md_out.parent.mkdir(parents=True, exist_ok=True)
         md_out.write_text(render_issue_markdown(title, payload), encoding="utf-8")
+
+    gate_name = infer_gate_name_from_title(title)
+    observations = quality_issues_to_observations(
+        issues,
+        skill="ppt-polished-deck-collab",
+        gate=gate_name,
+        artifact_path=pptx_path,
+        detector=detector_for_gate(gate_name),
+    )
+    reminder = build_agent_reminder(
+        observations,
+        source={"skill": "ppt-polished-deck-collab", "gate": gate_name},
+        artifact={"path": str(pptx_path.resolve())},
+        full_report_ref=str(json_out) if json_out else None,
+        target_milestone="final",
+    )
+    agent_json_out = sidecar_path(json_out, ".json")
+    agent_md_out = sidecar_path(md_out, ".md")
+    write_agent_reminder(json_path=agent_json_out, md_path=agent_md_out, reminder=reminder)
+    payload["agent_reminder"] = {
+        "json": str(agent_json_out) if agent_json_out else None,
+        "markdown": str(agent_md_out) if agent_md_out else None,
+        "decision": reminder["decision"],
+    }
     return payload
+
+
+def infer_gate_name_from_title(title: str) -> str:
+    """从报告标题推断 gate 名称。"""
+
+    normalized = title.lower()
+    if "package" in normalized:
+        return "package_preflight"
+    if "structure" in normalized:
+        return "structure_precheck"
+    if "render" in normalized:
+        return "render_review"
+    return "quality_gate"
+
+
+def detector_for_gate(gate_name: str) -> dict:
+    """返回 gate 对应的 detector 元数据。"""
+
+    mapping = {
+        "package_preflight": {
+            "id": "ppt.package_preflight",
+            "layer": "package",
+            "method": "ooxml_package_analysis",
+            "version": "1.0",
+        },
+        "structure_precheck": {
+            "id": "ppt.structure_precheck",
+            "layer": "structure",
+            "method": "pptx_geometry_analysis",
+            "version": "1.0",
+        },
+        "render_review": {
+            "id": "ppt.render_review",
+            "layer": "raster",
+            "method": "raster_edge_detection",
+            "version": "1.0",
+        },
+    }
+    return mapping.get(
+        gate_name,
+        {"id": f"ppt.{gate_name}", "layer": "unknown", "method": "unknown", "version": "1.0"},
+    )

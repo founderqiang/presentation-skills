@@ -66,7 +66,7 @@ def brief_template(title: str, audience: str, scenario: str, objective: str) -> 
         - 是否需要无人讲解也能读懂：
         - 参考模板文件：
         - 模板 / 品牌约束：
-        - 交付物要求：可编辑 PPTX、逐页预览图、验证记录。
+        - 交付物要求：最终可编辑 PPTX 放入 `final/`，并提供逐页预览图、验证记录。
         - 验证要求：package preflight、structure precheck、preview export、render review、visual review。
 
         ## Deck Contract

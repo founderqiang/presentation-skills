@@ -130,14 +130,14 @@ python scripts/init_deck_workspace.py \
 
 **`asset_slots` 是模块生产入口。** 对复杂 deck，`asset_mode` 只表达主资产类型，具体图表、图片、icon、表格、diagram 和生图 prompt 都应进入 `asset_slots`。轻量任务可以只写一个 slot，正式外发或多模块任务应写完整 slot 状态、输入、输出和验证要求。
 
-**`build/` 放可重建产物。** 当前 `pptx`、派生 `slide_specs.yaml`、中间 PDF 和逐页预览图都应放在这里。
+**`build/` 放可重建产物。** 派生 `slide_specs.yaml`、构建候选稿、中间 PDF 和逐页预览图都应放在这里。`build/pptx/` 可以保存工作稿或候选稿，但不作为最终交付目录。
 
 **`validation/` 放证据。** connector 报告、preview manifest、review note、asset lint 结果都应集中落在这里。
 
 **`validation/` 还应承载 deck 级 quality gates。** 至少建议固定 `package_preflight/` 与 `structure_precheck/` 两个目录，让文件级问题和页面结构问题分开沉淀，不要混成一份大杂烩报告。
 **preview 导出后还应有 `render_review/`。** 它服务成图层问题，不应再塞回 `structure_precheck/`。
 
-**`final/` 放交付物。** 给用户和评审会看的最终 deck 与 handoff 说明只放在这里。final 前应能指向最新 preview、三段质量 gate 和 visual review 结论。
+**`final/` 放交付物。** 给用户和评审会看的最终可编辑 PPTX 与 handoff 说明只放在这里。final 前应能指向最新 preview、三段质量 gate 和 visual review 结论。
 
 ## Quality Gate 衔接
 
@@ -355,6 +355,6 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 ## 交付底线
 
-**完整交付至少包含八项。** `brief.md`、`deck_narrative.md`、planning checkpoint 记录、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、与页面验证模式相匹配的验证结果、final 前 visual review 结论。
+**完整交付至少包含八项。** `brief.md`、`deck_narrative.md`、planning checkpoint 记录、派生 `slide_specs.yaml`、`final/*.pptx` 可编辑交付文件、逐页预览图、与页面验证模式相匹配的验证结果、final 前 visual review 结论。
 
 **每次修改都要有新证据。** 修复后必须能指出新的 `pptx`、新的 preview，或新的结构校验结果。

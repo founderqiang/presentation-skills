@@ -45,6 +45,9 @@ FONT_SIZE_GRID_PT = 0.5
 FONT_SIZE_GRID_TOLERANCE_PT = 0.02
 FONT_SIZE_FRAGMENTATION_LIMIT = 10
 DEFAULT_FONT_SIZE_POLICY = {
+    "typography_profile": "cn_song_times",
+    "latin_font_name": "Times New Roman",
+    "east_asia_font_name": "宋体",
     "hero_title_font_pt": 40.0,
     "section_title_font_pt": 30.0,
     "page_title_font_pt": 24.0,
@@ -54,6 +57,17 @@ DEFAULT_FONT_SIZE_POLICY = {
     "label_font_pt": 10.5,
     "caption_font_pt": 9.0,
     "table_font_pt": 10.5,
+}
+PPT_FONT_TOKEN_ROLES = {
+    "hero_title_font_pt": "hero",
+    "section_title_font_pt": "section_title",
+    "page_title_font_pt": "page_title",
+    "subtitle_font_pt": "subtitle",
+    "minor_title_font_pt": "minor_title",
+    "body_font_pt": "body",
+    "label_font_pt": "label",
+    "caption_font_pt": "caption",
+    "table_font_pt": "table",
 }
 
 
@@ -374,6 +388,11 @@ def resolve_font_size_policy(workspace_dir: Path | None) -> dict:
     """优先从 slide specs 读取字号基线，否则使用 skill 默认值。"""
 
     policy = {**DEFAULT_FONT_SIZE_POLICY, "source": "skill_default"}
+    policy["_field_sources"] = {
+        field: "skill_default"
+        for field in DEFAULT_FONT_SIZE_POLICY
+        if field.endswith("_font_pt")
+    }
     if workspace_dir is None:
         return policy
 
@@ -386,10 +405,15 @@ def resolve_font_size_policy(workspace_dir: Path | None) -> dict:
         return policy
 
     theme_tokens = (specs.get("deck") or {}).get("theme_tokens") or {}
+    for field in ("typography_profile", "latin_font_name", "east_asia_font_name"):
+        value = theme_tokens.get(field)
+        if isinstance(value, str) and value.strip():
+            policy[field] = value
     for field in DEFAULT_FONT_SIZE_POLICY:
         value = theme_tokens.get(field)
         if isinstance(value, (int, float)) and float(value) > 0:
             policy[field] = float(value)
+            policy["_field_sources"][field] = "theme_tokens"
     policy["source"] = str(specs_path)
     return policy
 
@@ -398,6 +422,72 @@ def nearest_font_grid_value(font_size_pt: float) -> float:
     """返回最接近的 0.5pt 字号档位。"""
 
     return round(round(font_size_pt / FONT_SIZE_GRID_PT) * FONT_SIZE_GRID_PT, 2)
+
+
+def infer_typography_language(policy: dict) -> str | None:
+    """从 theme token 推断 deck 级排版语言。"""
+
+    profile = str(policy.get("typography_profile") or "")
+    east_asia_font = str(policy.get("east_asia_font_name") or "")
+    if profile.startswith("cn_") or any(name in east_asia_font for name in ("宋", "黑", "楷", "微软雅黑")):
+        return "zh"
+    if profile.startswith("en_"):
+        return "en"
+    return None
+
+
+def font_token_recommendation_for_occurrence(occurrence, policy: dict) -> dict:
+    """为单个字号 occurrence 解析最可能的 active typography token。"""
+
+    token_field = None
+    if occurrence.source_kind.startswith("table_cell"):
+        token_field = "table_font_pt"
+    elif len(occurrence.text) >= 36:
+        token_field = "body_font_pt"
+    elif occurrence.font_size_pt < float(policy.get("caption_font_pt", 9.0)):
+        token_field = "caption_font_pt"
+
+    if token_field is None:
+        return {
+            "recommendation_status": "unresolved",
+            "recommended_token_field": None,
+            "recommended_token": None,
+            "recommended_value_pt": None,
+            "role": None,
+            "typography_language": infer_typography_language(policy),
+            "typography_profile": policy.get("typography_profile"),
+            "east_asia_font_name": policy.get("east_asia_font_name"),
+            "font_size_policy_source": policy.get("source"),
+        }
+
+    value = policy.get(token_field)
+    language = infer_typography_language(policy)
+    field_source = (policy.get("_field_sources") or {}).get(token_field)
+    if not isinstance(value, (int, float)) or (field_source == "skill_default" and language != "zh"):
+        return {
+            "recommendation_status": "unresolved",
+            "recommended_token_field": token_field,
+            "recommended_token": None,
+            "recommended_value_pt": None,
+            "role": PPT_FONT_TOKEN_ROLES.get(token_field),
+            "typography_language": language,
+            "typography_profile": policy.get("typography_profile"),
+            "east_asia_font_name": policy.get("east_asia_font_name"),
+            "font_size_policy_source": policy.get("source"),
+        }
+
+    value = float(value)
+    return {
+        "recommendation_status": "resolved",
+        "recommended_token_field": token_field,
+        "recommended_token": f"theme_tokens.{token_field}",
+        "recommended_value_pt": value,
+        "role": PPT_FONT_TOKEN_ROLES.get(token_field),
+        "typography_language": language,
+        "typography_profile": policy.get("typography_profile"),
+        "east_asia_font_name": policy.get("east_asia_font_name"),
+        "font_size_policy_source": policy.get("source"),
+    }
 
 
 def font_size_quality_issues(font_occurrences, policy: dict) -> list[QualityIssue]:
@@ -415,11 +505,13 @@ def font_size_quality_issues(font_occurrences, policy: dict) -> list[QualityIssu
 
     for occurrence in font_occurrences:
         nearest_size = nearest_font_grid_value(occurrence.font_size_pt)
+        recommendation = font_token_recommendation_for_occurrence(occurrence, policy)
         common_details = {
             "font_size_pt": occurrence.font_size_pt,
             "text": occurrence.text,
             "shape_name": occurrence.owner_shape_name,
             "setting_source": occurrence.setting_source,
+            **recommendation,
         }
         if abs(occurrence.font_size_pt - nearest_size) > FONT_SIZE_GRID_TOLERANCE_PT:
             issues.append(
@@ -454,20 +546,29 @@ def font_size_quality_issues(font_occurrences, policy: dict) -> list[QualityIssu
 
         if occurrence.source_kind.startswith("table_cell"):
             minimum_size = policy["table_font_pt"]
+            token_field = "table_font_pt"
             issue_type = "table_font_below_theme_token"
             message = "表格文字低于 active table_font_pt，可能是为塞入内容而临时缩小。"
         elif occurrence.font_size_pt < policy["caption_font_pt"]:
             minimum_size = policy["caption_font_pt"]
+            token_field = "caption_font_pt"
             issue_type = "font_size_below_caption_floor"
             message = "可见文字低于 active caption_font_pt，已经小于当前 deck 的最弱语义档位。"
         elif len(occurrence.text) >= 36 and occurrence.font_size_pt < policy["body_font_pt"]:
             minimum_size = policy["body_font_pt"]
+            token_field = "body_font_pt"
             issue_type = "body_text_below_theme_token"
             message = "较长文本低于 active body_font_pt，疑似通过压小字号解决版面密度。"
         else:
             continue
 
         if occurrence.font_size_pt < minimum_size - FONT_SIZE_GRID_TOLERANCE_PT:
+            role_recommendation = font_token_recommendation_for_occurrence(occurrence, policy)
+            if role_recommendation["recommendation_status"] == "resolved":
+                role_recommendation["recommended_token_field"] = token_field
+                role_recommendation["recommended_token"] = f"theme_tokens.{token_field}"
+                role_recommendation["recommended_value_pt"] = float(minimum_size)
+                role_recommendation["role"] = PPT_FONT_TOKEN_ROLES.get(token_field)
             issues.append(
                 QualityIssue(
                     severity="warning",
@@ -476,7 +577,7 @@ def font_size_quality_issues(font_occurrences, policy: dict) -> list[QualityIssu
                     slide_number=occurrence.slide_number,
                     shape_id=occurrence.owner_shape_id,
                     source_kind=occurrence.source_kind,
-                    details={**common_details, "minimum_font_size_pt": minimum_size},
+                    details={**common_details, **role_recommendation, "minimum_font_size_pt": minimum_size},
                     suggested_fix="先减少文案、放宽容器或拆页；确需更小字号时，记录该语义角色和例外原因。",
                 )
             )
@@ -615,6 +716,13 @@ def main() -> int:
         print(f"[INFO] 写入 JSON: {json_out}")
     if md_out:
         print(f"[INFO] 写入 Markdown: {md_out}")
+    agent_reminder = payload.get("agent_reminder") or {}
+    if agent_reminder.get("json"):
+        print(f"[INFO] agent_reminder_json={agent_reminder['json']}")
+    if agent_reminder.get("markdown"):
+        print(f"[INFO] agent_reminder_markdown={agent_reminder['markdown']}")
+    if agent_reminder.get("decision"):
+        print(f"[INFO] agent_reminder_decision={agent_reminder['decision']['state']}")
 
     if args.fail_on == "never":
         print("[OK] structure precheck 完成（不按严重级别拦截）")

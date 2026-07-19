@@ -241,6 +241,13 @@ def main() -> int:
         print(f"[INFO] 写入 JSON: {json_out}")
     if md_out:
         print(f"[INFO] 写入 Markdown: {md_out}")
+    agent_reminder = payload.get("agent_reminder") or {}
+    if agent_reminder.get("json"):
+        print(f"[INFO] agent_reminder_json={agent_reminder['json']}")
+    if agent_reminder.get("markdown"):
+        print(f"[INFO] agent_reminder_markdown={agent_reminder['markdown']}")
+    if agent_reminder.get("decision"):
+        print(f"[INFO] agent_reminder_decision={agent_reminder['decision']['state']}")
 
     if args.fail_on == "never":
         print("[OK] package preflight 完成（不按严重级别拦截）")

@@ -13,11 +13,15 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from word_skill_tools import build_agent_reminder
 from word_skill_tools import guess_qa_dir
 from word_skill_tools import load_meta
 from word_skill_tools import report_to_markdown
 from word_skill_tools import resolve_standard_context
 from word_skill_tools import run_docx_qa
+from word_skill_tools import sidecar_path
+from word_skill_tools import word_qa_report_to_observations
+from word_skill_tools import write_agent_reminder
 from word_skill_tools import write_json
 
 
@@ -64,10 +68,29 @@ def main() -> int:
     md_out = args.md_out or qa_dir / "qa_report.md"
     write_json(json_out, report)
     md_out.write_text(report_to_markdown("DOCX QA Report", report) + "\n", encoding="utf-8")
+    observations = word_qa_report_to_observations(
+        report,
+        skill="word-polished-doc-collab",
+        gate="docx_qa",
+        artifact_path=docx_path,
+    )
+    reminder = build_agent_reminder(
+        observations,
+        source={"skill": "word-polished-doc-collab", "gate": "docx_qa"},
+        artifact={"path": str(docx_path.resolve())},
+        full_report_ref=str(json_out),
+        target_milestone="final",
+    )
+    agent_json_out = sidecar_path(json_out, ".json")
+    agent_md_out = sidecar_path(md_out, ".md")
+    write_agent_reminder(json_path=agent_json_out, md_path=agent_md_out, reminder=reminder)
 
     print(f"[INFO] style_profile={profile_name} workflow_mode={workflow_mode}")
     print(f"[INFO] json_report={json_out}")
     print(f"[INFO] markdown_report={md_out}")
+    print(f"[INFO] agent_reminder_json={agent_json_out}")
+    print(f"[INFO] agent_reminder_markdown={agent_md_out}")
+    print(f"[INFO] agent_reminder_decision={reminder['decision']['state']}")
     print(f"[INFO] font_size_warnings={report['advisory_summary']['warning']}")
 
     if report["passed_all_checks"]:

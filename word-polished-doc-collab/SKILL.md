@@ -60,7 +60,7 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 - `cn_song_times` 默认使用“表题在表上方且加粗、图题在图下方、表注在表下方”的中文正式文档规则；如果 active `style_profile` 或 preset 显式覆盖 `figure_title` 位置，就必须让构建与 QA 一起跟随 `caption_policy` 落地。
 
 5. **轻量模式默认不做 review**
-- 默认交付重点是把 `.docx` 本体快速、干净地落出来，不自动附带 visual review 或质量 gate。
+- 默认交付重点是把 `final/*.docx` 本体快速、干净地落出来，不自动附带 visual review 或质量 gate。
 - 只有用户明确要求自动 review、人工复核或任务已经明显升级成精细模式时，才追加检查步骤。
 
 ## 精细模式工作流
@@ -92,8 +92,10 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 
 6. **强制做 QA**
 - 至少检查字体槽位、中英文字体、标题层级、正文首行缩进、行距、段前段后、表图标题位置、图注/来源说明、表格字号、表题加粗、表格对齐、图片裁切和原生对象可编辑性。
-- 字号 QA 同时检查 role/profile 漂移、profile 外临时档位、字号碎片化和半点网格。Word 字号底层按半点表达，因此整数与 `10.5pt` 合法，`9.6pt`、`11.3pt` 这类配置应提醒并优先收敛到最近的 `0.5pt`；提醒默认不改变 QA pass/fail。
+- 字号 QA 同时检查 source/config 层 literal、DOCX 产物层 role/profile 漂移、profile 外临时档位、字号碎片化和半点网格。Word 字号底层按半点表达，因此整数与 `10.5pt` 合法，`9.6pt`、`11.3pt` 这类配置应提醒；能解析 active role 时优先直接收敛到 active `style_profile` 的默认 token，例如中文正文回 `cn_song_times.body=12pt`。
+- 字号 observation 默认是 advisory；如果同一异常导致段落 `style_contract`、字体槽位、表格契约或 visual review gate 失败，对应 contract finding 仍会独立 hard block。Agent 应先修 hard block，再处理或记录字号 advisory。
 - 提醒必须按问题类型聚合、统计 occurrence 数并只保留少量代表位置，不能把每个 run 展开成重复长列表。
+- `lint_doc_markdown.py` 和 `run_docx_qa.py` 会在原 JSON / Markdown 报告旁生成 `.agent_reminder.json` 与 `.agent_reminder.md`。Agent 必须先读 reminder 的 `decision`、`groups`、`suggested_fix`、`sample_locations` 和 `full_report_ref`，只有需要完整证据时再打开 full report。
 - 没有视觉复核或结构核对的 `.docx` 不算完成。
 
 ## 资源路由
@@ -125,10 +127,12 @@ description: Use when collaborating with humans to turn Markdown, DOCX, and stru
 - `cn_song_times` 默认正文必须满足 `中文宋体 + 英文 Times New Roman + 小四 12pt + 首行缩进 2 字符 + 1.5 倍行距 + 段前段后 0.5 行`。
 - 标题字号必须随层级单调递减，不能出现二级标题比一级标题更大。
 - 字号默认服从 active `style_profile` 并使用 `0.5pt` 网格；非半点小数、局部覆盖和过多临时档位必须进入聚合 warning，模板或 preset 例外应先写入 profile。
+- 字号 reminder 必须显示 active profile 的默认推荐值；例如中文 `cn_song_times.body` 推荐 `12pt`，英文 `teal_consulting_report.body` 推荐 `9pt`，英文 `red_private_equity_report.body` 推荐 `10pt`。中文任务中的英文单词仍使用中文 profile 的字号 token。
 - 表格正文默认使用 `五号 10.5pt`，确有密度压力时才降到 `小五 9pt`，表头默认居中、左侧索引列左对齐、右侧数值列右对齐。
 - `cn_song_times` 默认表题在表上方且加粗，图题在图下方，表注在表下方。其他 preset 或 style profile 可以显式覆盖 `figure_title` 的位置，但必须在 profile 和 QA 中写清楚。
 - 轻量模式默认不附带 review 记录；精细模式默认必须带 `validation_bundle`，并且让 QA 跟随 active `style_profile` 与 `asset_manifest`（若存在）执行。
 - 没有显式设置 `ascii/hAnsi/eastAsia/cs` 字体槽位的构建结果，不应被当作“格式已锁定”。
+- 最终交付 DOCX 必须放在 workspace 根目录的 `final/` 下；`build/` 和 `temp/` 只放可重建中间物、候选稿和验证证据。
 
 ## 典型宿主命令
 
@@ -158,6 +162,7 @@ python scripts/run_docx_qa.py --meta markdown/<doc-slug>/meta.json
 - `build_docx.py` 负责按 active `style_profile` 生成 `.docx`
 - `export_docx_preview.py` 负责导出 PDF 和逐页 PNG
 - `run_docx_qa.py` 负责执行字体槽位、段落契约、表格对齐、section 栏数和 asset 路线 QA
+- `scripts/agent_qc_reminders/` 是随本 skill 分发的本地提醒 runtime，负责生成 `.agent_reminder.json/.md`；脚本不得依赖仓库根目录存在同名共享包。
 
 ## 额外说明
 

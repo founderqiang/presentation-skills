@@ -4,7 +4,7 @@
 
 ## 推荐 workspace
 
-**轻量模式优先使用最小 workspace。** 对单篇、快速、弱验证任务，优先使用 `lightweight_mode.md` 里的 `doc.md + assets + out` 结构，不要被精细模式目录拖重。
+**轻量模式优先使用最小 workspace。** 对单篇、快速、弱验证任务，优先使用 `lightweight_mode.md` 里的 `doc.md + assets + final` 结构，不要被精细模式目录拖重。
 
 **工作区应该把“来源、编辑、构建、验证”分开。** 推荐结构如下：
 
@@ -19,9 +19,12 @@ doc-workspace/
 │       └── [asset_manifest.json]
 ├── build/
 │   └── docx/
+├── final/
 ├── scripts/
 └── temp/
 ```
+
+**`final/` 放最终交付物。** 对用户交付的 DOCX 固定使用 `final/<doc-slug>.docx`。`build/docx/` 只放可重建工作稿、兼容旧流程的中间 DOCX 或调试候选稿。
 
 **`asset_manifest.json` 只在复杂视觉资产出现时引入。** 多张图表、Office 原生对象、Python figure、来源说明和 preset 级图文系统都属于“该文件该出现”的信号；不要在纯文本或极简图片文档里为凑结构硬塞一个空 manifest。
 
@@ -38,7 +41,7 @@ flowchart LR
     D --> E
     E --> F[style profile + optional asset manifest]
     F --> G[markdown to docx build]
-    G --> H[build/docx/*.docx]
+    G --> H[final/*.docx]
     H --> I[manual visual QA + style QA]
 ```
 
@@ -48,7 +51,7 @@ flowchart LR
 
 **第二步是保留 Word 的结构语义。** 抽取到 Markdown 时优先保留标题、正文、列表、表格和图片顺序。不要为了“导出更快”就把表格改成截图或把图片说明揉进上一段正文。
 
-**第三步是只在 Markdown 里做持续编辑。** 文本修改、结构调整、表题表注补齐、图片替换都优先在 Markdown 层完成。导出的 `.docx` 是交付物，不是长期维护源。
+**第三步是只在 Markdown 里做持续编辑。** 文本修改、结构调整、表题表注补齐、图片替换都优先在 Markdown 层完成。导出的 `final/*.docx` 是交付物，不是长期维护源。
 
 **第四步是先锁 `style_profile`，并在需要时补上 `asset_manifest`。** 精细模式应在构建前明确 active style、caption 位置；只要文档开始混用多张图、多种资产模式、来源说明或可编辑对象要求，就把这些信息写进 `asset_manifest`。
 
@@ -126,6 +129,8 @@ python scripts/run_docx_qa.py --meta markdown/<doc-slug>/meta.json
 - `output_docx`
 - `style_profile`
 - `workflow_mode`
+
+**`output_docx` 默认指向 `final/`。** 新 refined workspace 应写成 `final/<doc-slug>.docx`。历史 workspace 中已经存在的 `build/docx/*.docx` 可以继续按 meta 构建，但不再作为新任务默认交付路径。
 
 **`style_profile` 应该进入元数据。** 这样构建脚本才能知道这份文档默认用 `cn_song_times`、`cn_kaiti_times` 还是 `cn_heiti_arial`。
 

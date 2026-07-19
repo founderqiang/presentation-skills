@@ -13,11 +13,15 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from word_skill_tools import build_agent_reminder
 from word_skill_tools import infer_workspace_root
 from word_skill_tools import lint_markdown_source
 from word_skill_tools import load_meta
 from word_skill_tools import report_to_markdown
 from word_skill_tools import resolve_standard_context
+from word_skill_tools import sidecar_path
+from word_skill_tools import word_lint_report_to_observations
+from word_skill_tools import write_agent_reminder
 from word_skill_tools import write_json
 
 
@@ -53,15 +57,35 @@ def main() -> int:
     md_out = args.md_out or default_report_path(markdown_path, "markdown_lint.md")
     write_json(json_out, report)
     md_out.write_text(report_to_markdown("Markdown Lint Report", report) + "\n", encoding="utf-8")
+    observations = word_lint_report_to_observations(
+        report,
+        skill="word-polished-doc-collab",
+        gate="markdown_lint",
+        artifact_path=markdown_path,
+    )
+    reminder = build_agent_reminder(
+        observations,
+        source={"skill": "word-polished-doc-collab", "gate": "markdown_lint"},
+        artifact={"path": str(markdown_path.resolve())},
+        full_report_ref=str(json_out),
+        target_milestone="build",
+    )
+    agent_json_out = sidecar_path(json_out, ".json")
+    agent_md_out = sidecar_path(md_out, ".md")
+    write_agent_reminder(json_path=agent_json_out, md_path=agent_md_out, reminder=reminder)
 
     print(f"[INFO] markdown={markdown_path}")
     print(f"[INFO] style_profile={profile_name} workflow_mode={workflow_mode}")
     print(f"[INFO] json_report={json_out}")
     print(f"[INFO] markdown_report={md_out}")
+    print(f"[INFO] agent_reminder_json={agent_json_out}")
+    print(f"[INFO] agent_reminder_markdown={agent_md_out}")
+    print(f"[INFO] agent_reminder_decision={reminder['decision']['state']}")
 
     error_count = sum(1 for issue in report["issues"] if issue["severity"] == "error")
     warning_count = sum(1 for issue in report["issues"] if issue["severity"] == "warning")
     print(f"[INFO] issue_count={report['issue_count']} errors={error_count} warnings={warning_count}")
+    print(f"[INFO] source_font_size_warnings={report.get('source_font_size_warning_count', 0)}")
 
     if error_count > 0 or (args.fail_on_warning and warning_count > 0):
         print("[FAIL] Markdown lint 未通过")

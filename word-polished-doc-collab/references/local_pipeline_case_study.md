@@ -7,7 +7,8 @@
 **目录职责已经分清。** 当前工作区把：
 - `original/` 用于保存原始 Word
 - `markdown/` 用于长期编辑
-- `build/docx/` 用于输出
+- `build/docx/` 用于历史输出和可重建工作稿
+- `final/` 用于当前统一的最终交付 DOCX
 - `scripts/` 用于转换脚本
 - `temp/` 用于测试输出
 

@@ -70,11 +70,11 @@ def initialize_lightweight_workspace(workspace_dir: Path, doc_slug: str, title: 
     """初始化轻量模式工作区。"""
 
     assets_dir = workspace_dir / "assets"
-    out_dir = workspace_dir / "out"
+    final_dir = workspace_dir / "final"
     markdown_path = workspace_dir / "doc.md"
 
     assets_dir.mkdir(parents=True, exist_ok=False)
-    out_dir.mkdir(parents=True, exist_ok=False)
+    final_dir.mkdir(parents=True, exist_ok=False)
     markdown_path.write_text(
         build_markdown_template(title, profile_name, mode="lightweight", include_figure_example=False),
         encoding="utf-8",
@@ -94,11 +94,12 @@ def initialize_lightweight_workspace(workspace_dir: Path, doc_slug: str, title: 
                 f"{workspace_dir.name}/",
                 "├── assets/",
                 "├── doc.md",
-                "└── out/",
+                "└── final/",
                 "```",
                 "",
                 "## 说明",
                 "",
+                f"- 最终交付 DOCX 固定放在 `final/{doc_slug}.docx`。",
                 "- 轻量模式默认不要求 `meta.json`、`asset_manifest.json` 和自动 QA。",
                 "- 如果后续需求升级为正式报告、复杂图表、preset 或强制 review，请迁移到 refined workspace。",
                 "",
@@ -107,7 +108,7 @@ def initialize_lightweight_workspace(workspace_dir: Path, doc_slug: str, title: 
                 "```bash",
                 "python <path-to-word-skill>/scripts/build_docx.py \\",
                 "  --markdown doc.md \\",
-                f"  --output out/{doc_slug}.docx \\",
+                f"  --output final/{doc_slug}.docx \\",
                 f"  --style-profile {profile_name}",
                 "```",
                 "",
@@ -131,11 +132,12 @@ def initialize_refined_workspace(
     markdown_dir = workspace_dir / "markdown" / doc_slug
     assets_dir = markdown_dir / "assets"
     build_dir = workspace_dir / "build" / "docx"
+    final_dir = workspace_dir / "final"
     temp_preview_dir = workspace_dir / "temp" / "preview" / "pages"
     temp_qa_dir = workspace_dir / "temp" / "qa"
     local_scripts_dir = workspace_dir / "scripts"
 
-    for directory in (original_dir, assets_dir, build_dir, temp_preview_dir, temp_qa_dir, local_scripts_dir):
+    for directory in (original_dir, assets_dir, build_dir, final_dir, temp_preview_dir, temp_qa_dir, local_scripts_dir):
         directory.mkdir(parents=True, exist_ok=False)
 
     markdown_path = markdown_dir / f"{doc_slug}.md"
@@ -156,7 +158,7 @@ def initialize_refined_workspace(
             "source_docx": None,
             "markdown_file": f"markdown/{doc_slug}/{doc_slug}.md",
             "assets_dir": f"markdown/{doc_slug}/assets",
-            "output_docx": f"build/docx/{doc_slug}.docx",
+            "output_docx": f"final/{doc_slug}.docx",
             "style_profile": profile_name,
             "workflow_mode": "refined",
         },
@@ -215,7 +217,8 @@ def initialize_refined_workspace(
                 "│       ├── assets/",
                 "│       ├── meta.json",
                 "│       └── [asset_manifest.json]",
-                "├── build/docx/",
+                "├── build/docx/  # 可重建工作稿或中间 DOCX",
+                "├── final/      # 最终交付 DOCX",
                 "├── scripts/",
                 "└── temp/",
                 "```",
@@ -224,6 +227,7 @@ def initialize_refined_workspace(
                 "",
                 f"- style profile：`{profile_name}`",
                 "- workflow mode：`refined`",
+                f"- output docx：`final/{doc_slug}.docx`",
                 "",
                 "## 典型命令",
                 "",

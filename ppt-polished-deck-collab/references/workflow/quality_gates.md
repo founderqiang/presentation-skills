@@ -45,7 +45,7 @@ validation/
 
 **推荐优先使用 `--workspace-dir` 自动归档。** 这样每次执行都会按标准目录写入带时间戳的 `json + md` 报告，后续更适合回溯、对比和复盘。
 
-**visual review 也应留下证据。** 推荐在 `validation/visual/review_log.md` 或 final handoff 中记录最新 preview 路径、contact sheet 路径、fatal / warning / preference 结论，以及是否存在人工接受的 residual risk。
+**visual review 也应留下证据。** 推荐在 `validation/visual/review_log.md` 或 `final/handoff.md` 中记录最新 preview 路径、contact sheet 路径、fatal / warning / preference 结论，以及是否存在人工接受的 residual risk。
 
 ## 问题类型分层
 
@@ -148,11 +148,13 @@ python scripts/check_pptx_render_review.py \
 
 **模块级 validation 不能替代 deck 级 gate。** connector 通过不代表文件能在移动端打开；逐页 preview 正常也不代表 `docProps` 和 `sectionLst` 一致；结构预检通过也不代表图片内部标签没有互相打架。
 
-**typography 与 table profile 需要进入 visual review。** 中文正式材料的宋体 / Times 字体槽、正文段落、表格上下居中、表头居中和财务数值右对齐可以作为后续结构检查增强，但当前 gate 仍以 fail-fast 为主。研报质感、版心纪律、图号单位和免责声明位置应在 preview contact sheet 与人工 visual review 中确认，不能仅凭 `render_review` 通过就进入 final。
+**typography 与 table profile 需要进入 visual review。** 中文正式材料的宋体 / Times 字体槽、正文段落、表格上下居中、表头居中和财务数值右对齐可以作为后续结构检查增强，但当前 gate 仍以 fail-fast 为主。研报质感、版心纪律、图号单位和免责声明位置应在 preview contact sheet 与人工 visual review 中确认，不能仅凭 `render_review` 通过就把最终 PPTX 放入 `final/`。
 
 **typography token 要被抽查兑现。** visual review 应抽查封面、章节页、正文页、图表页和表格页，确认 hero / section / page title / subtitle / body / label / caption / table 文本符合 `theme_tokens`。低于 `body_font_pt` 的正文、低于 `table_font_pt` 的表格、碎片化字号和临时字体切换都应记录为 warning 或 preference fix，不能被当成自然排版差异。
 
-**字号提醒使用压缩报告。** 默认字号网格为 `0.5pt`，因此 `10.5pt` 合法而 `9.6pt`、`11.3pt` 需要提醒。字号问题默认是 `warning`，不因单个小数档位阻断交付；Markdown 报告必须沿用统一的 `severity + issue_type + message + suggested_fix` 聚合，只输出一次问题说明和压缩后的位置清单，JSON 再保留逐 occurrence 证据。
+**字号提醒使用压缩报告。** 默认字号网格为 `0.5pt`，因此 `10.5pt` 合法而 `9.6pt`、`11.3pt` 需要提醒。`lint_deck_assets.py` 扫描 source/config 层的字号 literal，`structure_precheck` 扫描 PPTX 产物层的可见字号。字号问题默认是 `warning/advisory`，不因单个小数档位阻断交付；如果同页同时存在文本越界、遮挡或包结构错误，对应 finding 会独立 hard block。
+
+**字号修复优先使用 active token。** 能解析 role 时，reminder 直接显示 active `theme_tokens` 的推荐值，例如中文正文 `theme_tokens.body_font_pt=12pt`、中文表格 `theme_tokens.table_font_pt=10.5pt`。最近 `0.5pt` 只在无法解析 role token 时作为临时候选，不能替代 active contract。
 
 **页面可见文案也要进入 visual review。** 自动 gate 主要检查结构和成图风险，不能判断一句话是否属于外发页面。人工复核应抽查标题、正文、卡片、图注和章节页，确认没有把 `Narrative Role`、讲者提示、协作说明、敏感性处理策略或“这页 / 本部分 / 公开课应 / 建议讲者 / 帮助听众理解”等元叙述直接放到 PPT 可见层。
 

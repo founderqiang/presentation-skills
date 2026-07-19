@@ -19,7 +19,7 @@
 doc-job/
 ├── doc.md
 ├── assets/
-└── out/
+└── final/
 ```
 
 **如果任务是从原始 Word 起步，可以再加一个输入文件。** 推荐结构：
@@ -29,10 +29,12 @@ doc-job/
 ├── input.docx
 ├── doc.md
 ├── assets/
-└── out/
+└── final/
 ```
 
-**轻量模式不强制 `meta.json`、不强制 `temp/`、不强制验证目录。** 先把 Markdown 和最终 `.docx` 跑顺，再决定要不要升级到精细模式。
+**轻量模式不强制 `meta.json`、不强制 `temp/`、不强制验证目录。** 先把 Markdown 和 `final/*.docx` 跑顺，再决定要不要升级到精细模式。
+
+**最终交付物固定放 `final/`。** 轻量模式可以不建重型验证目录，但对用户交付的 DOCX 仍应放在 workspace 根目录的 `final/` 下。
 
 **轻量模式默认也不强制 review 记录。** 只有用户明确要求自动 review、人工复核或任务已经升级成精细模式时，才追加检查产物。
 

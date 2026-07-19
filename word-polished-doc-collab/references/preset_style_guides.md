@@ -15,7 +15,7 @@
   "source_docx": "original/source.docx",
   "markdown_file": "markdown/report/report.md",
   "assets_dir": "markdown/report/assets",
-  "output_docx": "build/docx/report.docx",
+  "output_docx": "final/report.docx",
   "style_profile": "teal_consulting_report"
 }
 ```

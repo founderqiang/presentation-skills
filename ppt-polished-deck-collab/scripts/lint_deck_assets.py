@@ -20,6 +20,12 @@ from pathlib import Path
 
 import yaml
 
+from agent_qc_reminders import build_agent_reminder
+from agent_qc_reminders import make_observation
+from agent_qc_reminders import scan_source_font_size_literals
+from agent_qc_reminders import sidecar_path
+from agent_qc_reminders import write_agent_reminder
+
 
 REQUIRED_DIRS = ("data", "assets", "build", "validation", "final")
 REQUIRED_FILES = ("brief.md", "deck_narrative.md")
@@ -174,6 +180,17 @@ ALIGNMENT_TOKEN_VALUES = {
     "table_numeric_alignment": {"right"},
 }
 FONT_SIZE_TOKEN_FIELDS = tuple(field for field in REQUIRED_THEME_TOKEN_FIELDS if field.endswith("_font_pt"))
+DEFAULT_ZH_FONT_TOKEN_FALLBACKS = {
+    "hero_title_font_pt": 40.0,
+    "section_title_font_pt": 30.0,
+    "page_title_font_pt": 24.0,
+    "subtitle_font_pt": 16.0,
+    "minor_title_font_pt": 14.0,
+    "body_font_pt": 12.0,
+    "label_font_pt": 10.5,
+    "caption_font_pt": 9.0,
+    "table_font_pt": 10.5,
+}
 FONT_SIZE_GRID_PT = 0.5
 FONT_SIZE_GRID_TOLERANCE_PT = 0.02
 
@@ -413,6 +430,127 @@ def lint_slide_specs(workspace_dir: Path, errors: list[str], warnings: list[str]
     return result
 
 
+def collect_source_font_size_observations(workspace_dir: Path) -> list[dict]:
+    """扫描 PPT workspace 源文件和构建配置中的显式字号 literal。"""
+
+    candidate_paths: list[Path] = []
+    for name in ("brief.md", "deck_narrative.md"):
+        path = workspace_dir / name
+        if path.exists():
+            candidate_paths.append(path)
+    specs_path = workspace_dir / "build" / "generated" / "slide_specs.yaml"
+    if specs_path.exists():
+        candidate_paths.append(specs_path)
+    for dirname in ("build", "scripts"):
+        root = workspace_dir / dirname
+        if root.exists():
+            candidate_paths.extend(
+                path
+                for path in root.rglob("*")
+                if path.is_file() and path.suffix in {".py", ".json", ".yaml", ".yml", ".md"}
+            )
+
+    theme_tokens = load_theme_tokens(workspace_dir)
+    return scan_source_font_size_literals(
+        sorted(set(candidate_paths)),
+        skill="ppt-polished-deck-collab",
+        gate="workspace_lint",
+        artifact_root=workspace_dir,
+        active_tokens=ppt_font_token_map(theme_tokens),
+        typography_language=ppt_typography_language(theme_tokens),
+        detector_id="ppt.source.font_size_literal",
+    )
+
+
+def load_theme_tokens(workspace_dir: Path) -> dict:
+    """从派生 slide_specs.yaml 中读取 active PPT theme tokens。"""
+
+    specs_path = workspace_dir / "build" / "generated" / "slide_specs.yaml"
+    if not specs_path.exists():
+        return {}
+    try:
+        loaded = yaml.safe_load(specs_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(loaded, dict):
+        return {}
+    deck = loaded.get("deck")
+    if not isinstance(deck, dict):
+        return {}
+    tokens = deck.get("theme_tokens")
+    return tokens if isinstance(tokens, dict) else {}
+
+
+def ppt_font_token_map(theme_tokens: dict) -> dict:
+    """从 active PPT theme tokens 生成 source detector 使用的字号 token。"""
+
+    result = dict(theme_tokens)
+    result["recommendation_source"] = "active_ppt_theme_tokens"
+    result["typography_language"] = ppt_typography_language(theme_tokens)
+    for field in FONT_SIZE_TOKEN_FIELDS:
+        if field in result:
+            result[f"{field}__token"] = f"theme_tokens.{field}"
+            if result.get("typography_language") == "zh" and field in DEFAULT_ZH_FONT_TOKEN_FALLBACKS:
+                result[f"{field}__fallback_value_pt"] = DEFAULT_ZH_FONT_TOKEN_FALLBACKS[field]
+    return result
+
+
+def ppt_typography_language(theme_tokens: dict) -> str | None:
+    """根据 typography_profile 和字体槽位推断 PPT 排版语言。"""
+
+    profile = str(theme_tokens.get("typography_profile") or "")
+    east_asia = str(theme_tokens.get("east_asia_font_name") or "")
+    if profile.startswith("zh") or "宋" in east_asia or "黑" in east_asia or "楷" in east_asia or "微软雅黑" in east_asia:
+        return "zh"
+    if profile.startswith("en"):
+        return "en"
+    return None
+
+
+def workspace_lint_observations(
+    *,
+    workspace_dir: Path,
+    errors: list[str],
+    warnings: list[str],
+    source_font_size_observations: list[dict],
+) -> list[dict]:
+    """把 workspace lint 的错误、警告和 source 字号事实合并成统一 observation。"""
+
+    observations: list[dict] = []
+    artifact = {"path": str(workspace_dir)}
+    detector = {"id": "ppt.workspace_lint", "layer": "source", "method": "workspace_contract_lint", "version": "1.0"}
+    for index, message in enumerate(errors, start=1):
+        observations.append(
+            make_observation(
+                code="workspace_lint_error",
+                severity="error",
+                message=message,
+                suggested_fix="修复 workspace 输入或 slide_specs 合同后重跑 workspace lint。",
+                source={"skill": "ppt-polished-deck-collab", "gate": "workspace_lint"},
+                detector=detector,
+                artifact=artifact,
+                location={"kind": "source_issue", "index": index},
+                details={"raw_message": message},
+            )
+        )
+    for index, message in enumerate(warnings, start=1):
+        observations.append(
+            make_observation(
+                code="workspace_lint_warning",
+                severity="warning",
+                message=message,
+                suggested_fix="如影响构建或交付质量，修复后重跑；确认为可接受时在 review note 说明。",
+                source={"skill": "ppt-polished-deck-collab", "gate": "workspace_lint"},
+                detector=detector,
+                artifact=artifact,
+                location={"kind": "source_issue", "index": index},
+                details={"raw_message": message},
+            )
+        )
+    observations.extend(source_font_size_observations)
+    return observations
+
+
 def main() -> int:
     """执行 workspace lint。"""
     args = parse_args()
@@ -459,6 +597,7 @@ def main() -> int:
     contract_result = None
     if args.check_contract:
         contract_result = lint_slide_specs(workspace_dir, errors, warnings)
+    source_font_size_observations = collect_source_font_size_observations(workspace_dir)
 
     result = {
         "workspace": str(workspace_dir),
@@ -468,9 +607,18 @@ def main() -> int:
         "contract_check": contract_result,
         "legacy_dirs": legacy_dirs,
         "asset_counts": asset_counts,
+        "source_font_size_observations": source_font_size_observations,
+        "source_font_size_warning_count": len(source_font_size_observations),
         "errors": errors,
         "warnings": warnings,
     }
+    json_out = args.json_out or workspace_dir / "validation" / "workspace_lint" / "workspace_lint.json"
+    observations = workspace_lint_observations(
+        workspace_dir=workspace_dir,
+        errors=errors,
+        warnings=warnings,
+        source_font_size_observations=source_font_size_observations,
+    )
 
     print(f"[INFO] workspace={workspace_dir}")
     print("[INFO] required_files=" + ", ".join(f"{k}:{v}" for k, v in required_file_status.items()))
@@ -481,16 +629,30 @@ def main() -> int:
             "[INFO] contract_check="
             + f"exists:{contract_result['exists']} slides:{contract_result['slides']} asset_slots:{contract_result['asset_slots']}"
         )
+    print(f"[INFO] source_font_size_warnings={len(source_font_size_observations)}")
 
     for warning in warnings:
         print(f"[WARN] {warning}")
     for error in errors:
         print(f"[ERROR] {error}")
 
-    if args.json_out:
-        args.json_out.parent.mkdir(parents=True, exist_ok=True)
-        args.json_out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"[INFO] 写入 JSON: {args.json_out}")
+    if json_out:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[INFO] 写入 JSON: {json_out}")
+        reminder = build_agent_reminder(
+            observations,
+            source={"skill": "ppt-polished-deck-collab", "gate": "workspace_lint"},
+            artifact={"path": str(workspace_dir)},
+            full_report_ref=str(json_out),
+            target_milestone="build",
+        )
+        agent_json_out = sidecar_path(json_out, ".json")
+        agent_md_out = sidecar_path(json_out.with_suffix(".md"), ".md")
+        write_agent_reminder(json_path=agent_json_out, md_path=agent_md_out, reminder=reminder)
+        print(f"[INFO] agent_reminder_json={agent_json_out}")
+        print(f"[INFO] agent_reminder_markdown={agent_md_out}")
+        print(f"[INFO] agent_reminder_decision={reminder['decision']['state']}")
 
     if errors:
         print(f"[FAIL] workspace lint 未通过，错误数: {len(errors)}")

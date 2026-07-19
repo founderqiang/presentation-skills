@@ -30,6 +30,14 @@ from zipfile import ZipFile
 import xml.etree.ElementTree as ET
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+
+from agent_qc_reminders import build_agent_reminder
+from agent_qc_reminders import scan_source_font_size_literals
+from agent_qc_reminders import sidecar_path
+from agent_qc_reminders import word_lint_report_to_observations
+from agent_qc_reminders import word_qa_report_to_observations
+from agent_qc_reminders import write_agent_reminder
+
 VENDOR_DIR = SCRIPT_DIR.parent / "vendor"
 if VENDOR_DIR.exists():
     sys.path.insert(0, str(VENDOR_DIR))
@@ -1225,12 +1233,62 @@ def lint_markdown_source(
     elif workflow_mode == "refined" and figure_count:
         issues.append(Issue("error", "asset_manifest_required", "精细模式包含复杂视觉资产，但缺少 asset_manifest.json。"))
 
+    source_font_size_observations = collect_source_font_size_observations(
+        markdown_path=markdown_path,
+        profile=profile,
+        asset_manifest_path=asset_manifest_path,
+    )
     passed = not any(issue.severity == "error" for issue in issues)
     return {
         "passed": passed,
         "issue_count": len(issues),
         "issues": [asdict(issue) for issue in issues],
+        "source_font_size_observations": source_font_size_observations,
+        "source_font_size_warning_count": len(source_font_size_observations),
     }
+
+
+def collect_source_font_size_observations(
+    *,
+    markdown_path: Path,
+    profile: StyleProfile,
+    asset_manifest_path: Path | None,
+) -> list[dict]:
+    """扫描 Word workspace 源文件与配置中的显式字号 literal。"""
+
+    workspace_root = infer_workspace_root(markdown_path.parent / "meta.json") if (markdown_path.parent / "meta.json").exists() else markdown_path.parent
+    candidate_paths = [markdown_path]
+    if (markdown_path.parent / "meta.json").exists():
+        candidate_paths.append(markdown_path.parent / "meta.json")
+    if asset_manifest_path is not None:
+        candidate_paths.append(asset_manifest_path)
+    scripts_dir = workspace_root / "scripts"
+    if scripts_dir.exists():
+        candidate_paths.extend(path for path in scripts_dir.rglob("*") if path.suffix in {".py", ".json", ".yaml", ".yml", ".md"})
+    return scan_source_font_size_literals(
+        sorted(set(candidate_paths)),
+        skill="word-polished-doc-collab",
+        gate="markdown_lint",
+        artifact_root=workspace_root,
+        active_tokens=word_font_token_map(profile),
+        typography_language=word_typography_language(profile.name),
+        detector_id="word.source.font_size_literal",
+    )
+
+
+def word_font_token_map(profile: StyleProfile) -> dict[str, Any]:
+    """从 active Word style profile 动态生成 source detector 的字号 token。"""
+
+    tokens: dict[str, Any] = {
+        "profile_id": profile.name,
+        "typography_language": word_typography_language(profile.name),
+        "recommendation_source": "active_word_profile",
+        "table_font_size_pt": profile.table_font_size_pt,
+        "dense_table_font_size_pt": profile.dense_table_font_size_pt,
+    }
+    for role, spec in profile.role_specs.items():
+        tokens[f"{role}_font_size_pt"] = spec.size_pt
+    return tokens
 
 
 def lint_asset_manifest(
@@ -1306,7 +1364,8 @@ def run_docx_qa(
 
     passed_all_auto = all(result.passed for name, result in results.items() if name != "visual_review_status")
     passed_all = all(result.passed for result in results.values())
-    font_size_advisories = collect_font_size_advisories(document, profile)
+    font_size_observations = collect_font_size_observations(document, profile)
+    font_size_advisories = aggregate_font_size_advisories(font_size_observations)
     return {
         "markdown_path": str(markdown_path),
         "docx_path": str(docx_path),
@@ -1319,6 +1378,7 @@ def run_docx_qa(
         "passed_all_checks": passed_all,
         "advisory_summary": {"warning": sum(item["count"] for item in font_size_advisories)},
         "advisories": font_size_advisories,
+        "font_size_observations": font_size_observations,
         "checks": {name: asdict(result) for name, result in results.items()},
     }
 
@@ -1455,11 +1515,187 @@ def check_table_contract(document: Document, profile: StyleProfile) -> list[str]
 def collect_font_size_advisories(document: Document, profile: StyleProfile) -> list[dict]:
     """聚合字号漂移提醒，不改变 QA 的通过状态。"""
 
-    buckets: dict[str, dict] = {}
+    return aggregate_font_size_advisories(collect_font_size_observations(document, profile))
+
+
+def collect_font_size_observations(document: Document, profile: StyleProfile) -> list[dict]:
+    """保留逐位置字号事实，交给统一 reminder adapter 再聚合。"""
+
+    observations: list[dict] = []
     observed_sizes: set[float] = set()
     profile_sizes = {
         spec.size_pt for spec in profile.role_specs.values()
     } | {profile.table_font_size_pt, profile.dense_table_font_size_pt}
+
+    def add_observation(
+        *,
+        code: str,
+        message: str,
+        suggested_fix: str,
+        location: dict,
+        details: dict,
+    ) -> None:
+        observations.append(
+            {
+                "severity": "warning",
+                "code": code,
+                "message": message,
+                "suggested_fix": suggested_fix,
+                "location": location,
+                "details": details,
+            }
+        )
+
+    for role, spec in profile.role_specs.items():
+        nearest_size = nearest_half_point(spec.size_pt)
+        if not is_on_half_point_grid(spec.size_pt):
+            add_observation(
+                code="font_size_policy_off_half_point_grid",
+                message="active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
+                suggested_fix="把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
+                location={"kind": "style_profile_token", "profile": profile.name, "role": role},
+                details={
+                    "actual_value_pt": spec.size_pt,
+                    "nearest_half_point_pt": nearest_size,
+                    "recommended_value_pt": nearest_size,
+                    "recommended_token": f"{profile.name}.{role}",
+                    "recommended_token_field": role,
+                    "recommendation_source": "active_word_profile",
+                    "recommendation_status": "resolved",
+                    "role": role,
+                    "typography_language": word_typography_language(profile.name),
+                    "profile_id": profile.name,
+                },
+            )
+
+    for field, font_size in (
+        ("table_font_size_pt", profile.table_font_size_pt),
+        ("dense_table_font_size_pt", profile.dense_table_font_size_pt),
+    ):
+        nearest_size = nearest_half_point(font_size)
+        if not is_on_half_point_grid(font_size):
+            role = "table" if field == "table_font_size_pt" else "dense_table"
+            add_observation(
+                code="font_size_policy_off_half_point_grid",
+                message="active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
+                suggested_fix="把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
+                location={"kind": "style_profile_token", "profile": profile.name, "role": role},
+                details={
+                    "actual_value_pt": font_size,
+                    "nearest_half_point_pt": nearest_size,
+                    "recommended_value_pt": nearest_size,
+                    "recommended_token": f"{profile.name}.{role}",
+                    "recommended_token_field": field,
+                    "recommendation_source": "active_word_profile",
+                    "recommendation_status": "resolved",
+                    "role": role,
+                    "typography_language": word_typography_language(profile.name),
+                    "profile_id": profile.name,
+                },
+            )
+
+    style_roles = {spec.style_name: role for role, spec in profile.role_specs.items()}
+    style_specs = {spec.style_name: spec for spec in profile.role_specs.values()}
+    for paragraph_index, paragraph in enumerate(document.paragraphs, start=1):
+        style_name = paragraph.style.name
+        spec = style_specs.get(style_name)
+        role = style_roles.get(style_name)
+        expected_size = spec.size_pt if spec else None
+        for run_index, run in enumerate(paragraph.runs, start=1):
+            if not (run.text or "").strip():
+                continue
+            size_pt = effective_run_font_size_pt(run, paragraph)
+            if size_pt is None:
+                continue
+            observed_sizes.add(size_pt)
+            location = {
+                "kind": "paragraph_run",
+                "paragraph": paragraph_index,
+                "run": run_index,
+                "style": style_name,
+            }
+            add_run_font_size_observations(
+                size_pt=size_pt,
+                expected_size_pt=expected_size,
+                role=role,
+                profile=profile,
+                profile_sizes=profile_sizes,
+                location=location,
+                add_observation=add_observation,
+            )
+
+    for table_index, table in enumerate(document.tables, start=1):
+        for row_index, row in enumerate(table.rows, start=1):
+            for col_index, cell in enumerate(row.cells, start=1):
+                for paragraph_index, paragraph in enumerate(cell.paragraphs, start=1):
+                    for run_index, run in enumerate(paragraph.runs, start=1):
+                        if not (run.text or "").strip():
+                            continue
+                        size_pt = effective_run_font_size_pt(run, paragraph)
+                        if size_pt is None:
+                            continue
+                        observed_sizes.add(size_pt)
+                        expected_sizes = {profile.table_font_size_pt, profile.dense_table_font_size_pt}
+                        expected_size = next(
+                            (value for value in expected_sizes if is_close(size_pt, value, FONT_SIZE_GRID_TOLERANCE_PT)),
+                            None,
+                        )
+                        location = {
+                            "kind": "table_run",
+                            "table": table_index,
+                            "row": row_index,
+                            "col": col_index,
+                            "paragraph": paragraph_index,
+                            "run": run_index,
+                        }
+                        add_run_font_size_observations(
+                            size_pt=size_pt,
+                            expected_size_pt=expected_size,
+                            role="table",
+                            profile=profile,
+                            profile_sizes=profile_sizes,
+                            location=location,
+                            add_observation=add_observation,
+                        )
+                        if expected_size is None:
+                            allowed_text = "/".join(f"{value:g}" for value in sorted(expected_sizes))
+                            details = word_font_recommendation_details(
+                                actual_value_pt=size_pt,
+                                expected_value_pt=profile.table_font_size_pt,
+                                role="table",
+                                profile=profile,
+                            )
+                            details["allowed_font_sizes_pt"] = sorted(expected_sizes)
+                            add_observation(
+                                code="font_size_role_drift",
+                                message="文本 run 字号偏离其语义角色或表格允许档位。",
+                                suggested_fix=f"如无密表或已登记例外，直接改为 {profile.table_font_size_pt:g}pt；允许表格档位为 {allowed_text}pt。",
+                                location=location,
+                                details=details,
+                            )
+
+    if len(observed_sizes) > FONT_SIZE_FRAGMENTATION_LIMIT:
+        add_observation(
+            code="font_size_fragmentation",
+            message="文档使用了过多字号档位，字号系统可能已经碎片化。",
+            suggested_fix="把相同语义的文字收敛到 active style profile 的 role 字号。",
+            location={"kind": "document"},
+            details={
+                "font_sizes_pt": sorted(observed_sizes),
+                "unique_font_size_count": len(observed_sizes),
+                "recommendation_status": "unresolved",
+                "recommendation_source": "active_word_profile",
+                "typography_language": word_typography_language(profile.name),
+                "profile_id": profile.name,
+            },
+        )
+    return observations
+
+
+def aggregate_font_size_advisories(observations: list[dict]) -> list[dict]:
+    """把逐位置字号 observation 压缩成兼容旧报告的 advisory 列表。"""
+
+    buckets: dict[str, dict] = {}
 
     def add_advisory(code: str, message: str, suggested_fix: str, example: str) -> None:
         bucket = buckets.setdefault(
@@ -1477,126 +1713,149 @@ def collect_font_size_advisories(document: Document, profile: StyleProfile) -> l
         if len(bucket["examples"]) < FONT_SIZE_ADVISORY_EXAMPLE_LIMIT and example not in bucket["examples"]:
             bucket["examples"].append(example)
 
-    for role, spec in profile.role_specs.items():
-        nearest_size = nearest_half_point(spec.size_pt)
-        if not is_on_half_point_grid(spec.size_pt):
-            add_advisory(
-                "font_size_policy_off_half_point_grid",
-                "active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
-                "把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
-                f"role={role} configured={spec.size_pt:g}pt nearest={nearest_size:g}pt",
-            )
-
-    for field, font_size in (
-        ("table_font_size_pt", profile.table_font_size_pt),
-        ("dense_table_font_size_pt", profile.dense_table_font_size_pt),
-    ):
-        nearest_size = nearest_half_point(font_size)
-        if not is_on_half_point_grid(font_size):
-            add_advisory(
-                "font_size_policy_off_half_point_grid",
-                "active style profile 包含无法稳定写入 DOCX 半点字号网格的配置。",
-                "把 profile 字号改成最接近的 0.5pt 档位，避免构建时被 Office 静默取整。",
-                f"field={field} configured={font_size:g}pt nearest={nearest_size:g}pt",
-            )
-
-    style_specs = {spec.style_name: spec for spec in profile.role_specs.values()}
-    for paragraph_index, paragraph in enumerate(document.paragraphs, start=1):
-        spec = style_specs.get(paragraph.style.name)
-        for run_index, run in enumerate(paragraph.runs, start=1):
-            if not (run.text or "").strip():
-                continue
-            size_pt = effective_run_font_size_pt(run, paragraph)
-            if size_pt is None:
-                continue
-            observed_sizes.add(size_pt)
-            location = f"paragraph={paragraph_index} run={run_index} style={paragraph.style.name} size={size_pt:g}pt"
-            collect_run_font_size_advisories(
-                size_pt=size_pt,
-                expected_size_pt=spec.size_pt if spec else None,
-                profile_sizes=profile_sizes,
-                location=location,
-                add_advisory=add_advisory,
-            )
-
-    for table_index, table in enumerate(document.tables, start=1):
-        for row_index, row in enumerate(table.rows, start=1):
-            for col_index, cell in enumerate(row.cells, start=1):
-                for paragraph_index, paragraph in enumerate(cell.paragraphs, start=1):
-                    for run_index, run in enumerate(paragraph.runs, start=1):
-                        if not (run.text or "").strip():
-                            continue
-                        size_pt = effective_run_font_size_pt(run, paragraph)
-                        if size_pt is None:
-                            continue
-                        observed_sizes.add(size_pt)
-                        location = (
-                            f"table={table_index} row={row_index} col={col_index} "
-                            f"paragraph={paragraph_index} run={run_index} size={size_pt:g}pt"
-                        )
-                        expected_sizes = {profile.table_font_size_pt, profile.dense_table_font_size_pt}
-                        expected_size = next(
-                            (value for value in expected_sizes if is_close(size_pt, value, FONT_SIZE_GRID_TOLERANCE_PT)),
-                            None,
-                        )
-                        collect_run_font_size_advisories(
-                            size_pt=size_pt,
-                            expected_size_pt=expected_size,
-                            profile_sizes=profile_sizes,
-                            location=location,
-                            add_advisory=add_advisory,
-                        )
-                        if expected_size is None:
-                            allowed_text = "/".join(f"{value:g}" for value in sorted(expected_sizes))
-                            add_advisory(
-                                "font_size_role_drift",
-                                "文本 run 字号偏离其语义角色或表格允许档位。",
-                                "删除局部字号覆盖，让 run 继承 active style profile。",
-                                f"{location} expected={allowed_text}pt",
-                            )
-
-    if len(observed_sizes) > FONT_SIZE_FRAGMENTATION_LIMIT:
+    for item in observations:
+        details = item.get("details") or {}
         add_advisory(
-            "font_size_fragmentation",
-            "文档使用了过多字号档位，字号系统可能已经碎片化。",
-            "把相同语义的文字收敛到 active style profile 的 role 字号。",
-            "observed_sizes=" + ",".join(f"{value:g}" for value in sorted(observed_sizes)),
+            item["code"],
+            item["message"],
+            item["suggested_fix"],
+            font_observation_example(item.get("location") or {}, details),
         )
     return [buckets[code] for code in sorted(buckets)]
 
 
-def collect_run_font_size_advisories(
+def add_run_font_size_observations(
     *,
     size_pt: float,
     expected_size_pt: float | None,
+    role: str | None,
+    profile: StyleProfile,
     profile_sizes: set[float],
-    location: str,
-    add_advisory,
+    location: dict,
+    add_observation,
 ) -> None:
-    """把单个 run 的字号问题加入聚合桶。"""
+    """把单个 run 的字号事实展开成 observation。"""
 
     if not is_on_half_point_grid(size_pt):
-        add_advisory(
-            "font_size_off_half_point_grid",
-            "检测到偏离 DOCX 0.5pt 网格的字号。",
-            "改用最接近的 0.5pt 档位；若模板要求例外，在 review note 中说明。",
-            f"{location} nearest={nearest_half_point(size_pt):g}pt",
+        expected_value = expected_size_pt or nearest_half_point(size_pt)
+        add_observation(
+            code="font_size_off_half_point_grid",
+            message="检测到偏离 DOCX 0.5pt 网格的字号。",
+            suggested_fix=(
+                f"如无模板、品牌或已登记的 profile 例外，直接改为 {expected_value:g}pt。"
+                if expected_size_pt is not None
+                else f"先回查 active profile role；临时可收敛到最近半点档位 {nearest_half_point(size_pt):g}pt。"
+            ),
+            location=location,
+            details=word_font_recommendation_details(
+                actual_value_pt=size_pt,
+                expected_value_pt=expected_size_pt,
+                role=role,
+                profile=profile,
+            ),
         )
     if expected_size_pt is not None and not is_close(size_pt, expected_size_pt, FONT_SIZE_GRID_TOLERANCE_PT):
-        add_advisory(
-            "font_size_role_drift",
-            "文本 run 字号偏离其语义角色或表格允许档位。",
-            "删除局部字号覆盖，让 run 继承 active style profile。",
-            f"{location} expected={expected_size_pt:g}pt",
+        add_observation(
+            code="font_size_role_drift",
+            message="文本 run 字号偏离其语义角色或表格允许档位。",
+            suggested_fix=f"如无模板、品牌或已登记的 profile 例外，直接改为 {expected_size_pt:g}pt。",
+            location=location,
+            details=word_font_recommendation_details(
+                actual_value_pt=size_pt,
+                expected_value_pt=expected_size_pt,
+                role=role,
+                profile=profile,
+            ),
         )
     if not any(is_close(size_pt, allowed_size, FONT_SIZE_GRID_TOLERANCE_PT) for allowed_size in profile_sizes):
-        add_advisory(
-            "font_size_outside_profile_scale",
-            "文本使用了 active style profile 之外的临时字号档位。",
-            "为该文本绑定已有 role；确需新档位时先更新 style profile，再构建文档。",
-            location,
+        add_observation(
+            code="font_size_outside_profile_scale",
+            message="文本使用了 active style profile 之外的临时字号档位。",
+            suggested_fix=(
+                f"如无模板、品牌或已登记的 profile 例外，直接改为 {expected_size_pt:g}pt。"
+                if expected_size_pt is not None
+                else "先确认该文本的语义 role；确需新档位时先更新 style profile。"
+            ),
+            location=location,
+            details=word_font_recommendation_details(
+                actual_value_pt=size_pt,
+                expected_value_pt=expected_size_pt,
+                role=role,
+                profile=profile,
+            ),
         )
 
+
+def word_font_recommendation_details(
+    *,
+    actual_value_pt: float,
+    expected_value_pt: float | None,
+    role: str | None,
+    profile: StyleProfile,
+) -> dict:
+    """构造 Word 字号 observation 的推荐字段。"""
+
+    details = {
+        "actual_value_pt": actual_value_pt,
+        "nearest_half_point_pt": nearest_half_point(actual_value_pt),
+        "profile_id": profile.name,
+        "role": role,
+        "typography_language": word_typography_language(profile.name),
+        "recommendation_source": "active_word_profile",
+    }
+    if expected_value_pt is None or role is None:
+        details.update(
+            {
+                "recommendation_status": "unresolved",
+                "recommended_token": None,
+                "recommended_value_pt": None,
+            }
+        )
+    else:
+        details.update(
+            {
+                "recommendation_status": "resolved",
+                "recommended_token": f"{profile.name}.{role}",
+                "recommended_token_field": role,
+                "recommended_value_pt": expected_value_pt,
+            }
+        )
+    return details
+
+
+def word_typography_language(profile_name: str) -> str:
+    """返回 Word style profile 的排版语言合同。"""
+
+    if profile_name in ENGLISH_PRESET_PROFILES:
+        return "en"
+    return "zh"
+
+
+def font_observation_example(location: dict, details: dict) -> str:
+    """把字号 observation 转成兼容旧 advisory 的代表位置。"""
+
+    size_text = ""
+    actual_value = details.get("actual_value_pt")
+    if isinstance(actual_value, (int, float)):
+        size_text = f" size={actual_value:g}pt"
+    if location.get("kind") == "paragraph_run":
+        return (
+            f"paragraph={location.get('paragraph')} run={location.get('run')} "
+            f"style={location.get('style')}{size_text}"
+        )
+    if location.get("kind") == "table_run":
+        return (
+            f"table={location.get('table')} row={location.get('row')} col={location.get('col')} "
+            f"paragraph={location.get('paragraph')} run={location.get('run')}{size_text}"
+        )
+    if location.get("kind") == "style_profile_token":
+        return (
+            f"profile={location.get('profile')} role={location.get('role')} "
+            f"configured={actual_value:g}pt nearest={details.get('nearest_half_point_pt'):g}pt"
+        )
+    if location.get("kind") == "document":
+        return "observed_sizes=" + ",".join(f"{value:g}" for value in details.get("font_sizes_pt", []))
+    return str(location)
 
 def effective_run_font_size_pt(run, paragraph) -> float | None:
     """解析 run 的直接字号或段落样式字号。"""
@@ -1829,18 +2088,32 @@ def export_docx_preview(
 
 
 def guess_preview_dir(docx_path: Path) -> Path:
-    """按标准 `build/docx/*.docx` 结构推断 preview 目录。"""
+    """按标准 workspace 输出路径推断 preview 目录。
+
+    新 workspace 默认把最终 DOCX 放在 `<workspace>/final/*.docx`，历史
+    workspace 可能仍使用 `<workspace>/build/docx/*.docx`。两种路径都应把
+    preview evidence 放回 `<workspace>/temp/preview`。
+    """
 
     resolved = docx_path.resolve()
+    if len(resolved.parents) >= 2 and resolved.parents[0].name == "final":
+        return resolved.parents[1] / "temp" / "preview"
     if len(resolved.parents) >= 3 and resolved.parents[0].name == "docx" and resolved.parents[1].name == "build":
         return resolved.parents[2] / "temp" / "preview"
     return resolved.parent / "preview"
 
 
 def guess_qa_dir(docx_path: Path) -> Path:
-    """按标准 `build/docx/*.docx` 结构推断 QA 目录。"""
+    """按标准 workspace 输出路径推断 QA 目录。
+
+    新 workspace 默认把最终 DOCX 放在 `<workspace>/final/*.docx`，历史
+    workspace 可能仍使用 `<workspace>/build/docx/*.docx`。两种路径都应把
+    QA evidence 放回 `<workspace>/temp/qa`。
+    """
 
     resolved = docx_path.resolve()
+    if len(resolved.parents) >= 2 and resolved.parents[0].name == "final":
+        return resolved.parents[1] / "temp" / "qa"
     if len(resolved.parents) >= 3 and resolved.parents[0].name == "docx" and resolved.parents[1].name == "build":
         return resolved.parents[2] / "temp" / "qa"
     return resolved.parent / "qa"
@@ -1876,6 +2149,8 @@ def report_to_markdown(title: str, report: dict) -> str:
     if "issues" in report:
         lines.append(f"- passed: `{report['passed']}`")
         lines.append(f"- issue_count: `{report['issue_count']}`")
+        if "source_font_size_warning_count" in report:
+            lines.append(f"- source_font_size_warnings: `{report['source_font_size_warning_count']}`")
         lines.append("")
         for issue in report["issues"]:
             lines.append(f"## {issue['code']}")

@@ -33,7 +33,9 @@
 - 表头是否居中、左侧索引列是否左对齐、右侧数值列是否右对齐
 - 表题、图题、表注、图注和来源说明的位置与段距是否符合 active `caption_policy`
 
-**字号提醒不默认阻断。** role/profile 的硬契约偏离仍由 `style_contract` 判定失败；非半点配置、profile 外临时档位和字号碎片化进入 `advisories`，默认不改变 `passed_all_checks`。Markdown 只按 code 聚合、给出 occurrence 数和少量代表位置，JSON 保留结构化提醒，避免逐 run 重复输出。
+**字号提醒分 source 层和产物层。** `lint_doc_markdown.py` 会扫描 Markdown、meta、asset manifest 和 workspace scripts 中的显式字号 literal，用来捕捉 `Pt(9.6)`、`font_size: 11.3` 这类构建源问题；`run_docx_qa.py` 会扫描 DOCX 产物里的可见字号漂移。两层都进入统一 `.agent_reminder`，完整证据留在 JSON。
+
+**字号提醒不默认阻断。** source/config literal、非半点配置、profile 外临时档位和字号碎片化进入 advisory；role/profile 的硬契约偏离仍由 `style_contract` 判定失败。也就是说，同一字号异常可以同时产生一个 `typography.font_size.*` advisory 和一个 `typography.paragraph.style_contract_drift` hard block，Agent 先修 hard block，再处理或记录字号 advisory。
 
 ## Gate 3: Font Slot Integrity
 
@@ -63,7 +65,7 @@
 
 **精细模式的一次完整交付至少包含以下对象。**
 - 可维护的 Markdown 源
-- 导出的 `.docx`
+- `final/*.docx` 最终交付文件
 - 必要的图片、原生对象或生成图资产
 - `style_profile` 说明，以及在存在复杂视觉资产时对应的 `asset_manifest`
 - 一次复核记录或结论

@@ -14,7 +14,7 @@
 
 **`slide_spec` 是派生出来的机器页面对象。** 每一页都应先定义 `reader_question`、`page_task`、`reading_mode`、`archetype`、`asset_mode`、`validation_mode`。这些字段仍然是页面构建的主键，但默认不再手工维护一份独立文档，而是从 `deck_narrative.md` 派生出来。
 
-**`validation_bundle` 是最小验收对象。** 完整交付至少包含可编辑 `pptx`、逐页预览图、结构校验结果与必要的人工复核记录。没有验证证据的 deck 不算完成。
+**`validation_bundle` 是最小验收对象。** 完整交付至少包含 `final/*.pptx` 可编辑交付文件、逐页预览图、结构校验结果与必要的人工复核记录。没有验证证据的 deck 不算完成。
 
 **`workspace` 是最小协作对象。** 人类与 agent 的长期协作应围绕稳定 workspace 展开，而不是每次生成一棵新的 run 目录。默认 workspace 的职责是让 `brief.md`、`deck_narrative.md`、assets、build、validation 和 final 始终可追溯。
 
@@ -120,7 +120,7 @@
 
 ## 交付底线
 
-**最低交付物。** 一次完整 deck 任务至少要有 `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、可编辑 `pptx`、逐页预览图、验证结果和 final 前 visual review 结论。
+**最低交付物。** 一次完整 deck 任务至少要有 `brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、`final/*.pptx` 可编辑交付文件、逐页预览图、验证结果和 final 前 visual review 结论。
 
 **最低可读性。** 弱信息不能抢标题区，正文与背景必须高对比，同类对象必须挂到公共网格，一页必须存在清晰的第一视觉中心。
 

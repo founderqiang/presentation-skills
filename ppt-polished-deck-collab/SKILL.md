@@ -103,7 +103,9 @@ description: Use when collaborating with humans to produce polished, editable, h
 8. **强制跑 build 后质量 gate**
 - 所有 deck 在 `build` 之后都应先跑 `package_preflight`，检查包结构一致性、移动端兼容风险和外发安全信号。
 - 所有 deck 在 `package_preflight` 之后都应再跑 `structure_precheck`，检查文本框 fit、文字遮挡、结构化对象排版边界和字号系统漂移。
-- 字号提醒默认不阻断交付：`10.5pt` 这类半点档位是规范档位；`9.6pt`、`11.3pt` 这类偏离 `0.5pt` 网格的显式字号、低于 active typography token 的文字和过多碎片化字号应进入 warning。模板确有特殊字号时允许保留，但必须在 review note 说明。
+- 字号提醒默认不阻断交付：`10.5pt` 这类半点档位是规范档位；source/config 层或 PPTX 产物层出现 `9.6pt`、`11.3pt` 这类偏离 `0.5pt` 网格的显式字号、低于 active typography token 的文字和过多碎片化字号应进入 warning。能解析 active role 时，reminder 必须提示默认 token，例如中文正文回 `theme_tokens.body_font_pt=12pt`、中文表格回 `theme_tokens.table_font_pt=10.5pt`。模板确有特殊字号时允许保留，但必须在 review note 说明。
+- 字号 observation 默认是 advisory；如果同一页面同时存在文本越界、遮挡、包结构错误、必检 evidence 缺失等 finding，对应问题仍按 policy 独立 hard/soft block。Agent 应先处理 block，再处理或说明字号 advisory。
+- `package_preflight`、`structure_precheck` 和 `render_review` 会在原 JSON / Markdown 报告旁生成 `.agent_reminder.json` 与 `.agent_reminder.md`。Agent 必须先读 reminder 的 `decision`、`groups`、`suggested_fix`、`sample_locations` 和 `full_report_ref`，只有需要完整证据时再打开 full report。
 - `not_checked` 必须显式写入报告，不能当成“通过”。
 
 9. **做模块验证、预览和 preview 后质量 gate**
@@ -138,11 +140,12 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 ## 质量标准
 
-- 默认交付物至少包含：`brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、必要 asset slot 记录、可编辑 `pptx`、验证结果、逐页预览图。
+- 默认交付物至少包含：`brief.md`、`deck_narrative.md`、派生 `slide_specs.yaml`、必要 asset slot 记录、`final/*.pptx` 可编辑交付文件、验证结果、逐页预览图。
 - 没有预览图的 deck 不算完成。
 - 需要 connector 的页面，没有结构校验结果不算完成。
 - 页面风格允许多样，但弱信息、标题层级、网格稳定性和高对比文本是底线。
 - 同一语义必须复用 typography token；默认使用整数或 `0.5pt` 档位，不让模型临时手填任意小数。字号 QA 提醒按问题类型聚合并限制代表位置，避免逐 run 重复输出浪费 token。
+- 字号 reminder 必须优先显示 active theme token 的单一推荐值；中文无模板时使用 `hero=40`、`section_title=30`、`page_title=24`、`subtitle=16`、`minor_title=14`、`body=12`、`label=10.5`、`caption=9`、`table=10.5`，英文缺少 active token 时必须返回 unresolved，不能猜通用英文梯度。
 - 高质量是交付标准，不是题材限制。这个 skill 既可以做商业汇报，也可以做技术、研究、教育、运营等主题。
 
 ## 快速命令
@@ -213,6 +216,8 @@ python scripts/derive_slide_specs_from_narrative.py \
 python scripts/check_environment.py \
   --json-out <path/to/env_check.json>
 ```
+
+这套脚本自带 `scripts/agent_qc_reminders/` 本地提醒 runtime，用于生成 `.agent_reminder.json/.md`。正确装载或单独拷贝本 skill 目录后，脚本不得依赖仓库根目录存在同名共享包。
 
 ## 额外说明
 

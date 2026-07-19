@@ -18,6 +18,9 @@ demo_draft/
 docs/*
 !docs/
 !docs/ppt-polished-deck-collab.md
+!docs/plans/
+docs/plans/*
+!docs/plans/2026-07-19-统一Agent提醒架构升级计划.md
 AGENTS.md
 
 old/demo_draft/
