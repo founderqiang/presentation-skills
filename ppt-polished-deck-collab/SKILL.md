@@ -88,6 +88,8 @@ description: Use when collaborating with humans to produce polished, editable, h
 5. **做 planning checkpoint，再进入具体生产**
 - 对正式 deck、外发 deck、自解释 deck 和“最高质量 / 自由发挥”任务，完整 build 前必须给人类一个 planning checkpoint，至少包括章节结构、逐页 `page_task` / `key_message`、页面可见文案方向、资产需求和 layout 方向。
 - 人类明确确认、或已经在任务中授权 agent 继续执行时，才进入资产生产和 PPT 组装。确认过程可以简短，但不能省略 workspace 与 narrative 的落盘证据。
+- 进入资产生产和代码编写前，必须先读取 anti-AI-slop prompt，并把其中的约束写入 `brief.md` 或 `deck_narrative.md`。这一步是前置设计输入，不是对尚未生成内容的检查，也不能等到 quality gate 之后再补救。
+- Anti-AI-slop 的最低约束包括：卡片必须承担分组或比较任务；背景必须使用正确的 slide background、母版或原生底层形状；圆角矩形、窄边强调条、阴影和渐变必须有 profile 理由；矩形、节点、panel 和卡片里的文字必须直接写入该 shape，而不是额外叠一个文本框。
 
 6. **统一做 asset plan，不让模块各自抢入口**
 - 所有图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都通过 `asset_slot` 进入页面。
@@ -130,6 +132,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 
 **专项文档**
 - 需要统一标题区、网格、留白、视觉复核底线时，读取 `references/design/slide_design_system.md`。
+- 需要在正式设计或写 PPT 构建代码前避免模型默认装饰套路时，读取 `references/design/slide_design_system.md` 里的 anti-AI-slop prompt 约束。
 - 需要理解 deck 级质量 gate、移动端兼容预检查、结构排版预检查与 validation bundle 时，读取 `references/workflow/quality_gates.md`。
 - 需要在模板改写、空白页直生、PowerPoint / LibreOffice 预览导出、diagram connector 路线之间做选择时，读取 `references/workflow/build_routes.md`。
 - 需要做系统架构图、dataflow、dependency map、Mermaid 草稿层和 connector 策略时，读取 `references/modules/diagram_support.md`。
@@ -144,6 +147,7 @@ description: Use when collaborating with humans to produce polished, editable, h
 - 没有预览图的 deck 不算完成。
 - 需要 connector 的页面，没有结构校验结果不算完成。
 - 页面风格允许多样，但弱信息、标题层级、网格稳定性和高对比文本是底线。
+- Anti-AI-slop 是 build 前设计纪律。无理由的卡片化、默认圆角矩形、窄边装饰条、整页可移动图片背景、矩形上叠文本框等模型套路都应在写 PPT 代码前被消除。
 - 同一语义必须复用 typography token；默认使用整数或 `0.5pt` 档位，不让模型临时手填任意小数。字号 QA 提醒按问题类型聚合并限制代表位置，避免逐 run 重复输出浪费 token。
 - 字号 reminder 必须优先显示 active theme token 的单一推荐值；中文无模板时使用 `hero=40`、`section_title=30`、`page_title=24`、`subtitle=16`、`minor_title=14`、`body=12`、`label=10.5`、`caption=9`、`table=10.5`，英文缺少 active token 时必须返回 unresolved，不能猜通用英文梯度。
 - 高质量是交付标准，不是题材限制。这个 skill 既可以做商业汇报，也可以做技术、研究、教育、运营等主题。

@@ -102,6 +102,13 @@ def brief_template(title: str, audience: str, scenario: str, objective: str) -> 
         - 页面可见文案方向：
         - 资产 / 配图 / 图表需求：
         - layout 与节奏安排：
+
+        ## Anti-AI-Slop Prompt Intake
+        - 先读 prompt，再开始设计或写代码：
+        - 卡片使用理由：
+        - 背景实现方式：
+        - 圆角 / 色条 / 阴影 / 渐变使用理由：
+        - 矩形、节点、panel、卡片内部文字是否直接写入对应 shape：
         """
     )
 
@@ -171,6 +178,7 @@ def narrative_template(title: str, audience: str, scenario: str, objective: str)
         - 页面可见文案方向：
         - 资产 / 配图 / 图表需求：
         - layout 与节奏安排：
+        - anti-AI-slop 约束：
 
         ### S01 | <slide title>
         ```yaml slide_spec
@@ -195,6 +203,8 @@ def narrative_template(title: str, audience: str, scenario: str, objective: str)
         **Evidence / Asset Plan.** 这页需要的证据、数据、图片、图表、diagram、表格或 icon。
 
         **Layout Notes.** 版式、密度、节奏角色、字体层级和可编辑对象策略。
+
+        **Anti-slop Notes.** 说明这页为何需要或不需要卡片、背景、圆角、强调条、阴影、渐变和独立文本框。矩形、节点、panel 或卡片内部文字应直接写入该 shape；只有独立标题、注释、页脚或自由文本才使用单独文本框。
 
         **Speaker / Collaboration Notes.** 给讲者、合作者或 agent 的解释、取舍理由和口头过渡语，不直接进入页面可见文字。
         """

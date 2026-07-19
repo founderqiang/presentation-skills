@@ -19,7 +19,7 @@
 
 ## 主链路
 
-**默认主链路固定为：** `intake -> source/template lock -> workspace_init -> deck_contract -> narrative -> slide_contracts -> planning_checkpoint -> asset_plan -> asset_production -> pptx_assembly -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> first_draft_checkpoint -> detailed_revision(optional) -> final`。
+**默认主链路固定为：** `intake -> source/template lock -> workspace_init -> deck_contract -> narrative -> slide_contracts -> planning_checkpoint -> anti_slop_prompt_intake -> asset_plan -> asset_production -> pptx_assembly -> package_preflight -> structure_precheck -> module_validation -> preview -> render_review -> visual_review -> first_draft_checkpoint -> detailed_revision(optional) -> final`。
 
 ```mermaid
 flowchart LR
@@ -29,19 +29,20 @@ flowchart LR
   D --> E[deck_narrative.md]
   E --> F[Derived slide_contracts]
   F --> G[Planning Checkpoint]
-  G --> H[Asset Plan]
-  H --> I[Asset Production]
-  I --> J[Editable PPT Assembly]
-  J --> K[Package Preflight]
-  K --> L[Structure Precheck]
-  L --> M[Module Validation]
-  M --> N[Preview Export]
-  N --> O[Render Review]
-  O --> P[Visual Review / Contact Sheet]
-  P --> Q[First Draft Checkpoint]
-  Q --> R[Final Delivery]
-  Q --> S[Detailed Revision Optional]
-  S --> J
+  G --> H[Anti-slop Prompt Intake]
+  H --> I[Asset Plan]
+  I --> J[Asset Production]
+  J --> K[Editable PPT Assembly]
+  K --> L[Package Preflight]
+  L --> M[Structure Precheck]
+  M --> N[Module Validation]
+  N --> O[Preview Export]
+  O --> P[Render Review]
+  P --> Q[Visual Review / Contact Sheet]
+  Q --> R[First Draft Checkpoint]
+  R --> S[Final Delivery]
+  R --> T[Detailed Revision Optional]
+  T --> K
 ```
 
 **intake 用人话完成。** agent 应问清“这份 PPT 是发出去让别人自己看懂，还是配合你现场讲”“有没有必须沿用的模板或旧 PPT”“更像商业汇报、技术说明、研究材料，还是设计感演示”“后续是否还会改数据、图表或结构”。内部字段可以记录在合同里，不应把字段名直接抛给用户。
@@ -63,6 +64,8 @@ flowchart LR
 **在 narrative 阶段就要把增强资产选项告诉人类。** agent 应明确说明当前可用的 icon、原生 Office chart、Python figure、diagram、原生表格、普通图片和 GPT 生图路线，让人类按需指定更偏编辑性、更偏研究表达、还是更偏视觉节奏的方向。
 
 **planning checkpoint 是 build 前阶段门。** 正式 deck、外发 deck、自解释 deck，以及用户要求“最高质量 / 研报风格 / 公开课 / 自由发挥”的任务，在完整 build 之前必须展示或记录 planning checkpoint。checkpoint 至少覆盖：全局基调、章节结构、逐页页面角色、逐页 `key_message`、可见文案方向、资产 / 配图需求、layout recipe 和 rhythm role。用户确认或明确授权继续后，才进入资产生产和 PPT 组装。
+
+**anti-slop prompt intake 是代码前阶段门。** planning checkpoint 之后、资产生产和 PPT 组装之前，agent 必须先读入 anti-slop prompt，并把每页要避免的模型默认装饰套路写入 `deck_narrative.md` 的 planning checkpoint 或页面 `Layout Notes`：无理由卡片化、圆角矩形泛滥、窄边强调条滥用、整页可移动图片或形状背景、矩形上叠文本框、阴影和渐变补丁。这里是前置约束导入，不是对尚未生成内容的验收。
 
 **asset_plan 统一由 slot 承载。** 图表、Python figure、diagram、icon、表格、普通图片和 GPT 生图都先登记为 `asset_slots`，再进入对应模块。PPT 组装阶段只消费 slide contracts 和已登记 slot，不在组装时临时发明页面逻辑。
 
@@ -203,6 +206,13 @@ python scripts/audit_pptx_template.py \
 - 禁止使用的品牌元素：
 - 免责声明 / 风险边界：
 - 不允许发生的错误：
+
+## Anti-AI-Slop Prompt Intake
+- 先读 prompt，再开始设计或写代码：
+- 卡片使用理由：
+- 背景实现方式：
+- 圆角 / 色条 / 阴影 / 渐变使用理由：
+- 矩形、节点、panel、卡片内部文字是否直接写入对应 shape：
 ```
 
 ## `deck_narrative.md` 最小模板
@@ -262,6 +272,15 @@ deck:
 - 这套 deck 的论证主线：
 - 这套 deck 的主题词和禁区：
 
+## Planning Checkpoint
+- 全局基调：
+- 章节结构：
+- 每页角色和读者问题：
+- 页面可见文案方向：
+- 资产 / 配图 / 图表需求：
+- layout 与节奏安排：
+- anti-AI-slop 约束：
+
 ### S01 | <slide title>
 ```yaml slide_spec
 title: "<slide title>"
@@ -291,6 +310,8 @@ asset_slots: []
 **Speaker / Collaboration Notes.** 给讲者、合作者或 agent 的解释、敏感性处理策略、取舍理由、备选讲法和口头过渡语放在这里；除非被改写成外发读者可直接阅读的判断句，否则不得进入 PPT 页面可见文字。
 
 **Layout Notes.** 这页倾向使用什么版式、什么 icon 或图表策略。
+
+**Anti-slop Notes.** 先说明这页为何需要或不需要卡片、背景、圆角、强调条、阴影、渐变和独立文本框。矩形、节点、panel 或卡片内部文字应直接写入该 shape；只有独立标题、注释、页脚或自由文本才使用单独文本框。
 ```
 
 **页面可见文案与内部说明必须分层。** `key_message` 可以进入页面，但必须是读者可直接接受的结论。`Narrative Role`、`Content Notes` 和 `Speaker / Collaboration Notes` 默认不进页面；构建脚本若要引用这些内容，必须先做外发文案改写，删除“本页 / 这页 / 讲述 / 读者 / 听众 / 公开课 / 建议 / 处理敏感问题”等元叙述标记。
@@ -337,13 +358,14 @@ python scripts/derive_slide_specs_from_narrative.py \
 
 **checkpoint 仍使用现有文档层。** 它默认从 `deck_narrative.md` 汇总出来，可以写在对话、review note 或 `deck_narrative.md` 的 `Planning Checkpoint` 小节中，不需要另起长期维护的 plan 文件。
 
-**checkpoint 至少回答六个问题。**
+**checkpoint 至少回答七个问题。**
 - 整套 deck 的基调和传播场景是什么。
 - 章节顺序如何支撑主判断。
 - 每页承担什么页面角色和读者问题。
 - 每页的页面可见结论句是什么。
 - 每页需要什么资产、证据、配图或图表。
 - 每页采用什么 layout recipe、密度和 rhythm role。
+- 每页如何避免无理由卡片化、整页可移动背景、圆角矩形泛滥、窄边装饰条和矩形上叠文本框。
 
 **checkpoint 通过后才进入完整 build。** 用户已经明确授权 agent 继续执行时，可以不等待逐页口头确认，但必须在 workspace 中留下上述规划信息。
 
